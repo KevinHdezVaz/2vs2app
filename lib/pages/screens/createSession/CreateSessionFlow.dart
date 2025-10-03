@@ -4,6 +4,7 @@ import 'package:Frutia/pages/screens/createSession/CourtDetailsScreen.dart';
 import 'package:Frutia/pages/screens/createSession/PlayerDetailsScreen.dart';
 import 'package:Frutia/pages/screens/createSession/SessionDetailScreen.dart';
 import 'package:Frutia/services/2vs2/SessionService.dart';
+import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -43,15 +44,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFE63946), Color(0xFFFF6F61)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+        backgroundColor: FrutiaColors.primary,
         title: Text(
           'Crear Nueva Sesión',
           style: GoogleFonts.poppins(
@@ -78,7 +71,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                       height: 4,
                       decoration: BoxDecoration(
                         color: i <= _currentPage
-                            ? const Color(0xFFE63946)
+                            ? FrutiaColors.accent
                             : Colors.grey[300],
                         borderRadius: BorderRadius.circular(2),
                       ),
@@ -148,103 +141,111 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
     );
   }
 
-  Future<void> _handleStartSession() async {
-    final confirmed = await _showConfirmationDialog();
-    if (!confirmed) return;
+Future<void> _handleStartSession() async {
+  final confirmed = await _showConfirmationDialog();
+  if (!confirmed) return;
 
-    setState(() {
-      _isCreating = true;
-    });
+  // 🔥 Mostrar loading AQUÍ
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Creando sesión...',
+            style: GoogleFonts.lato(
+              color: Colors.white,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 
-    try {
-      print('[CreateSessionFlow] Creando sesión...');
-      
-      // Enviar datos al backend usando SessionService
-      final response = await SessionService.createSession(_sessionData.toJson());
-      
-      print('[CreateSessionFlow] Sesión creada: ${response['session']['id']}');
-      
-      final sessionId = response['session']['id'];
-      
-      // Iniciar la sesión (generar juegos)
-      print('[CreateSessionFlow] Iniciando sesión...');
-      await SessionService.startSession(sessionId);
-      
-      print('[CreateSessionFlow] Sesión iniciada exitosamente');
+  try {
+    print('[CreateSessionFlow] Creando sesión...');
+    
+    final response = await SessionService.createSession(_sessionData.toJson());
+    print('[CreateSessionFlow] Sesión creada: ${response['session']['id']}');
+    
+    final sessionId = response['session']['id'];
+    
+    print('[CreateSessionFlow] Iniciando sesión...');
+    await SessionService.startSession(sessionId);
+    print('[CreateSessionFlow] Sesión iniciada exitosamente');
 
-      if (!mounted) return;
+   if (!mounted) return;
 
-      Navigator.pop(context);
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Sesión iniciada con éxito!'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-        ),
-      );
+Navigator.of(context).pop(); // Cerrar loading
+Navigator.of(context).pop(); // Cerrar CreateSessionFlow
 
-   // En el método _handleStartSession, reemplaza el TODO con:
-Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(
-    builder: (context) => SessionControlPanel(sessionId: sessionId),
+ScaffoldMessenger.of(context).showSnackBar(
+  const SnackBar(
+    content: Text('¡Sesión iniciada con éxito!'),
+    backgroundColor: Colors.green,
+    duration: Duration(seconds: 2),
   ),
 );
 
-    } catch (e) {
-      print('[CreateSessionFlow] Error: $e');
-      
-      if (!mounted) return;
-      
-      setState(() {
-        _isCreating = false;
-      });
+// 🔥 pushAndRemoveUntil para limpiar el stack y volver a HomePage
+Navigator.of(context).pushAndRemoveUntil(
+  MaterialPageRoute(
+    builder: (context) => SessionControlPanel(sessionId: sessionId),
+  ),
+  (route) => route.isFirst, // Mantiene solo HomePage (la primera ruta)
+);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al crear sesión: ${e.toString()}'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 4),
-        ),
-      );
-    }
-  }
+  } catch (e) {
+    print('[CreateSessionFlow] Error: $e');
+    
+    if (!mounted) return;
+    
+    Navigator.of(context).pop(); // Cerrar loading
 
-  Future<bool> _showConfirmationDialog() async {
-    return await showDialog<bool>(
-      context: context,
-      barrierDismissible: !_isCreating,
-      builder: (context) => AlertDialog(
-        title: const Text('¿Iniciar Sesión?'),
-        content: _isCreating
-            ? const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Creando sesión...'),
-                ],
-              )
-            : const Text(
-                '¿Estás seguro? La mayoría de las configuraciones no podrán modificarse después de iniciar.',
-              ),
-        actions: _isCreating
-            ? []
-            : [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Revisar'),
-                ),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE63946),
-                  ),
-                  child: const Text('Iniciar Sesión'),
-                ),
-              ],
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error al crear sesión: ${e.toString()}'),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
       ),
-    ) ?? false;
+    );
   }
 }
+
+// Simplificar el diálogo de confirmación (sin loading aquí)
+Future<bool> _showConfirmationDialog() async {
+  return await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Crear Sesión'),
+      content: const Text(
+        '¿Estás seguro? La mayoría de las configuraciones no podrán modificarse después de iniciar.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Revisar'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, true),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: FrutiaColors.primary,
+          ),
+          child: const Text(
+            'CREAR SESIÓN', 
+            style: TextStyle(color: Colors.white)
+          ),
+        ),
+      ],
+    ),
+  ) ?? false;
+}
+
+ }

@@ -1,4 +1,5 @@
 import 'package:Frutia/model/2vs2p/SessionData.dart';
+import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -41,7 +42,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[900],
+                color: FrutiaColors.primaryText,
               ),
             ),
             const SizedBox(height: 8),
@@ -49,7 +50,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               'Configura los parámetros de tu sesión',
               style: GoogleFonts.lato(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: FrutiaColors.secondaryText,
               ),
             ),
             const SizedBox(height: 24),
@@ -60,15 +61,18 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               decoration: InputDecoration(
                 labelText: 'Nombre de la Sesión',
                 hintText: 'p. ej., Torneo de Fin de Semana',
-                prefixIcon: const Icon(Icons.sports_tennis, color: Color(0xFFE63946)),
+                prefixIcon: Icon(Icons.sports_tennis, color: FrutiaColors.primary),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE63946), width: 2),
+                  borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
                 ),
+                labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                hintStyle: GoogleFonts.lato(color: FrutiaColors.disabledText),
               ),
+              style: GoogleFonts.lato(color: FrutiaColors.primaryText),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Por favor, ingresa un nombre de sesión';
@@ -133,7 +137,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[900],
+                color: FrutiaColors.primaryText,
               ),
             ),
             const SizedBox(height: 16),
@@ -186,7 +190,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[900],
+                color: FrutiaColors.primaryText,
               ),
             ),
             const SizedBox(height: 16),
@@ -208,7 +212,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE63946),
+                  backgroundColor: FrutiaColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -260,20 +264,20 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             style: GoogleFonts.lato(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
+              color: FrutiaColors.primaryText,
             ),
           ),
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: FrutiaColors.primaryBackground,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(color: FrutiaColors.tertiaryBackground),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFFE63946), size: 24),
+                Icon(icon, color: FrutiaColors.primary, size: 24),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
@@ -281,6 +285,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
+                      color: FrutiaColors.primaryText,
                     ),
                   ),
                 ),
@@ -291,14 +296,14 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                           ? () => onChanged(value - 1)
                           : null,
                       icon: const Icon(Icons.remove_circle_outline),
-                      color: const Color(0xFFE63946),
+                      color: FrutiaColors.primary,
                     ),
                     IconButton(
                       onPressed: value < max
                           ? () => onChanged(value + 1)
                           : null,
                       icon: const Icon(Icons.add_circle_outline),
-                      color: const Color(0xFFE63946),
+                      color: FrutiaColors.primary,
                     ),
                   ],
                 ),
@@ -327,20 +332,20 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             style: GoogleFonts.lato(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[700],
+              color: FrutiaColors.primaryText,
             ),
           ),
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: FrutiaColors.primaryBackground,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[300]!),
+              border: Border.all(color: FrutiaColors.tertiaryBackground),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFFE63946), size: 24),
+                Icon(icon, color: FrutiaColors.primary, size: 24),
                 const SizedBox(width: 16),
                 Expanded(
                   child: DropdownButtonHideUnderline(
@@ -354,11 +359,16 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
+                              color: FrutiaColors.primaryText,
                             ),
                           ),
                         );
                       }).toList(),
                       onChanged: onChanged,
+                      dropdownColor: FrutiaColors.primaryBackground,
+                      style: GoogleFonts.poppins(
+                        color: FrutiaColors.primaryText,
+                      ),
                     ),
                   ),
                 ),
@@ -409,13 +419,13 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFFE63946).withOpacity(0.1)
-              : Colors.white,
+              ? FrutiaColors.primary.withOpacity(0.1)
+              : FrutiaColors.primaryBackground,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFFE63946)
-                : Colors.grey[300]!,
+                ? FrutiaColors.primary
+                : FrutiaColors.tertiaryBackground,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -425,15 +435,15 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFFE63946).withOpacity(0.2)
-                    : Colors.grey[100],
+                    ? FrutiaColors.primary.withOpacity(0.2)
+                    : FrutiaColors.secondaryBackground,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
                 color: isSelected
-                    ? const Color(0xFFE63946)
-                    : Colors.grey[600],
+                    ? FrutiaColors.primary
+                    : FrutiaColors.secondaryText,
                 size: 24,
               ),
             ),
@@ -448,8 +458,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: isSelected
-                          ? const Color(0xFFE63946)
-                          : Colors.grey[900],
+                          ? FrutiaColors.primary
+                          : FrutiaColors.primaryText,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -457,16 +467,16 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                     description,
                     style: GoogleFonts.lato(
                       fontSize: 12,
-                      color: Colors.grey[600],
+                      color: FrutiaColors.secondaryText,
                     ),
                   ),
                 ],
               ),
             ),
             if (isSelected)
-              const Icon(
+              Icon(
                 Icons.check_circle,
-                color: Color(0xFFE63946),
+                color: FrutiaColors.primary,
                 size: 24,
               ),
           ],

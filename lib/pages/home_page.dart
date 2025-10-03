@@ -28,35 +28,53 @@ class _HomePageState extends State<HomePage> {
     _loadData();
   }
 
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-    });
+ Future<void> _loadData() async {
+  setState(() {
+    _isLoading = true;
+  });
 
-    try {
-      final activeSessions = await SessionService.getActiveSessions();
+  try {
+    final activeSessions = await SessionService.getActiveSessions();
+    
+    // Ordenar las sesiones: primero por las más recientes (fecha de creación)
+    // y luego por progreso (mayor progreso primero)
+    activeSessions.sort((a, b) {
+      // Primero comparar por fecha de creación (más reciente primero)
+      final dateA = DateTime.parse(a['created_at'] ?? '2000-01-01');
+      final dateB = DateTime.parse(b['created_at'] ?? '2000-01-01');
+      final dateComparison = dateB.compareTo(dateA);
       
-      setState(() {
-        _activeSessions = activeSessions;
-        _recentSessions = activeSessions;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('[HomePage] Error al cargar datos: $e');
-      setState(() {
-        _isLoading = false;
-      });
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al cargar sesiones: ${e.toString()}'),
-            backgroundColor: FrutiaColors.error,
-          ),
-        );
+      // Si las fechas son iguales, ordenar por progreso (mayor progreso primero)
+      if (dateComparison == 0) {
+        final progressA = (a['progress_percentage'] ?? 0).toDouble();
+        final progressB = (b['progress_percentage'] ?? 0).toDouble();
+        return progressB.compareTo(progressA);
       }
+      
+      return dateComparison;
+    });
+    
+    setState(() {
+      _activeSessions = activeSessions;
+      _recentSessions = activeSessions;
+      _isLoading = false;
+    });
+  } catch (e) {
+    print('[HomePage] Error al cargar datos: $e');
+    setState(() {
+      _isLoading = false;
+    });
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al cargar sesiones: ${e.toString()}'),
+          backgroundColor: FrutiaColors.error,
+        ),
+      );
     }
   }
+}
 
   void _showActiveSessionsList() {
     showModalBottomSheet(
@@ -138,10 +156,13 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FrutiaColors.secondaryBackground,
-      drawer: const CustomDrawer(
+      drawer: 
+      
+      const CustomDrawer(
         userName: "Coordinador",
         userEmail: "coordinador@sport.com",
       ),
+      
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: const BoxDecoration(
@@ -164,16 +185,7 @@ class _HomePageState extends State<HomePage> {
         ),
         elevation: 4,
         shadowColor: Colors.black.withOpacity(0.2),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _loadData,
-          ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
+        
       ),
       body: _isLoading
           ? const Center(
@@ -415,17 +427,7 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildSecondaryActionButton(
-                  icon: Icons.visibility_outlined,
-                  title: 'Unirse como Espectador',
-                  color: FrutiaColors.plan,
-                  onTap: () {
-                    print('Entrar en modo espectador');
-                  },
-                ),
-              ),
+              
             ],
           ),
         ],

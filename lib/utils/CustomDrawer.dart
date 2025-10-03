@@ -133,14 +133,7 @@ class CustomDrawer extends StatelessWidget {
                       Navigator.pop(context);
                     },
                   ),
-                  _buildDrawerItem(
-                    icon: Icons.sports_tennis,
-                    title: 'Mis Sesiones',
-                    onTap: () {
-                      Navigator.pop(context);
-                      // Navegar a mis sesiones
-                    },
-                  ),
+                 
                   _buildDrawerItem(
                     icon: Icons.history,
                     title: 'Historial',
@@ -157,23 +150,8 @@ class CustomDrawer extends StatelessWidget {
                       // Navegar a jugadores
                     },
                   ),
-                  _buildDrawerItem(
-                    icon: Icons.bar_chart,
-                    title: 'Estadísticas',
-                    onTap: () {
-                      Navigator.pop(context);
-                      // Navegar a estadísticas
-                    },
-                  ),
-                  const Divider(height: 32, thickness: 1),
-                  _buildDrawerItem(
-                    icon: Icons.settings_outlined,
-                    title: 'Configuración',
-                    onTap: () {
-                      Navigator.pop(context);
-                      // Navegar a configuración
-                    },
-                  ),
+                  
+                 
                   _buildDrawerItem(
                     icon: Icons.help_outline,
                     title: 'Ayuda',

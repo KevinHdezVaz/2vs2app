@@ -9,6 +9,138 @@ class SessionService {
 
   // ==================== SESSIONS ====================
   
+
+static Future<Map<String, String>> getAuthHeaders() async {
+    final token = await _storage.getToken();
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+  }
+
+
+// En SessionService.dart
+
+// Método para espectadores (sin autenticación)
+static Future<List<dynamic>> getPublicActiveSessions() async {
+  final url = Uri.parse('$baseUrl/public/sessions/active');
+  
+  final response = await http.get(
+    url,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    return data['sessions'] ?? [];
+  } else {
+    throw Exception('Error al obtener sesiones públicas');
+  }
+}
+
+static Future<Map<String, dynamic>> getPublicSession(int sessionId) async {
+  print('[SessionService] Obteniendo sesión pública con ID: $sessionId');
+  
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/public/sessions/$sessionId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error al obtener sesión.');
+    }
+  } catch (e) {
+    print('[SessionService] Excepción: $e');
+    throw Exception('Error de conexión: $e');
+  }
+}
+
+static Future<List<dynamic>> getPublicGamesByStatus(int sessionId, String status) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/public/sessions/$sessionId/games/$status'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['games'] ?? [];
+    } else {
+      throw Exception('Error al obtener juegos.');
+    }
+  } catch (e) {
+    throw Exception('Error de conexión: $e');
+  }
+}
+
+static Future<List<dynamic>> getPublicPlayerStats(int sessionId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/public/sessions/$sessionId/players'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['players'] ?? [];
+    } else {
+      throw Exception('Error al obtener estadísticas.');
+    }
+  } catch (e) {
+    throw Exception('Error de conexión: $e');
+  }
+}
+
+
+
+  static Future<Map<String, dynamic>> joinWithCode(String code) async {
+    final url = Uri.parse('$baseUrl/sessions/join/$code');
+    
+    final response = await http.post(
+      url,
+      headers: await getAuthHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data;
+    } else {
+      throw Exception('Código inválido o expirado');
+    }
+  }
+
+ static Future<Map<String, dynamic>> getSessionRole(int sessionId) async {
+    final url = Uri.parse('$baseUrl/sessions/$sessionId/role');
+    
+    final response = await http.get(
+      url,
+      headers: await getAuthHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error al verificar permisos');
+    }
+  }
+
+
   static Future<Map<String, dynamic>> createSession(Map<String, dynamic> sessionData) async {
     print('[SessionService] Iniciando creación de sesión...');
     final token = await _storage.getToken();

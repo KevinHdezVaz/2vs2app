@@ -1,5 +1,6 @@
 // PANTALLA 2: Detalles de la Cancha
 import 'package:Frutia/model/2vs2p/SessionData.dart';
+import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -46,7 +47,7 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
             style: GoogleFonts.poppins(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[900],
+              color: FrutiaColors.primaryText,
             ),
           ),
           const SizedBox(height: 8),
@@ -54,7 +55,7 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
             'Personalizar nombres de las canchas (opcional)',
             style: GoogleFonts.lato(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: FrutiaColors.secondaryText,
             ),
           ),
           const SizedBox(height: 24),
@@ -68,21 +69,24 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
                 controller: _courtControllers[index],
                 decoration: InputDecoration(
                   labelText: 'Cancha ${index + 1}',
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     Icons.sports_tennis,
-                    color: Color(0xFFE63946),
+                    color: FrutiaColors.primary,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFFE63946),
+                    borderSide: BorderSide(
+                      color: FrutiaColors.primary,
                       width: 2,
                     ),
                   ),
+                  labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                  hintStyle: GoogleFonts.lato(color: FrutiaColors.disabledText),
                 ),
+                style: GoogleFonts.lato(color: FrutiaColors.primaryText),
                 onChanged: (value) {
                   widget.sessionData.courtNames[index] = value;
                 },
@@ -96,11 +100,11 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
+                child: ElevatedButton(
                   onPressed: widget.onNext,
-                  style: OutlinedButton.styleFrom(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FrutiaColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: Color(0xFFE63946)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

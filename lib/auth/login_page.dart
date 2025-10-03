@@ -1,4 +1,7 @@
 import 'package:Frutia/pages/home_page.dart';
+import 'package:Frutia/pages/screens/SessionControl/SessionControlPanel.dart';
+import 'package:Frutia/pages/screens/SessionControl/SpectatorSessionsListPage.dart';
+import 'package:Frutia/services/2vs2/SessionService.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -66,7 +69,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     print('====================================');
     print('🔵 INICIO LOGIN');
     print('====================================');
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -86,16 +89,15 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       print('🟢 Login exitoso: $response');
 
       if (!mounted) return;
-      
+
       // Cierra el diálogo de carga
       Navigator.of(context).pop();
-      
+
       // 👇 CAMBIA ESTO: Navega directo a HomePage
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const HomePage()),
         (route) => false, // Elimina todas las rutas anteriores
       );
-      
     } on AuthException catch (e) {
       print('🔴 AuthException: ${e.message}');
       if (!mounted) return;
@@ -138,6 +140,144 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     return true;
   }
 
+  void _showSpectatorDialog() {
+    final codeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.remove_red_eye, color: FrutiaColors.accent),
+            SizedBox(width: 8),
+            Text(
+              'Modo Espectador',
+              style: GoogleFonts.poppins(
+                color: FrutiaColors.primaryText,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Ingresa el código de la sesión para verla en vivo',
+              style: GoogleFonts.lato(
+                color: FrutiaColors.secondaryText,
+                fontSize: 14,
+              ),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              controller: codeController,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.robotoMono(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 4,
+              ),
+              decoration: InputDecoration(
+                hintText: 'ABC12345',
+                hintStyle: GoogleFonts.robotoMono(
+                  color: FrutiaColors.disabledText,
+                  letterSpacing: 4,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: FrutiaColors.accent.withOpacity(0.5),
+                    width: 2.0,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: FrutiaColors.accent,
+                    width: 2.0,
+                  ),
+                ),
+              ),
+              textCapitalization: TextCapitalization.characters,
+              maxLength: 8,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.lato(color: FrutiaColors.secondaryText),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (codeController.text.isEmpty) {
+                showErrorSnackBar('Ingresa un código válido');
+                return;
+              }
+
+              Navigator.pop(context); // Cierra el diálogo
+              await _joinAsSpectator(codeController.text.trim().toUpperCase());
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: FrutiaColors.accent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              'Unirse',
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _joinAsSpectator(String code) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.accent),
+        ),
+      ),
+    );
+
+    try {
+      final response = await SessionService.joinWithCode(code);
+
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Cierra el loading
+
+      // Navega al SessionControlPanel en modo espectador
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => SessionControlPanel(
+            sessionId: response['session_id'],
+            isSpectator: true, // 👈 Nuevo parámetro
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Cierra el loading
+      showErrorSnackBar('Código inválido o sesión no encontrada');
+    }
+  }
+
   void showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -166,7 +306,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             end: Alignment.bottomCenter,
             colors: [
               FrutiaColors.primary, // Slate Teal
-              FrutiaColors.accent    // Lime
+              FrutiaColors.accent // Lime
             ],
           ),
         ),
@@ -196,7 +336,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               SizedBox(height: 20),
 
                               Text(
-                                "Bienvenido a Frutia",
+                                "Bienvenido a PickleBracket",
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.lato(
                                   fontSize: 24,
@@ -211,7 +351,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 style: GoogleFonts.lato(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w400,
-                                  color: FrutiaColors.primaryText.withOpacity(0.7),
+                                  color:
+                                      FrutiaColors.primaryText.withOpacity(0.7),
                                 ),
                               ),
                               SizedBox(height: 40),
@@ -225,7 +366,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(15),
                                       borderSide: BorderSide(
-                                        color: FrutiaColors.accent.withOpacity(0.5),
+                                        color: FrutiaColors.accent
+                                            .withOpacity(0.5),
                                         width: 1.0,
                                       ),
                                     ),
@@ -238,7 +380,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                     ),
                                     labelText: "Correo",
                                     labelStyle: GoogleFonts.lato(
-                                      color: FrutiaColors.primaryText.withOpacity(0.7),
+                                      color: FrutiaColors.primaryText
+                                          .withOpacity(0.7),
                                       fontSize: 16,
                                     ),
                                     prefixIcon: Icon(
@@ -268,7 +411,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(15),
                                       borderSide: BorderSide(
-                                        color: FrutiaColors.accent.withOpacity(0.5),
+                                        color: FrutiaColors.accent
+                                            .withOpacity(0.5),
                                         width: 1.0,
                                       ),
                                     ),
@@ -281,7 +425,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                     ),
                                     labelText: "Contraseña",
                                     labelStyle: GoogleFonts.lato(
-                                      color: FrutiaColors.primaryText.withOpacity(0.7),
+                                      color: FrutiaColors.primaryText
+                                          .withOpacity(0.7),
                                       fontSize: 16,
                                     ),
                                     prefixIcon: Icon(
@@ -395,7 +540,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                               ),
                               SizedBox(height: 20),
-                              // Sign In with Google Button
+                         
+                         /*
                               SlideTransition(
                                 position: _slideAnimation,
                                 child: Container(
@@ -438,7 +584,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                       padding:
                                           EdgeInsets.symmetric(vertical: 16),
                                       side: BorderSide(
-                                          color: FrutiaColors.primary, width: 1.5),
+                                          color: FrutiaColors.primary,
+                                          width: 1.5),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(15),
                                       ),
@@ -474,14 +621,66 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 20),
-                              // Create Account Link
+                              */
+                              // Después del botón "Unirse con Google" (línea ~448)
+                              SizedBox(height: 10),
+
+// 🆕 Botón Unirse como Espectador
+                              SlideTransition(
+                                position: _slideAnimation,
+                                child: Container(
+                                  width: size.width * 0.8,
+                                  child: OutlinedButton(
+                                    onPressed: () {
+  Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SpectatorSessionsListPage(), // 👈 Primero a la lista
+          ),
+        );                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      backgroundColor:
+                                          FrutiaColors.warning.withOpacity(0.1),
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 16),
+                                      side: BorderSide(
+                                          color: FrutiaColors.warning,
+                                          width: 1.5),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.remove_red_eye_outlined,
+                                          color: FrutiaColors.warning,
+                                          size: 24,
+                                        ),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          "Unirse como Espectador",
+                                          style: GoogleFonts.lato(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: FrutiaColors.warning,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              SizedBox(height: 40),
+
                               TextButton(
                                 onPressed: widget.showLoginPage,
                                 child: Text(
                                   "Crea tu cuenta",
                                   style: GoogleFonts.lato(
-                                    fontSize: 16,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w500,
                                     color: FrutiaColors.primary,
                                     decoration: TextDecoration.underline,

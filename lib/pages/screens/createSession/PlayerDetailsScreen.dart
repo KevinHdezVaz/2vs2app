@@ -1,5 +1,6 @@
 // PANTALLA 3: Detalles de Jugadores
 import 'package:Frutia/model/2vs2p/SessionData.dart';
+import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -71,7 +72,7 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
             style: GoogleFonts.poppins(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[900],
+              color: FrutiaColors.primaryText,
             ),
           ),
           const SizedBox(height: 8),
@@ -79,7 +80,7 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
             'Ingresa la información de los jugadores',
             style: GoogleFonts.lato(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: FrutiaColors.secondaryText,
             ),
           ),
           const SizedBox(height: 16),
@@ -92,12 +93,12 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                 'Configuraciones Avanzadas',
                 style: GoogleFonts.lato(
                   fontSize: 14,
-                  color: Colors.grey[700],
+                  color: FrutiaColors.primaryText,
                 ),
               ),
               Switch(
                 value: _showAdvancedSettings,
-                activeColor: const Color(0xFFE63946),
+                activeColor: FrutiaColors.primary,
                 onChanged: (value) {
                   setState(() {
                     _showAdvancedSettings = value;
@@ -111,7 +112,7 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
           // Lista de jugadores
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: FrutiaColors.primaryBackground,
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
@@ -125,7 +126,10 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: widget.sessionData.numberOfPlayers,
-              separatorBuilder: (context, index) => const Divider(height: 1),
+              separatorBuilder: (context, index) => Divider(
+                height: 1,
+                color: FrutiaColors.tertiaryBackground,
+              ),
               itemBuilder: (context, index) {
                 return _buildPlayerRow(index);
               },
@@ -142,7 +146,7 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                   onPressed: widget.onBack,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: Color(0xFFE63946)),
+                    side: BorderSide(color: FrutiaColors.primary),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -152,7 +156,7 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFFE63946),
+                      color: FrutiaColors.primary,
                     ),
                   ),
                 ),
@@ -163,8 +167,8 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                 child: ElevatedButton(
                   onPressed: _areAllPlayersFilled() ? widget.onStartSession : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE63946),
-                    disabledBackgroundColor: Colors.grey[300],
+                    backgroundColor: FrutiaColors.primary,
+                    disabledBackgroundColor: FrutiaColors.disabledText,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -195,20 +199,20 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
+                color: FrutiaColors.warning.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                border: Border.all(color: FrutiaColors.warning.withOpacity(0.3)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                  Icon(Icons.info_outline, color: FrutiaColors.warning, size: 20),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Completa los nombres de todos los jugadores para iniciar la sesión',
                       style: GoogleFonts.lato(
                         fontSize: 13,
-                        color: Colors.orange[800],
+                        color: FrutiaColors.warning,
                       ),
                     ),
                   ),
@@ -222,179 +226,160 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
       ),
     ).animate().fadeIn(duration: 300.ms);
   }
-
+  
   Widget _buildPlayerRow(int index) {
-    final player = widget.sessionData.players[index];
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              // Número del jugador
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE63946).withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '${index + 1}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFE63946),
-                    ),
+  final player = widget.sessionData.players[index];
+  
+  return Container(
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      children: [
+        Row(
+          children: [
+            // Número del jugador
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: FrutiaColors.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  '${index + 1}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: FrutiaColors.primary,
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
-              
-              // Nombre
+            ),
+            const SizedBox(width: 12),
+            
+            // Nombre - mismo tamaño que Apellido
+            Expanded(
+              child: TextFormField(
+                controller: _firstNameControllers[index],
+                decoration: InputDecoration(
+                  labelText: 'Nombre',
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
+                  ),
+                  labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                ),
+                style: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                onChanged: (value) {
+                  setState(() {
+                    player.firstName = value;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            
+            // Apellido - mismo tamaño que Nombre
+            Expanded(
+              child: TextFormField(
+                controller: _lastInitialControllers[index],
+                 textCapitalization: TextCapitalization.characters,
+                decoration: InputDecoration(
+                  labelText: 'Apellido',
+                  counterText: '',
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
+                  ),
+                  labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                ),
+                style: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                onChanged: (value) {
+                  setState(() {
+                    player.lastInitial = value;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+        
+        // Configuraciones avanzadas
+        if (_showAdvancedSettings) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const SizedBox(width: 44),
               Expanded(
-                flex: 2,
-                child: TextFormField(
-                  controller: _firstNameControllers[index],
-                  decoration: InputDecoration(
-                    labelText: 'Nombre',
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFE63946),
-                        width: 2,
-                      ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: FrutiaColors.tertiaryBackground),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: player.level,
+                      isDense: true,
+                      isExpanded: true,
+                      dropdownColor: FrutiaColors.primaryBackground,
+                      items: ['Por encima del promedio', 'Promedio', 'Por debajo del promedio']
+                          .map((level) => DropdownMenuItem(
+                                value: level,
+                                child: Text(level, style: GoogleFonts.lato(fontSize: 13, color: FrutiaColors.primaryText)),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          player.level = value!;
+                        });
+                      },
+                      style: GoogleFonts.lato(color: FrutiaColors.primaryText),
                     ),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      player.firstName = value;
-                    });
-                  },
                 ),
               ),
               const SizedBox(width: 12),
-              
-              // Inicial del Apellido
-              SizedBox(
-                width: 80,
-                child: TextFormField(
-                  controller: _lastInitialControllers[index],
-                  maxLength: 1,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: InputDecoration(
-                    labelText: 'Apellido',
-                    counterText: '',
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 12,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFE63946),
-                        width: 2,
-                      ),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: FrutiaColors.tertiaryBackground),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: player.dominantHand,
+                      isDense: true,
+                      isExpanded: true,
+                      dropdownColor: FrutiaColors.primaryBackground,
+                      items: ['Zurdo', 'Diestro', 'Ninguna']
+                          .map((hand) => DropdownMenuItem(
+                                value: hand,
+                                child: Text(hand, style: GoogleFonts.lato(fontSize: 13, color: FrutiaColors.primaryText)),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          player.dominantHand = value!;
+                        });
+                      },
+                      style: GoogleFonts.lato(color: FrutiaColors.primaryText),
                     ),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      player.lastInitial = value;
-                    });
-                  },
                 ),
               ),
             ],
           ),
-          
-          // Configuraciones avanzadas
-          if (_showAdvancedSettings) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                const SizedBox(width: 48),
-                // Nivel
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: player.level,
-                        isDense: true,
-                        isExpanded: true,
-                        items: ['Por encima del promedio', 'Promedio', 'Por debajo del promedio']
-                            .map((level) => DropdownMenuItem(
-                                  value: level,
-                                  child: Text(
-                                    level,
-                                    style: GoogleFonts.lato(fontSize: 13),
-                                  ),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            player.level = value!;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Mano Dominante
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: player.dominantHand,
-                        isDense: true,
-                        isExpanded: true,
-                        items: ['Zurdo', 'Diestro', 'Ninguna']
-                            .map((hand) => DropdownMenuItem(
-                                  value: hand,
-                                  child: Text(
-                                    hand,
-                                    style: GoogleFonts.lato(fontSize: 13),
-                                  ),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            player.dominantHand = value!;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
         ],
-      ),
-    );
-  }
+      ],
+    ),
+  );
+}
 }

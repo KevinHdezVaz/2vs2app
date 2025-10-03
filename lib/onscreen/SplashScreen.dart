@@ -133,7 +133,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   children: [
                     Text(
-                      'FRUTIA', // Cambiado a FRUTIA para ser coherente
+                      'PickleBracket', // Cambiado a FRUTIA para ser coherente
                       style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.bold,

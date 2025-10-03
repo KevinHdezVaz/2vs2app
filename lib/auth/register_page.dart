@@ -1,3 +1,4 @@
+import 'package:Frutia/pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_intl_phone_field/flutter_intl_phone_field.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -102,55 +103,67 @@ class _RegisterPageState extends State<RegisterPage>
     }
   }
 
-  Future<void> signUp() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
-        ),
+Future<void> signUp() async {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const Center(
+      child: CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
+      ),
+    ),
+  );
+
+  try {
+    final response = await _authService.register(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      phone: _fullPhoneNumber,
+      password: _passwordController.text,
+      affiliateCode: _affiliateCodeController.text.trim(),
+    );
+
+    if (!mounted) return;
+    Navigator.of(context).pop(); // Cierra el loading
+
+    final userName = response['user']['name'];
+    
+    // Mostrar mensaje de bienvenida
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('¡Bienvenido, $userName! Registro exitoso.'),
+        backgroundColor: FrutiaColors.success,
       ),
     );
 
-    try {
-      final response = await _authService.register(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        phone: _fullPhoneNumber,
-        password: _passwordController.text,
-        affiliateCode: _affiliateCodeController.text.trim(),
-      );
+    // 🆕 Navegar a HomePage después del registro exitoso
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const HomePage()),
+      (route) => false, // Elimina todas las rutas anteriores
+    );
+    
+  } on AuthException catch (e) {
+    if (!mounted) return;
+    Navigator.of(context).pop();
 
-      Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.message),
+        backgroundColor: FrutiaColors.error,
+      ),
+    );
+  } catch (e) {
+    if (!mounted) return;
+    Navigator.of(context).pop();
 
-      final userName = response['user']['name'];
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('¡Bienvenido, $userName! Registro exitoso.'),
-          backgroundColor: FrutiaColors.success,
-        ),
-      );
-    } on AuthException catch (e) {
-      Navigator.of(context).pop();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-          backgroundColor: FrutiaColors.error,
-        ),
-      );
-    } catch (e) {
-      Navigator.of(context).pop();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'),
-          backgroundColor: FrutiaColors.error,
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'),
+        backgroundColor: FrutiaColors.error,
+      ),
+    );
   }
+}
 
   bool validateRegister() {
     if (_passwordController.text.isNotEmpty &&
@@ -545,7 +558,8 @@ class _RegisterPageState extends State<RegisterPage>
                                       ),
                                     ),
                                     SizedBox(height: 20),
-                                    // Sign Up with Google Button
+                                    
+                                    /*
                                     SlideTransition(
                                       position: _slideAnimation,
                                       child: Container(
@@ -594,6 +608,8 @@ class _RegisterPageState extends State<RegisterPage>
                                         ),
                                       ),
                                     ),
+
+                                  */
                                   ],
                                 ),
                               ),

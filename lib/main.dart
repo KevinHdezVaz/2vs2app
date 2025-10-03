@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:Frutia/providers/QuestionnaireProvider.dart';
 import 'package:Frutia/providers/ShoppingProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -13,8 +12,7 @@ import 'package:Frutia/services/settings/theme_provider.dart';
 import 'package:Frutia/utils/constantes.dart';
 import 'firebase_options.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:showcaseview/showcaseview.dart';
-
+ 
 // Llaves globales que pueden ser útiles en toda la app
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -35,14 +33,9 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ShoppingProvider()),
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
-        ChangeNotifierProvider(create: (context) => QuestionnaireProvider()),
       ],
-      child: ShowCaseWidget(
-        builder: (context) => MyApp(isviewed: isviewed),
-        autoPlay: false,
-        enableAutoScroll: true,
-        blurValue: 1.5,
-      ),
+         child: MyApp(isviewed: isviewed),
+
     ),
   );
 }
@@ -75,12 +68,7 @@ class MyApp extends StatelessWidget {
           theme: lightTheme,
           darkTheme: darkTheme,
           home: SplashScreen(isviewed: isviewed),
-          builder: (context, child) {
-            // El ShowCaseWidget se puede mantener aquí si se usa en múltiples partes de la app.
-            return ShowCaseWidget(
-              builder: (ctx) => child!,
-            );
-          },
+          
         );
       },
     );
