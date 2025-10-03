@@ -1,0 +1,39 @@
+import 'package:flutter/material.dart';
+
+class FrutiaColors {
+  // Core Background Colors
+  static const Color primaryBackground = Color(0xFFFFFFFF); // White for main background
+  static const Color secondaryBackground = Color(0xFFF5F5F5); // Off-White for secondary backgrounds
+
+  // Primary Colors (Nuevos colores principales)
+  static const Color primary = Color(0xFF335D55); // Slate Teal - Color principal
+  static const Color accent = Color(0xFFA3E635); // Lime - Color de acento principal
+
+  // Text Colors
+  static const Color primaryText = Color(0xFF2D2D2D); // Dark Gray for primary text
+  static const Color secondaryText = Color(0xFF666666); // Light Gray for secondary text (ajustado)
+  static const Color disabledText = Color(0xFF767676); // Medium Gray for disabled text (simplificado)
+
+  // Secondary Accent Colors (derivados de los principales)
+  static const Color secondaryAccent = Color(0xFFC6F679); // Lime más claro
+  static const Color accentLight = Color(0xFFE8F8C8); // Lime muy claro
+  static const Color accent2 = Color(0xFF4A7A70); // Slate Teal más claro
+
+  // Semantic Colors
+  static const Color warning = Color(0xFFFFA726); // Orange for warnings or alerts
+  static const Color success = Color(0xFF4CAF50); // Green for success states
+  static const Color error = Color(0xFFD32F2F); // Deep Red for error states
+
+  // Themed Colors for Specific Features
+  static const Color nutrition = Color(0xFF4CAF50); // Green for nutrition-related elements
+  static const Color progress = Color(0xFF42A5F5); // Blue for progress indicators
+  static const Color plan = Color(0xFFAB47BC); // Purple for plan-related elements
+  static const Color chatBubble = Color(0xFFE1F5FE); // Light Blue for chat bubbles
+
+  // Shadow and Overlay Colors
+  static const Color shadow = Color(0x1A000000); // Black with 10% opacity for shadows
+  static const Color overlay = Color(0x80000000); // Black with 50% opacity for overlays
+
+  // Neutral Colors
+  static const Color tertiaryBackground = Color(0xFFE0E0E0); // Lighter grey for dividers
+}
