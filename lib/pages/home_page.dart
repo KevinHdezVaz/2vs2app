@@ -2,11 +2,13 @@
 import 'package:Frutia/pages/screens/SessionControl/SessionControlPanel.dart';
 import 'package:Frutia/pages/screens/createSession/CreateSessionFlow.dart';
 import 'package:Frutia/services/2vs2/SessionService.dart';
+import 'package:Frutia/services/storage_service.dart';
 import 'package:Frutia/utils/CustomDrawer.dart';
 import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,65 +18,89 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final String _userName = "Coordinador";
-  
+  final StorageService _storage = StorageService();
+
+  String _userName = "Usuario";
+  String _userEmail = "";
+
   List<dynamic> _activeSessions = [];
   List<dynamic> _recentSessions = [];
   bool _isLoading = true;
-  
+
   @override
   void initState() {
     super.initState();
+    _loadUserData();
     _loadData();
   }
 
- Future<void> _loadData() async {
-  setState(() {
-    _isLoading = true;
-  });
 
-  try {
-    final activeSessions = await SessionService.getActiveSessions();
-    
-    // Ordenar las sesiones: primero por las más recientes (fecha de creación)
-    // y luego por progreso (mayor progreso primero)
-    activeSessions.sort((a, b) {
-      // Primero comparar por fecha de creación (más reciente primero)
-      final dateA = DateTime.parse(a['created_at'] ?? '2000-01-01');
-      final dateB = DateTime.parse(b['created_at'] ?? '2000-01-01');
-      final dateComparison = dateB.compareTo(dateA);
-      
-      // Si las fechas son iguales, ordenar por progreso (mayor progreso primero)
-      if (dateComparison == 0) {
-        final progressA = (a['progress_percentage'] ?? 0).toDouble();
-        final progressB = (b['progress_percentage'] ?? 0).toDouble();
-        return progressB.compareTo(progressA);
+@override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  // Esto se llama cada vez que regresas a esta pantalla
+  _loadData();
+}
+
+  Future<void> _loadUserData() async {
+    try {
+      final userDataJson = await _storage.getUserData();
+      if (userDataJson != null) {
+        final userData = json.decode(userDataJson);
+        setState(() {
+          _userName = userData['name'] ?? "Usuario";
+          _userEmail = userData['email'] ?? "";
+        });
+        print('[HomePage] Usuario cargado: $_userName');
       }
-      
-      return dateComparison;
-    });
-    
-    setState(() {
-      _activeSessions = activeSessions;
-      _recentSessions = activeSessions;
-      _isLoading = false;
-    });
-  } catch (e) {
-    print('[HomePage] Error al cargar datos: $e');
-    setState(() {
-      _isLoading = false;
-    });
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al cargar sesiones: ${e.toString()}'),
-          backgroundColor: FrutiaColors.error,
-        ),
-      );
+    } catch (e) {
+      print('[HomePage] Error al cargar datos del usuario: $e');
     }
   }
-}
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final activeSessions = await SessionService.getActiveSessions();
+
+      activeSessions.sort((a, b) {
+        final dateA = DateTime.parse(a['created_at'] ?? '2000-01-01');
+        final dateB = DateTime.parse(b['created_at'] ?? '2000-01-01');
+        final dateComparison = dateB.compareTo(dateA);
+
+        if (dateComparison == 0) {
+          final progressA = (a['progress_percentage'] ?? 0).toDouble();
+          final progressB = (b['progress_percentage'] ?? 0).toDouble();
+          return progressB.compareTo(progressA);
+        }
+
+        return dateComparison;
+      });
+
+      setState(() {
+        _activeSessions = activeSessions;
+        _recentSessions = activeSessions;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('[HomePage] Error loading data: $e');
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading sessions: ${e.toString()}'),
+            backgroundColor: FrutiaColors.error,
+          ),
+        );
+      }
+    }
+  }
 
   void _showActiveSessionsList() {
     showModalBottomSheet(
@@ -89,7 +115,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Selecciona una sesión',
+              'Select a session',
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -102,7 +128,7 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.all(20.0),
                 child: Center(
                   child: Text(
-                    'No hay sesiones activas',
+                    'No active sessions',
                     style: GoogleFonts.lato(color: FrutiaColors.disabledText),
                   ),
                 ),
@@ -116,23 +142,25 @@ class _HomePageState extends State<HomePage> {
                       color: FrutiaColors.success.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.play_circle_filled, color: FrutiaColors.success),
+                    child: Icon(Icons.play_circle_filled,
+                        color: FrutiaColors.success),
                   ),
                   title: Text(
-                    session['session_name'] ?? 'Sin nombre',
+                    session['session_name'] ?? 'No name',
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       color: FrutiaColors.primaryText,
                     ),
                   ),
                   subtitle: Text(
-                    '${session['number_of_players']} jugadores | ${session['number_of_courts']} canchas',
+                    '${session['number_of_players']} players | ${session['number_of_courts']} courts',
                     style: GoogleFonts.lato(
                       fontSize: 12,
                       color: FrutiaColors.secondaryText,
                     ),
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios, size: 16, color: FrutiaColors.primary),
+                  trailing: Icon(Icons.arrow_forward_ios,
+                      size: 16, color: FrutiaColors.primary),
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -151,41 +179,45 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FrutiaColors.secondaryBackground,
-      drawer: 
-      
-      const CustomDrawer(
-        userName: "Coordinador",
-        userEmail: "coordinador@sport.com",
+      drawer: CustomDrawer(
+        userName: _userName,
+        userEmail: _userEmail,
       ),
-      
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: const BoxDecoration(
-           color: FrutiaColors.primary
+            color: FrutiaColors.primary,
           ),
         ),
-        title: Row(
-          children: [
-            const Icon(Icons.sports_tennis, color: Colors.white, size: 28),
-            const SizedBox(width: 8),
-            Text(
-              'Hola',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 20,
+        leadingWidth: 40,
+        title: Image.asset(
+          'assets/icons/LogoAppWorkana.png',
+          height: 59,
+          fit: BoxFit.contain,
+        ),
+        titleSpacing: 0,
+        actions: [
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 120),
+              child: Text(
+                'Session Manager', // 👈 Tu texto aquí
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
         elevation: 4,
         shadowColor: Colors.black.withOpacity(0.2),
-        
       ),
       body: _isLoading
           ? const Center(
@@ -201,6 +233,10 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    _buildWelcomeHeader2(),
+                    const SizedBox(height: 10),
+                    Divider(thickness: 1, color: Colors.black.withOpacity(0.1)),
+                    const SizedBox(height: 24),
                     _buildWelcomeHeader(),
                     const SizedBox(height: 24),
                     _buildAccountSummary(),
@@ -216,22 +252,48 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildWelcomeHeader2() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Row(
+        children: [
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Create & Manage your Open Play Sessions.",
+                  style: GoogleFonts.poppins(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: const Color.fromARGB(255, 62, 87, 22),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.2);
+  }
+
   Widget _buildWelcomeHeader() {
     final hour = DateTime.now().hour;
     String greeting;
     IconData greetingIcon;
-    
+
     if (hour < 12) {
-      greeting = 'Buenos Días';
+      greeting = 'Good Morning';
       greetingIcon = Icons.wb_sunny;
     } else if (hour < 18) {
-      greeting = 'Buenas Tardes';
+      greeting = 'Good Afternoon';
       greetingIcon = Icons.wb_sunny_outlined;
     } else {
-      greeting = 'Buenas Noches';
+      greeting = 'Good Evening';
       greetingIcon = Icons.nights_stay_outlined;
     }
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Row(
@@ -287,7 +349,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildAccountSummary() {
     int activeSessions = _activeSessions.length;
     int totalPlayers = 0;
-    
+
     for (var session in _activeSessions) {
       totalPlayers += (session['number_of_players'] as int? ?? 0);
     }
@@ -297,7 +359,7 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [FrutiaColors.primary, FrutiaColors.accent.withOpacity(0.9)],
+          colors: [FrutiaColors.primary, FrutiaColors.primary.withOpacity(0.9)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -314,7 +376,7 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Resumen de Cuenta',
+            'Account Summary',
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -328,19 +390,19 @@ class _HomePageState extends State<HomePage> {
               _buildSummaryItem(
                 icon: Icons.check_circle_outline,
                 value: '0',
-                label: 'Completadas',
+                label: 'Completed',
               ),
               Container(height: 50, width: 1, color: Colors.white30),
               _buildSummaryItem(
                 icon: Icons.play_circle_outline,
                 value: activeSessions.toString(),
-                label: 'En Progreso',
+                label: 'In Progress',
               ),
               Container(height: 50, width: 1, color: Colors.white30),
               _buildSummaryItem(
                 icon: Icons.group_outlined,
                 value: totalPlayers.toString(),
-                label: 'Jugadores',
+                label: 'Players',
               ),
             ],
           ),
@@ -381,7 +443,7 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Acciones Rápidas',
+            'New Sessions',
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -391,45 +453,25 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(height: 16),
           _buildPrimaryActionButton(
             icon: Icons.add_circle,
-            title: 'Crear Nueva Sesión',
-            subtitle: 'Iniciar un nuevo torneo o playoff',
-            gradientColors: [FrutiaColors.success, FrutiaColors.success.withOpacity(0.8)],
+            title: 'Create New Session',
+            subtitle: 'Start a new Optimized or playoff',
+            gradientColors: [
+              FrutiaColors.success,
+              FrutiaColors.success.withOpacity(0.8)
+            ],
             onTap: () async {
               final result = await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const CreateSessionFlow()),
+                MaterialPageRoute(
+                    builder: (context) => const CreateSessionFlow()),
               );
-              
+
               if (result == true) {
                 _loadData();
               }
             },
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSecondaryActionButton(
-                  icon: Icons.play_arrow_rounded,
-                  title: 'Continuar Sesión',
-                  color: FrutiaColors.warning,
-                  onTap: () {
-                    if (_activeSessions.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('No hay sesiones activas'),
-                          backgroundColor: FrutiaColors.warning,
-                        ),
-                      );
-                    } else {
-                      _showActiveSessionsList();
-                    }
-                  },
-                ),
-              ),
-              
-            ],
-          ),
         ],
       ),
     ).animate().fadeIn(delay: 400.ms);
@@ -548,7 +590,7 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Sesiones Activas',
+                'Active Sessions',
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -564,13 +606,14 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.all(40.0),
                 child: Column(
                   children: [
-                    Icon(Icons.sports_tennis, size: 64, color: FrutiaColors.disabledText),
+                    Icon(Icons.sports_tennis,
+                        size: 64, color: FrutiaColors.disabledText),
                     const SizedBox(height: 16),
                     Text(
-                      'No hay sesiones activas',
+                      'No active sessions',
                       style: GoogleFonts.lato(
-                        fontSize: 16, 
-                        color: FrutiaColors.secondaryText
+                        fontSize: 16,
+                        color: FrutiaColors.secondaryText,
                       ),
                     ),
                   ],
@@ -578,7 +621,9 @@ class _HomePageState extends State<HomePage> {
               ),
             )
           else
-            ..._recentSessions.map((session) => _buildSessionCard(session)).toList(),
+            ..._recentSessions
+                .map((session) => _buildSessionCard(session))
+                .toList(),
         ],
       ),
     ).animate().fadeIn(delay: 500.ms);
@@ -589,34 +634,34 @@ class _HomePageState extends State<HomePage> {
     Color statusColor;
     IconData statusIcon;
     String statusText;
-    
+
     switch (status) {
       case 'active':
         statusColor = FrutiaColors.success;
         statusIcon = Icons.play_circle_filled;
-        statusText = 'En Progreso';
+        statusText = 'In Progress';
         break;
       case 'completed':
         statusColor = FrutiaColors.error;
         statusIcon = Icons.check_circle;
-        statusText = 'Completada';
+        statusText = 'Completed';
         break;
       default:
         statusColor = FrutiaColors.disabledText;
         statusIcon = Icons.schedule;
-        statusText = 'Pendiente';
+        statusText = 'Pending';
     }
 
     String getSessionTypeName(String type) {
       switch (type) {
         case 'T':
-          return 'Torneo';
+          return 'Optimized';
         case 'P4':
           return 'Playoff 4';
         case 'P8':
           return 'Playoff 8';
         default:
-          return 'Sesión';
+          return 'Session';
       }
     }
 
@@ -638,7 +683,8 @@ class _HomePageState extends State<HomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => SessionControlPanel(sessionId: session['id']),
+              builder: (context) =>
+                  SessionControlPanel(sessionId: session['id']),
             ),
           );
         },
@@ -666,7 +712,7 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             Expanded(
                               child: Text(
-                                session['session_name'] ?? 'Sin nombre',
+                                session['session_name'] ?? 'No name',
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -675,13 +721,15 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
                                 color: FrutiaColors.primary.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                getSessionTypeName(session['session_type'] ?? ''),
+                                'Type: '+ getSessionTypeName(
+                                    session['session_type'] ?? ''),
                                 style: GoogleFonts.lato(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -693,10 +741,10 @@ class _HomePageState extends State<HomePage> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Creada: ${_formatDate(session['created_at'])}',
+                          'Created: ${_formatDate(session['created_at'])}',
                           style: GoogleFonts.lato(
-                            fontSize: 13, 
-                            color: FrutiaColors.secondaryText
+                            fontSize: 13,
+                            color: FrutiaColors.secondaryText,
                           ),
                         ),
                       ],
@@ -709,12 +757,12 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   _buildSessionInfoChip(
                     Icons.group_outlined,
-                    '${session['number_of_players']} Jugadores',
+                    '${session['number_of_players']} Players',
                   ),
                   const SizedBox(width: 12),
                   _buildSessionInfoChip(
                     Icons.sports_tennis,
-                    '${session['number_of_courts']} Cancha${session['number_of_courts'] > 1 ? 's' : ''}',
+                    '${session['number_of_courts']} Court${session['number_of_courts'] > 1 ? 's' : ''}',
                   ),
                   const Spacer(),
                   Text(
@@ -736,10 +784,10 @@ class _HomePageState extends State<HomePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Progreso',
+                          'Progress',
                           style: GoogleFonts.lato(
-                            fontSize: 12, 
-                            color: FrutiaColors.secondaryText
+                            fontSize: 12,
+                            color: FrutiaColors.secondaryText,
                           ),
                         ),
                         Text(
@@ -775,23 +823,23 @@ class _HomePageState extends State<HomePage> {
         Icon(icon, size: 16, color: FrutiaColors.secondaryText),
         const SizedBox(width: 4),
         Text(
-          label, 
+          label,
           style: GoogleFonts.lato(
-            fontSize: 12, 
-            color: FrutiaColors.secondaryText
-          )
+            fontSize: 12,
+            color: FrutiaColors.secondaryText,
+          ),
         ),
       ],
     );
   }
 
   String _formatDate(dynamic date) {
-    if (date == null) return 'Fecha no disponible';
+    if (date == null) return 'Date not available';
     try {
       final DateTime dateTime = DateTime.parse(date.toString());
       return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     } catch (e) {
-      return 'Fecha inválida';
+      return 'Invalid date';
     }
   }
 }

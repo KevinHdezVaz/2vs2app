@@ -1,21 +1,27 @@
+
+
+
 // lib/pages/screens/sessionControl/widgets/ScoreEntryDialog.dart
 import 'package:Frutia/services/2vs2/SessionService.dart';
+import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
- 
+
+
 class ScoreEntryDialog extends StatefulWidget {
   final Map<String, dynamic> game;
   final Map<String, dynamic> session;
   final VoidCallback onScoreSubmitted;
+  final bool isEditing; // ← Agregar esta línea
 
   const ScoreEntryDialog({
     super.key,
     required this.game,
     required this.session,
     required this.onScoreSubmitted,
+    this.isEditing = false, // ← Agregar esta línea
   });
-
   @override
   State<ScoreEntryDialog> createState() => _ScoreEntryDialogState();
 }
@@ -26,6 +32,19 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
   bool _isSubmitting = false;
   String? _errorMessage;
 
+
+
+
+
+@override
+void initState() {
+  super.initState();
+  // Pre-fill scores if editing
+  if (widget.isEditing) {
+    _team1Controller.text = widget.game['team1_score']?.toString() ?? '';
+    _team2Controller.text = widget.game['team2_score']?.toString() ?? '';
+  }
+}
   @override
   void dispose() {
     _team1Controller.dispose();
@@ -45,10 +64,10 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
       return false;
     }
 
-    // No puede haber empate
+    // No ties allowed
     if (team1Score == team2Score) {
       setState(() {
-        _errorMessage = 'No puede haber empate';
+        _errorMessage = 'Ties are not allowed';
       });
       return false;
     }
@@ -59,18 +78,18 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     final winnerScore = team1Score > team2Score ? team1Score : team2Score;
     final loserScore = team1Score > team2Score ? team2Score : team1Score;
 
-    // El ganador debe llegar al mínimo de puntos
+    // Winner must reach minimum points
     if (winnerScore < pointsPerGame) {
       setState(() {
-        _errorMessage = 'El ganador debe tener al menos $pointsPerGame puntos';
+        _errorMessage = 'Winner must have at least $pointsPerGame points';
       });
       return false;
     }
 
-    // Verificar win-by
+    // Verify win-by margin
     if ((winnerScore - loserScore) < winBy) {
       setState(() {
-        _errorMessage = 'Debe ganar por al menos $winBy punto${winBy > 1 ? 's' : ''}';
+        _errorMessage = 'Must win by at least $winBy point${winBy > 1 ? 's' : ''}';
       });
       return false;
     }
@@ -81,42 +100,132 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     return true;
   }
 
-  Future<void> _submitScore() async {
-    if (!_isScoreValid()) return;
+Future<void> _submitScore() async {
+  if (!_isScoreValid()) return;
 
-    setState(() {
-      _isSubmitting = true;
-    });
+  setState(() {
+    _isSubmitting = true;
+  });
 
-    try {
-      final team1Score = int.parse(_team1Controller.text);
-      final team2Score = int.parse(_team2Controller.text);
+  try {
+    final team1Score = int.parse(_team1Controller.text);
+    final team2Score = int.parse(_team2Controller.text);
 
+    // Usar updateScore si está editando, submitScore si es nuevo
+    if (widget.isEditing) {
+      await GameService.updateScore(
+        widget.game['id'],
+        team1Score,
+        team2Score,
+      );
+    } else {
       await GameService.submitScore(
         widget.game['id'],
         team1Score,
         team2Score,
       );
-
-      if (!mounted) return;
-
-      Navigator.pop(context);
-      widget.onScoreSubmitted();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Resultado registrado exitosamente'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      print('[ScoreEntryDialog] Error: $e');
-
-      setState(() {
-        _isSubmitting = false;
-        _errorMessage = 'Error al registrar: ${e.toString()}';
-      });
     }
+
+    if (!mounted) return;
+
+    Navigator.pop(context);
+    widget.onScoreSubmitted();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(widget.isEditing ? 'Score updated successfully' : 'Score registered successfully'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  } catch (e) {
+    print('[ScoreEntryDialog] Error: $e');
+
+    setState(() {
+      _isSubmitting = false;
+      _errorMessage = 'Error ${widget.isEditing ? 'updating' : 'registering'}: ${e.toString()}';
+    });
+  }
+}
+  Widget _buildTeamRow({
+    required String player1Name,
+    required String player2Name,
+    required TextEditingController controller,
+    required Color backgroundColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          // Player names
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  player1Name,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: FrutiaColors.primaryText,
+                  ),
+                ),
+                Text(
+                  player2Name,
+                  style: GoogleFonts.lato(
+                    fontSize: 13,
+                    color: FrutiaColors.secondaryText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Score input
+          SizedBox(
+            width: 70,
+            child: TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.robotoMono(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: FrutiaColors.primaryText,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(2),
+              ],
+              decoration: InputDecoration(
+                hintText: '0',
+                hintStyle: TextStyle(color: FrutiaColors.disabledText),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: FrutiaColors.tertiaryBackground),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: FrutiaColors.tertiaryBackground),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                filled: true,
+                fillColor: FrutiaColors.primaryBackground,
+              ),
+              onChanged: (_) => _isScoreValid(),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -130,221 +239,153 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Title
-            Text(
-              'Registrar Resultado',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[900],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Juego a ${widget.session['points_per_game']} puntos | Ganar por ${widget.session['win_by']}',
-              style: GoogleFonts.lato(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Title
+              Text(
+                 widget.isEditing ? 'Edit Score' : 'Submit Score',  // ← AQUÍ cambia esta línea
 
-            // Team 1
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
-                    style: GoogleFonts.lato(fontSize: 14),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _team1Controller,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.robotoMono(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(2),
-                    ],
-                    decoration: InputDecoration(
-                      hintText: '0',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    onChanged: (_) => _isScoreValid(),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // VS
-            Text(
-              'VS',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[400],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Team 2
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    '${team2Player1['first_name']} ${team2Player1['last_initial']}.',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    '${team2Player2['first_name']} ${team2Player2['last_initial']}.',
-                    style: GoogleFonts.lato(fontSize: 14),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _team2Controller,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.robotoMono(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(2),
-                    ],
-                    decoration: InputDecoration(
-                      hintText: '0',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    onChanged: (_) => _isScoreValid(),
-                  ),
-                ],
-              ),
-            ),
-
-            // Error message
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange),
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: FrutiaColors.primaryText,
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.warning, color: Colors.orange, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: GoogleFonts.lato(
-                          fontSize: 12,
-                          color: Colors.orange[900],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Game to ${widget.session['points_per_game']} points | Win by ${widget.session['win_by']}',
+                style: GoogleFonts.lato(
+                  fontSize: 11,
+                  color: FrutiaColors.secondaryText,
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Team 1
+              _buildTeamRow(
+                player1Name: '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
+                player2Name: '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
+                controller: _team1Controller,
+                backgroundColor: FrutiaColors.accentLight,
+              ),
+
+              const SizedBox(height: 12),
+
+              // VS Divider
+              Text(
+                'VS',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: FrutiaColors.disabledText,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Team 2
+              _buildTeamRow(
+                player1Name: '${team2Player1['first_name']} ${team2Player1['last_initial']}.',
+                player2Name: '${team2Player2['first_name']} ${team2Player2['last_initial']}.',
+                controller: _team2Controller,
+                backgroundColor: FrutiaColors.secondaryBackground,
+              ),
+
+              // Error message
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: FrutiaColors.warning.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: FrutiaColors.warning),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.warning_rounded,
+                        color: FrutiaColors.warning,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: GoogleFonts.lato(
+                            fontSize: 11,
+                            color: FrutiaColors.primaryText,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-
-            const SizedBox(height: 24),
-
-            // Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _isSubmitting ? null : () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: Colors.grey),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'Cancelar',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: (_isScoreValid() && !_isSubmitting) ? _submitScore : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE63946),
-                      disabledBackgroundColor: Colors.grey[300],
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : Text(
-                            'Aceptar',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
+                    ],
                   ),
                 ),
               ],
-            ),
-          ],
+
+              const SizedBox(height: 20),
+
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: FrutiaColors.tertiaryBackground),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: FrutiaColors.secondaryText,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: (_isScoreValid() && !_isSubmitting) ? _submitScore : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FrutiaColors.primary,
+                        disabledBackgroundColor: FrutiaColors.tertiaryBackground,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : Text(
+        widget.isEditing ? 'Update' : 'Submit',  // ← AQUÍ cambia esta línea
+                              style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

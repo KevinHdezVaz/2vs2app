@@ -1,3 +1,5 @@
+import 'package:Frutia/pages/screens/drawer/HistoryScreen.dart';
+import 'package:Frutia/pages/screens/drawer/PlayersScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:Frutia/services/storage_service.dart';
@@ -10,12 +12,12 @@ class CustomDrawer extends StatelessWidget {
 
   const CustomDrawer({
     super.key,
-    this.userName = "Coordinador",
-    this.userEmail = "coordinador@sport.com",
+    this.userName = "Coordinator",
+    this.userEmail = "coordinator@sport.com",
   });
 
   Future<void> _logout(BuildContext context) async {
-    // Mostrar diálogo de confirmación
+    // Show confirmation dialog
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -28,7 +30,7 @@ class CustomDrawer extends StatelessWidget {
               Icon(Icons.logout, color: FrutiaColors.primary),
               const SizedBox(width: 12),
               Text(
-                'Cerrar Sesión',
+                'Log Out',
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -38,7 +40,7 @@ class CustomDrawer extends StatelessWidget {
             ],
           ),
           content: Text(
-            '¿Estás seguro de que deseas cerrar sesión?',
+            'Are you sure you want to log out?',
             style: GoogleFonts.lato(
               fontSize: 16,
               color: FrutiaColors.secondaryText,
@@ -48,7 +50,7 @@ class CustomDrawer extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
-                'Cancelar',
+                'Cancel',
                 style: GoogleFonts.lato(
                   color: FrutiaColors.disabledText,
                   fontWeight: FontWeight.w600,
@@ -64,7 +66,7 @@ class CustomDrawer extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Cerrar Sesión',
+                'Log Out',
                 style: GoogleFonts.lato(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -76,13 +78,13 @@ class CustomDrawer extends StatelessWidget {
       },
     );
 
-    // Si confirmó, cerrar sesión
+    // If confirmed, proceed with logout
     if (confirm == true && context.mounted) {
       try {
-        // Eliminar el token
+        // Remove the token
         await StorageService().removeToken();
 
-        // Navegar al login y eliminar todas las rutas anteriores
+        // Navigate to login and remove all previous routes
         if (context.mounted) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const AuthPageCheck()),
@@ -90,11 +92,11 @@ class CustomDrawer extends StatelessWidget {
           );
         }
       } catch (e) {
-        // Mostrar error si algo sale mal
+        // Show error if something goes wrong
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error al cerrar sesión: $e'),
+              content: Text('Error logging out: $e'),
               backgroundColor: FrutiaColors.error,
             ),
           );
@@ -119,52 +121,55 @@ class CustomDrawer extends StatelessWidget {
         ),
         child: Column(
           children: [
-                    const SizedBox(height: 30),
-            
-            // Opciones del menú
+            const SizedBox(height: 30),
+
+            // Menu options
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
                   _buildDrawerItem(
                     icon: Icons.home_outlined,
-                    title: 'Inicio',
+                    title: 'Home',
                     onTap: () {
                       Navigator.pop(context);
                     },
                   ),
-                 
-                  _buildDrawerItem(
-                    icon: Icons.history,
-                    title: 'Historial',
-                    onTap: () {
-                      Navigator.pop(context);
-                      // Navegar al historial
-                    },
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.group_outlined,
-                    title: 'Jugadores',
-                    onTap: () {
-                      Navigator.pop(context);
-                      // Navegar a jugadores
-                    },
-                  ),
-                  
-                 
+                _buildDrawerItem(
+  icon: Icons.history,
+  title: 'History',
+  onTap: () {
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const HistoryScreen()),
+    );
+  },
+),
+_buildDrawerItem(
+  icon: Icons.group_outlined,
+  title: 'Players',
+  onTap: () {
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PlayersScreen()),
+    );
+  },
+),
                   _buildDrawerItem(
                     icon: Icons.help_outline,
-                    title: 'Ayuda',
+                    title: 'Help',
                     onTap: () {
                       Navigator.pop(context);
-                      // Navegar a ayuda
+                      // Navigate to help
                     },
                   ),
                 ],
               ),
             ),
-            
-            // Botón de cerrar sesión
+
+            // Logout button
             Container(
               padding: const EdgeInsets.all(16),
               child: ListTile(
@@ -180,7 +185,7 @@ class CustomDrawer extends StatelessWidget {
                   ),
                 ),
                 title: Text(
-                  'Cerrar Sesión',
+                  'Log Out',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -197,12 +202,12 @@ class CustomDrawer extends StatelessWidget {
                 ),
               ),
             ),
-            
-            // Versión de la app
+
+            // App version
             Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Text(
-                'Versión 1.0.0',
+                'Version 1.0.0',
                 style: GoogleFonts.lato(
                   fontSize: 12,
                   color: FrutiaColors.disabledText,

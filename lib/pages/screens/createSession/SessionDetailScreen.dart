@@ -38,7 +38,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Detalles de la Sesión',
+              'Set up & launch a new Open Play session',
               style: GoogleFonts.poppins(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -47,20 +47,20 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Configura los parámetros de tu sesión',
+              'courts, players, and time \nwe’ll handle the matchups!',
               style: GoogleFonts.lato(
-                fontSize: 14,
+                fontSize: 16,
                 color: FrutiaColors.secondaryText,
               ),
             ),
             const SizedBox(height: 24),
-            
-            // Nombre de la Sesión
+
+            // Session Name
             TextFormField(
               controller: _sessionNameController,
               decoration: InputDecoration(
-                labelText: 'Nombre de la Sesión',
-                hintText: 'p. ej., Torneo de Fin de Semana',
+                labelText: 'Session Name',
+                hintText: 'e.g., Weekend Optimized',
                 prefixIcon: Icon(Icons.sports_tennis, color: FrutiaColors.primary),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -75,7 +75,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               style: GoogleFonts.lato(color: FrutiaColors.primaryText),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Por favor, ingresa un nombre de sesión';
+                  return 'Please enter a session name';
                 }
                 return null;
               },
@@ -85,9 +85,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Número de Canchas
+            // Number of Courts
             _buildNumberSelector(
-              label: 'Número de Canchas',
+              label: 'Number of Courts',
               value: widget.sessionData.numberOfCourts,
               min: 1,
               max: 4,
@@ -100,9 +100,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               },
             ),
 
-            // Duración
+            // Duration
             _buildNumberSelector(
-              label: 'Duración (Horas)',
+              label: 'Duration (Hours)',
               value: widget.sessionData.durationHours,
               min: 1,
               max: 3,
@@ -114,9 +114,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               },
             ),
 
-            // Número de Jugadores
+            // Number of Players
             _buildNumberSelector(
-              label: 'Número de Jugadores',
+              label: 'Number of Players',
               value: widget.sessionData.numberOfPlayers,
               min: widget.sessionData.numberOfCourts * 4,
               max: widget.sessionData.numberOfCourts * 8,
@@ -133,7 +133,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             const SizedBox(height: 24),
 
             Text(
-              'Configuraciones del Juego',
+              'Game Settings',
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -142,9 +142,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Puntos por Partido
+            // Points per Game
             _buildDropdownField(
-              label: 'Puntos por Partido',
+              label: 'Points per Game',
               value: widget.sessionData.pointsPerGame.toString(),
               items: ['7', '11', '15', '21'],
               icon: Icons.scoreboard,
@@ -155,9 +155,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               },
             ),
 
-            // Ganar Por
+            // Win By
             _buildDropdownField(
-              label: 'Ganar Por',
+              label: 'Win By',
               value: widget.sessionData.winBy.toString(),
               items: ['1', '2'],
               icon: Icons.trending_up,
@@ -168,9 +168,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               },
             ),
 
-            // Número de Sets
+            // Number of Sets
             _buildDropdownField(
-              label: 'Número de Sets',
+              label: 'Number of Sets',
               value: widget.sessionData.numberOfSets,
               items: ['1', 'Best of 3', 'Best of 5'],
               icon: Icons.repeat,
@@ -182,25 +182,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             ),
 
             const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 24),
-
-            Text(
-              'Tipo de Sesión',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: FrutiaColors.primaryText,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Selección de Tipo de Sesión
-            ...['T', 'P4', 'P8'].map((type) => _buildSessionTypeCard(type)),
-
-            const SizedBox(height: 32),
-
-            // Botón Siguiente
+           
+            // Next Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -219,7 +202,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                   ),
                 ),
                 child: Text(
-                  'Siguiente: Detalles de Cancha',
+                  'Next: Session Type',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -238,7 +221,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   void _updatePlayerLimits() {
     final minPlayers = widget.sessionData.numberOfCourts * 4;
     final maxPlayers = widget.sessionData.numberOfCourts * 8;
-    
+
     if (widget.sessionData.numberOfPlayers < minPlayers) {
       widget.sessionData.numberOfPlayers = minPlayers;
     } else if (widget.sessionData.numberOfPlayers > maxPlayers) {
@@ -388,18 +371,18 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
 
     switch (type) {
       case 'T':
-        title = 'Torneo';
-        description = 'Torneo estructurado en 3 etapas con rotación y juego clasificado';
+        title = 'Optimized';
+        description = 'Structured tournament in 3 stages with rotation and ranked play';
         icon = Icons.emoji_events;
         break;
       case 'P4':
         title = 'Playoff 4';
-        description = 'Partidos aleatorios que llevan a la final con los 4 mejores jugadores';
+        description = 'Random matches leading to a final with the top 4 players';
         icon = Icons.filter_4;
         break;
       case 'P8':
         title = 'Playoff 8';
-        description = 'Partidos aleatorios, luego semifinales y finales con los 8 mejores';
+        description = 'Random matches, then semifinals and finals with the top 8 players';
         icon = Icons.filter_8;
         break;
       default:

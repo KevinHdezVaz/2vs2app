@@ -187,6 +187,14 @@ Future<Map<String, dynamic>> login(String email, String password) async {
       print('✅ Login exitoso, guardando token...');
       await _storage.saveToken(data['token']);
       print('✅ Token guardado');
+      
+      // 🆕 AGREGAR ESTAS LÍNEAS: Guardar el usuario
+      if (data['user'] != null) {
+        print('✅ Guardando datos del usuario...');
+        await _storage.saveUser(frutia.User.fromJson(data['user']));
+        print('✅ Usuario guardado: ${data['user']['name']}');
+      }
+      
       return data;
     } else {
       print('❌ Login fallido: ${data['message']}');
@@ -215,7 +223,6 @@ Future<Map<String, dynamic>> login(String email, String password) async {
     throw AuthException('Error inesperado: $e');
   }
 }
-
 
   /// Cierra la sesión del usuario.
   Future<void> logout() async {

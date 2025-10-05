@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen>
           PageRouteBuilder(
             transitionDuration: const Duration(milliseconds: 800),
             pageBuilder: (context, animation, secondaryAnimation) =>
-                const AuthCheckMain(),  // 👈 Siempre va directo a verificar auth
+                const AuthCheckMain(),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               return FadeTransition(
@@ -85,8 +85,8 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              FrutiaColors.primary, // Slate Teal
-              FrutiaColors.accent    // Lime
+              FrutiaColors.primary,
+              FrutiaColors.accent
             ],
           ),
         ),
@@ -116,10 +116,13 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ],
                         ),
-                        child: Icon(
-                          Icons.sports_tennis, // Icono de tenis (coherente con la app)
-                          size: 100,
-                          color: FrutiaColors.primary,
+                        child: Center(
+                          child: Image.asset(
+                            'assets/icons/LogoAppWorkana.png',
+                            width: 200,
+                            height: 200,
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
                     ),
@@ -133,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Column(
                   children: [
                     Text(
-                      'PickleBracket', // Cambiado a FRUTIA para ser coherente
+                      'PickleBracket',
                       style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
@@ -150,7 +153,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'Tu compañero deportivo',
+                      'Your sports partner',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white.withOpacity(0.9),

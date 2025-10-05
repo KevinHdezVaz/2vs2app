@@ -12,7 +12,7 @@ class SessionData {
   String numberOfSets = '1';
   
   // Tipo de sesión
-  String sessionType = 'T'; // T, P4, P8
+  String sessionType = 'P4'; // T, P4, P8
   
   // Canchas
   List<String> courtNames = [];
@@ -61,12 +61,13 @@ class PlayerData {
   String dominantHand;
 
   // Constructor con valores por defecto
-  PlayerData({
-    this.firstName = '',
-    this.lastInitial = '',
-    this.level = 'Promedio',
-    this.dominantHand = 'Ninguna',
-  });
+ PlayerData({
+  this.firstName = '',
+  this.lastInitial = '',
+  this.level = 'Average',         // 👈 traducido
+  this.dominantHand = 'None',     // 👈 traducido
+});
+
 
   Map<String, dynamic> toJson() {
     return {

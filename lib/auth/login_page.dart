@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   Future<void> signIn() async {
     print('====================================');
-    print('🔵 INICIO LOGIN');
+    print('🔵 START LOGIN');
     print('====================================');
 
     showDialog(
@@ -81,27 +81,27 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
 
     try {
-      print('🔵 Llamando a _authService.login()...');
+      print('🔵 Calling _authService.login()...');
       final response = await _authService.login(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-      print('🟢 Login exitoso: $response');
+      print('🟢 Login successful: $response');
 
       if (!mounted) return;
 
-      // Cierra el diálogo de carga
+      // Close the loading dialog
       Navigator.of(context).pop();
 
-      // 👇 CAMBIA ESTO: Navega directo a HomePage
+      // 👇 CHANGE THIS: Navigate directly to HomePage
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const HomePage()),
-        (route) => false, // Elimina todas las rutas anteriores
+        (route) => false, // Remove all previous routes
       );
     } on AuthException catch (e) {
       print('🔴 AuthException: ${e.message}');
       if (!mounted) return;
-      Navigator.of(context).pop(); // Cierra el diálogo
+      Navigator.of(context).pop(); // Close the dialog
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message),
@@ -109,9 +109,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         ),
       );
     } catch (e) {
-      print('🔴 Error genérico: $e');
+      print('🔴 Generic error: $e');
       if (!mounted) return;
-      Navigator.of(context).pop(); // Cierra el diálogo
+      Navigator.of(context).pop(); // Close the dialog
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: $e'),
@@ -123,17 +123,17 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   bool validateLogin() {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      showErrorSnackBar("Por favor complete todos los campos");
+      showErrorSnackBar("Please fill in all fields");
       return false;
     }
 
     if (!_emailController.text.contains('@')) {
-      showErrorSnackBar("Correo electrónico inválido");
+      showErrorSnackBar("Invalid email address");
       return false;
     }
 
     if (_passwordController.text.length < 6) {
-      showErrorSnackBar("La contraseña debe tener al menos 6 caracteres");
+      showErrorSnackBar("Password must be at least 6 characters");
       return false;
     }
 
@@ -154,7 +154,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
             Icon(Icons.remove_red_eye, color: FrutiaColors.accent),
             SizedBox(width: 8),
             Text(
-              'Modo Espectador',
+              'Spectator Mode',
               style: GoogleFonts.poppins(
                 color: FrutiaColors.primaryText,
                 fontWeight: FontWeight.w600,
@@ -167,7 +167,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Ingresa el código de la sesión para verla en vivo',
+              'Enter the session code to watch it live',
               style: GoogleFonts.lato(
                 color: FrutiaColors.secondaryText,
                 fontSize: 14,
@@ -212,18 +212,18 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Cancelar',
+              'Cancel',
               style: GoogleFonts.lato(color: FrutiaColors.secondaryText),
             ),
           ),
           ElevatedButton(
             onPressed: () async {
               if (codeController.text.isEmpty) {
-                showErrorSnackBar('Ingresa un código válido');
+                showErrorSnackBar('Enter a valid code');
                 return;
               }
 
-              Navigator.pop(context); // Cierra el diálogo
+              Navigator.pop(context); // Close the dialog
               await _joinAsSpectator(codeController.text.trim().toUpperCase());
             },
             style: ElevatedButton.styleFrom(
@@ -233,7 +233,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               ),
             ),
             child: Text(
-              'Unirse',
+              'Join',
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
@@ -260,21 +260,21 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       final response = await SessionService.joinWithCode(code);
 
       if (!mounted) return;
-      Navigator.of(context).pop(); // Cierra el loading
+      Navigator.of(context).pop(); // Close the loading dialog
 
-      // Navega al SessionControlPanel en modo espectador
+      // Navigate to SessionControlPanel in spectator mode
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => SessionControlPanel(
             sessionId: response['session_id'],
-            isSpectator: true, // 👈 Nuevo parámetro
+            isSpectator: true, // 👈 New parameter
           ),
         ),
       );
     } catch (e) {
       if (!mounted) return;
-      Navigator.of(context).pop(); // Cierra el loading
-      showErrorSnackBar('Código inválido o sesión no encontrada');
+      Navigator.of(context).pop(); // Close the loading dialog
+      showErrorSnackBar('Invalid code or session not found');
     }
   }
 
@@ -313,7 +313,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         child: SafeArea(
           child: Stack(
             children: [
-              // Contenido principal
+              // Main content
               Center(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
@@ -336,7 +336,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               SizedBox(height: 20),
 
                               Text(
-                                "Bienvenido a PickleBracket",
+                                "Welcome to PickleBracket",
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.lato(
                                   fontSize: 24,
@@ -346,7 +346,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               ),
                               SizedBox(height: 10),
                               Text(
-                                "Ingresa tus credenciales para continuar",
+                                "Enter your credentials to continue",
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.lato(
                                   fontSize: 16,
@@ -378,7 +378,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         width: 2.0,
                                       ),
                                     ),
-                                    labelText: "Correo",
+                                    labelText: "Email",
                                     labelStyle: GoogleFonts.lato(
                                       color: FrutiaColors.primaryText
                                           .withOpacity(0.7),
@@ -423,7 +423,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         width: 2.0,
                                       ),
                                     ),
-                                    labelText: "Contraseña",
+                                    labelText: "Password",
                                     labelStyle: GoogleFonts.lato(
                                       color: FrutiaColors.primaryText
                                           .withOpacity(0.7),
@@ -478,7 +478,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                           checkColor: Colors.white,
                                         ),
                                         Text(
-                                          'Recordarme',
+                                          'Remember me',
                                           style: GoogleFonts.lato(
                                             fontSize: 14,
                                             color: FrutiaColors.primaryText,
@@ -497,7 +497,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         );
                                       },
                                       child: Text(
-                                        "Olvidé mi contraseña",
+                                        "Forgot my password",
                                         style: GoogleFonts.lato(
                                           color: FrutiaColors.primary,
                                           fontWeight: FontWeight.w500,
@@ -529,7 +529,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                       elevation: 5,
                                     ),
                                     child: Text(
-                                      "Entrar",
+                                      "Sign In",
                                       style: GoogleFonts.lato(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -540,8 +540,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                               ),
                               SizedBox(height: 20),
-                         
-                         /*
+                              /*
                               SlideTransition(
                                 position: _slideAnimation,
                                 child: Container(
@@ -563,7 +562,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
                                         if (!mounted) return;
                                         Navigator.pop(
-                                            context); // Cierra el diálogo de carga
+                                            context); // Close the loading dialog
 
                                         if (success) {
                                           Navigator.of(context).pushReplacement(
@@ -575,9 +574,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                       } catch (e) {
                                         if (!mounted) return;
                                         Navigator.pop(
-                                            context); // Cierra el diálogo de carga
+                                            context); // Close the loading dialog
                                         showErrorSnackBar(
-                                            "Error al iniciar sesión con Google");
+                                            "Error signing in with Google");
                                       }
                                     },
                                     style: OutlinedButton.styleFrom(
@@ -609,7 +608,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         ),
                                         SizedBox(width: 10),
                                         Text(
-                                          "Unirse con Google",
+                                          "Sign in with Google",
                                           style: GoogleFonts.lato(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
@@ -622,21 +621,23 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                               ),
                               */
-                              // Después del botón "Unirse con Google" (línea ~448)
+                              // After the "Sign in with Google" button (line ~448)
                               SizedBox(height: 10),
 
-// 🆕 Botón Unirse como Espectador
+                              // 🆕 Join as Spectator Button
                               SlideTransition(
                                 position: _slideAnimation,
                                 child: Container(
                                   width: size.width * 0.8,
                                   child: OutlinedButton(
                                     onPressed: () {
-  Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => SpectatorSessionsListPage(), // 👈 Primero a la lista
-          ),
-        );                                    },
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              SpectatorSessionsListPage(), // 👈 First to the list
+                                        ),
+                                      );
+                                    },
                                     style: OutlinedButton.styleFrom(
                                       backgroundColor:
                                           FrutiaColors.warning.withOpacity(0.1),
@@ -660,7 +661,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                         ),
                                         SizedBox(width: 10),
                                         Text(
-                                          "Unirse como Espectador",
+                                          "Join as Spectator",
                                           style: GoogleFonts.lato(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
@@ -678,7 +679,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               TextButton(
                                 onPressed: widget.showLoginPage,
                                 child: Text(
-                                  "Crea tu cuenta",
+                                  "Create your account",
                                   style: GoogleFonts.lato(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w500,

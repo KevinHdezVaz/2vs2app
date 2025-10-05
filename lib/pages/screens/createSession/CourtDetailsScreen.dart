@@ -1,4 +1,4 @@
-// PANTALLA 2: Detalles de la Cancha
+// SCREEN 2: Court Details
 import 'package:Frutia/model/2vs2p/SessionData.dart';
 import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +43,7 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Detalles de la Cancha',
+            'Court Details',
             style: GoogleFonts.poppins(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -52,7 +52,7 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Personalizar nombres de las canchas (opcional)',
+            'Customize court names (optional)',
             style: GoogleFonts.lato(
               fontSize: 14,
               color: FrutiaColors.secondaryText,
@@ -60,7 +60,7 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
           ),
           const SizedBox(height: 24),
 
-          // Campos para nombres de canchas
+          // Fields for court names
           ...List.generate(
             widget.sessionData.numberOfCourts,
             (index) => Container(
@@ -68,7 +68,7 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
               child: TextFormField(
                 controller: _courtControllers[index],
                 decoration: InputDecoration(
-                  labelText: 'Cancha ${index + 1}',
+                  labelText: 'Court ${index + 1}',
                   prefixIcon: Icon(
                     Icons.sports_tennis,
                     color: FrutiaColors.primary,
@@ -96,31 +96,56 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
 
           const SizedBox(height: 32),
 
-          // Botones de navegación
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: widget.onNext,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: FrutiaColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Siguiente: Detalles de Jugadores',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          // Navigation buttons
+         // Navigation buttons
+Row(
+  children: [
+    Expanded(
+      child: OutlinedButton(
+        onPressed: widget.onBack,
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          side: BorderSide(color: FrutiaColors.primary),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
+        ),
+        child: Text(
+          'Back: Session Details',
+          textAlign: TextAlign.center,  // ← Agrega esto
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: FrutiaColors.primary,
+          ),
+        ),
+      ),
+    ),
+    const SizedBox(width: 16),
+    Expanded(
+      flex: 2,
+      child: ElevatedButton(
+        onPressed: widget.onNext,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: FrutiaColors.primary,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Text(
+          'Next: Player Details',
+          textAlign: TextAlign.center,  // ← Y también aquí
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    ),
+  ],
+),
         ],
       ),
     ).animate().fadeIn(duration: 300.ms);

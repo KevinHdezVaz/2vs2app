@@ -2,7 +2,7 @@
 import 'package:Frutia/services/2vs2/SessionService.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
- 
+
 class StageCompleteDialog extends StatefulWidget {
   final int sessionId;
   final int currentStage;
@@ -25,11 +25,11 @@ class _StageCompleteDialogState extends State<StageCompleteDialog> {
   String _getStageTitle(int stage) {
     switch (stage) {
       case 1:
-        return 'Stage 1: Rotación';
+        return 'Stage 1: Rotation';
       case 2:
         return 'Stage 2: Rank-Based';
       case 3:
-        return 'Stage 3: Finales';
+        return 'Stage 3: Finals';
       default:
         return 'Stage $stage';
     }
@@ -38,11 +38,11 @@ class _StageCompleteDialogState extends State<StageCompleteDialog> {
   String _getNextStageDescription(int nextStage) {
     switch (nextStage) {
       case 2:
-        return 'Los jugadores se dividirán en grupos TOP, MID y LOW según sus ratings actuales. Se generarán matchups equilibrados.';
+        return 'Players will be divided into TOP, MID, and LOW groups based on their current ratings. Balanced matchups will be generated.';
       case 3:
-        return 'Las finales se jugarán entre jugadores del mismo nivel:\n• TOP vs TOP\n• MID vs MID\n• LOW vs LOW';
+        return 'The finals will be played between players of the same level:\n• TOP vs TOP\n• MID vs MID\n• LOW vs LOW';
       default:
-        return 'Siguiente etapa del torneo';
+        return 'Next Optimized stage';
     }
   }
 
@@ -61,7 +61,7 @@ class _StageCompleteDialogState extends State<StageCompleteDialog> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Stage ${widget.currentStage + 1} iniciado exitosamente'),
+          content: Text('Stage ${widget.currentStage + 1} started successfully'),
           backgroundColor: Colors.green,
         ),
       );
@@ -76,7 +76,7 @@ class _StageCompleteDialogState extends State<StageCompleteDialog> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error al avanzar stage: ${e.toString()}'),
+          content: Text('Error advancing stage: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );
@@ -113,7 +113,7 @@ class _StageCompleteDialogState extends State<StageCompleteDialog> {
 
             // Title
             Text(
-              '¡${_getStageTitle(widget.currentStage)} Completado!',
+              '${_getStageTitle(widget.currentStage)} Completed!',
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -123,7 +123,7 @@ class _StageCompleteDialogState extends State<StageCompleteDialog> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Todos los juegos de este stage han finalizado',
+              'All games in this stage have finished',
               style: GoogleFonts.lato(
                 fontSize: 14,
                 color: Colors.grey[600],
@@ -190,7 +190,7 @@ class _StageCompleteDialogState extends State<StageCompleteDialog> {
                       ),
                     ),
                     child: Text(
-                      'Revisar',
+                      'Review',
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
                         color: Colors.grey[700],
@@ -226,7 +226,7 @@ class _StageCompleteDialogState extends State<StageCompleteDialog> {
                               const Icon(Icons.play_arrow, color: Colors.white),
                               const SizedBox(width: 8),
                               Text(
-                                'Iniciar Stage ${nextStage}',
+                                'Start Stage ${nextStage}',
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,

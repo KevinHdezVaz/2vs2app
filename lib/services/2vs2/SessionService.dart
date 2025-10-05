@@ -19,8 +19,64 @@ static Future<Map<String, String>> getAuthHeaders() async {
     };
   }
 
+ 
 
-// En SessionService.dart
+ static Future<void> generatePlayoffBracket(int sessionId) async {
+  print('[SessionService] Generando bracket de playoffs para sesión: $sessionId');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('Usuario no autenticado.');
+  }
+
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/sessions/$sessionId/generate-playoff-bracket'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Error al generar bracket.');
+    }
+  } catch (e) {
+    print('[SessionService] Excepción: $e');
+    throw Exception('Error de conexión: $e');
+  }
+}
+
+static Future<void> advanceStage(int sessionId) async {
+  print('[SessionService] Avanzando stage para sesión: $sessionId');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('Usuario no autenticado.');
+  }
+
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/sessions/$sessionId/advance-stage'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Error al avanzar stage.');
+    }
+  } catch (e) {
+    print('[SessionService] Excepción: $e');
+    throw Exception('Error de conexión: $e');
+  }
+}
+
 
 // Método para espectadores (sin autenticación)
 static Future<List<dynamic>> getPublicActiveSessions() async {
@@ -330,42 +386,90 @@ static Future<List<dynamic>> getPublicPlayerStats(int sessionId) async {
       print('[SessionService] Excepción: $e');
       throw Exception('Error de conexión: $e');
     }
+  
+  
+    
+    
+    }
   }
 
-  static Future<Map<String, dynamic>> advanceStage(int sessionId) async {
-    print('[SessionService] Avanzando al siguiente stage...');
+// lib/services/game_service.dart
+class GameService {
+  static final StorageService _storage = StorageService();
+
+// En tu GameService.dart, agrega:
+
+static Future<void> skipToCourt(int gameId) async {
+  print('[GameService] Saltando juego a cancha ID: $gameId');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('Usuario no autenticado.');
+  }
+
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/games/$gameId/skip-to-court'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error al saltar juego a cancha.');
+    }
+  } catch (e) {
+    print('[GameService] Excepción: $e');
+    throw Exception('Error de conexión: $e');
+  }
+}
+
+
+static Future<Map<String, dynamic>> updateScore(
+    int gameId,
+    int team1Score,
+    int team2Score,
+  ) async {
+    print('[GameService] Actualizando score para juego ID: $gameId');
     final token = await _storage.getToken();
-    
     if (token == null) {
       throw Exception('Usuario no autenticado.');
     }
 
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/sessions/$sessionId/advance-stage'),
+      final response = await http.put(
+        Uri.parse('$baseUrl/games/$gameId/update-score'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
+        body: jsonEncode({
+          'team1_score': team1Score,
+          'team2_score': team2Score,
+        }),
       );
 
       if (response.statusCode == 200) {
-        print('[SessionService] Stage avanzado exitosamente.');
+        print('[GameService] Score actualizado exitosamente.');
         return json.decode(response.body);
       } else {
-        throw Exception('Error al avanzar stage.');
+        try {
+          final errorBody = json.decode(response.body);
+          throw Exception(errorBody['message'] ?? 'Error al actualizar score.');
+        } catch (e) {
+          throw Exception('Error al actualizar score. Código: ${response.statusCode}');
+        }
       }
     } catch (e) {
-      print('[SessionService] Excepción: $e');
+      print('[GameService] Excepción: $e');
       throw Exception('Error de conexión: $e');
     }
   }
-}
 
-// lib/services/game_service.dart
-class GameService {
-  static final StorageService _storage = StorageService();
+
 
   static Future<Map<String, dynamic>> startGame(int gameId) async {
     print('[GameService] Iniciando juego ID: $gameId');

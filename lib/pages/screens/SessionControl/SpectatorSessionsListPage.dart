@@ -39,7 +39,7 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error al cargar sesiones: $e'),
+          content: Text('Error loading sessions: $e'),
           backgroundColor: FrutiaColors.error,
         ),
       );
@@ -53,7 +53,7 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
       appBar: AppBar(
         backgroundColor: FrutiaColors.primary,
         title: Text(
-          'Sesiones Activas',
+          'Active Sessions',
           style: GoogleFonts.poppins(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -78,7 +78,7 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
                       Icon(Icons.sports_tennis, size: 64, color: FrutiaColors.disabledText),
                       SizedBox(height: 16),
                       Text(
-                        'No hay sesiones activas',
+                        'No active sessions',
                         style: GoogleFonts.lato(
                           fontSize: 16,
                           color: FrutiaColors.secondaryText,
@@ -134,7 +134,7 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      session['session_name'] ?? 'Sesión',
+                      session['session_name'] ?? 'Session',
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -149,7 +149,7 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'EN VIVO',
+                      'LIVE',
                       style: GoogleFonts.lato(
                         fontSize: 10,
                         color: Colors.white,
@@ -165,7 +165,7 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
                   Icon(Icons.people, size: 16, color: FrutiaColors.secondaryText),
                   SizedBox(width: 4),
                   Text(
-                    '${session['number_of_players']} jugadores',
+                    '${session['number_of_players']} players',
                     style: GoogleFonts.lato(
                       fontSize: 14,
                       color: FrutiaColors.secondaryText,
@@ -175,7 +175,7 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
                   Icon(Icons.location_on, size: 16, color: FrutiaColors.secondaryText),
                   SizedBox(width: 4),
                   Text(
-                    '${session['number_of_courts']} canchas',
+                    '${session['number_of_courts']} courts',
                     style: GoogleFonts.lato(
                       fontSize: 14,
                       color: FrutiaColors.secondaryText,
@@ -191,7 +191,7 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
               ),
               SizedBox(height: 4),
               Text(
-                '${(session['progress_percentage'] ?? 0).toInt()}% completado',
+                '${(session['progress_percentage'] ?? 0).toInt()}% completed',
                 style: GoogleFonts.lato(
                   fontSize: 12,
                   color: FrutiaColors.secondaryText,

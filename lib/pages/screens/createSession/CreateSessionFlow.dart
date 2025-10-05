@@ -3,6 +3,7 @@ import 'package:Frutia/pages/screens/SessionControl/SessionControlPanel.dart';
 import 'package:Frutia/pages/screens/createSession/CourtDetailsScreen.dart';
 import 'package:Frutia/pages/screens/createSession/PlayerDetailsScreen.dart';
 import 'package:Frutia/pages/screens/createSession/SessionDetailScreen.dart';
+import 'package:Frutia/pages/screens/createSession/SessionTypeScreen.dart';
 import 'package:Frutia/services/2vs2/SessionService.dart';
 import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
   bool _isCreating = false;
 
   void _nextPage() {
-    if (_currentPage < 2) {
+    if (_currentPage < 3) {  // Cambiado de 2 a 3 porque ahora hay 4 páginas (0,1,2,3)
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -46,7 +47,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
       appBar: AppBar(
         backgroundColor: FrutiaColors.primary,
         title: Text(
-          'Crear Nueva Sesión',
+          'Create New Session',
           style: GoogleFonts.poppins(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -60,12 +61,12 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
       ),
       body: Column(
         children: [
-          // Indicador de progreso
+          // Progress indicator - ACTUALIZADO A 4 PASOS
           Container(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                for (int i = 0; i < 3; i++) ...[
+                for (int i = 0; i < 4; i++) ...[  // Cambiado de 3 a 4
                   Expanded(
                     child: Container(
                       height: 4,
@@ -77,12 +78,12 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                       ),
                     ),
                   ),
-                  if (i < 2) const SizedBox(width: 8),
+                  if (i < 3) const SizedBox(width: 8),  // Cambiado de 2 a 3
                 ],
               ],
             ),
           ),
-          // Contenido de la página
+          // Page content
           Expanded(
             child: PageView(
               controller: _pageController,
@@ -93,15 +94,24 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                 });
               },
               children: [
+                // Página 1: Session Details (nombre, canchas, duración, jugadores, settings)
                 SessionDetailsScreen(
                   sessionData: _sessionData,
                   onNext: _nextPage,
                 ),
+                // Página 2: Session Type (Tournament, Playoff 4, Playoff 8)
+                SessionTypeScreen(
+                  sessionData: _sessionData,
+                  onNext: _nextPage, 
+                  onBack: _previousPage,
+                ),
+                // Página 3: Court Details (nombres de canchas)
                 CourtDetailsScreen(
                   sessionData: _sessionData,
                   onNext: _nextPage,
                   onBack: _previousPage,
                 ),
+                // Página 4: Player Details (nombres de jugadores)
                 PlayerDetailsScreen(
                   sessionData: _sessionData,
                   onBack: _previousPage,
@@ -119,12 +129,12 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Cancelar Creación de Sesión?'),
-        content: const Text('Se perderán todos los datos ingresados.'),
+        title: const Text('Cancel Session Creation?'),
+        content: const Text('All entered data will be lost.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Continuar Editando'),
+            child: const Text('Continue Editing'),
           ),
           TextButton(
             onPressed: () {
@@ -132,7 +142,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
               Navigator.pop(context);
             },
             child: const Text(
-              'Cancelar',
+              'Cancel',
               style: TextStyle(color: Colors.red),
             ),
           ),
@@ -141,111 +151,106 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
     );
   }
 
-Future<void> _handleStartSession() async {
-  final confirmed = await _showConfirmationDialog();
-  if (!confirmed) return;
+  Future<void> _handleStartSession() async {
+    final confirmed = await _showConfirmationDialog();
+    if (!confirmed) return;
 
-  // 🔥 Mostrar loading AQUÍ
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Creating session...',
+              style: GoogleFonts.lato(
+                color: Colors.white,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      print('[CreateSessionFlow] Creating session...');
+
+      final response = await SessionService.createSession(_sessionData.toJson());
+      print('[CreateSessionFlow] Session created: ${response['session']['id']}');
+
+      final sessionId = response['session']['id'];
+
+      print('[CreateSessionFlow] Starting session...');
+      await SessionService.startSession(sessionId);
+      print('[CreateSessionFlow] Session started successfully');
+
+      if (!mounted) return;
+
+      Navigator.of(context).pop(); // Close loading
+      Navigator.of(context).pop(); // Close CreateSessionFlow
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Session started successfully!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => SessionControlPanel(sessionId: sessionId),
+        ),
+        (route) => route.isFirst,
+      );
+    } catch (e) {
+      print('[CreateSessionFlow] Error: $e');
+
+      if (!mounted) return;
+
+      Navigator.of(context).pop(); // Close loading
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error creating session: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  Future<bool> _showConfirmationDialog() async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create Session'),
+        content: const Text(
+          'Are you sure? Most settings cannot be modified after starting.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Review'),
           ),
-          SizedBox(height: 16),
-          Text(
-            'Creando sesión...',
-            style: GoogleFonts.lato(
-              color: Colors.white,
-              fontSize: 16,
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: FrutiaColors.primary,
+            ),
+            child: const Text(
+              'CREATE SESSION',
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ],
       ),
-    ),
-  );
-
-  try {
-    print('[CreateSessionFlow] Creando sesión...');
-    
-    final response = await SessionService.createSession(_sessionData.toJson());
-    print('[CreateSessionFlow] Sesión creada: ${response['session']['id']}');
-    
-    final sessionId = response['session']['id'];
-    
-    print('[CreateSessionFlow] Iniciando sesión...');
-    await SessionService.startSession(sessionId);
-    print('[CreateSessionFlow] Sesión iniciada exitosamente');
-
-   if (!mounted) return;
-
-Navigator.of(context).pop(); // Cerrar loading
-Navigator.of(context).pop(); // Cerrar CreateSessionFlow
-
-ScaffoldMessenger.of(context).showSnackBar(
-  const SnackBar(
-    content: Text('¡Sesión iniciada con éxito!'),
-    backgroundColor: Colors.green,
-    duration: Duration(seconds: 2),
-  ),
-);
-
-// 🔥 pushAndRemoveUntil para limpiar el stack y volver a HomePage
-Navigator.of(context).pushAndRemoveUntil(
-  MaterialPageRoute(
-    builder: (context) => SessionControlPanel(sessionId: sessionId),
-  ),
-  (route) => route.isFirst, // Mantiene solo HomePage (la primera ruta)
-);
-
-  } catch (e) {
-    print('[CreateSessionFlow] Error: $e');
-    
-    if (!mounted) return;
-    
-    Navigator.of(context).pop(); // Cerrar loading
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Error al crear sesión: ${e.toString()}'),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 4),
-      ),
-    );
+    ) ?? false;
   }
 }
-
-// Simplificar el diálogo de confirmación (sin loading aquí)
-Future<bool> _showConfirmationDialog() async {
-  return await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Crear Sesión'),
-      content: const Text(
-        '¿Estás seguro? La mayoría de las configuraciones no podrán modificarse después de iniciar.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Revisar'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: FrutiaColors.primary,
-          ),
-          child: const Text(
-            'CREAR SESIÓN', 
-            style: TextStyle(color: Colors.white)
-          ),
-        ),
-      ],
-    ),
-  ) ?? false;
-}
-
- }

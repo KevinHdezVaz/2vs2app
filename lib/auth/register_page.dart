@@ -99,77 +99,76 @@ class _RegisterPageState extends State<RegisterPage>
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
-      showErrorSnackBar('Error al unirse con Google. Inténtalo de nuevo.');
+      showErrorSnackBar('Error signing in with Google. Please try again.');
     }
   }
 
-Future<void> signUp() async {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => const Center(
-      child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
-      ),
-    ),
-  );
-
-  try {
-    final response = await _authService.register(
-      name: _nameController.text.trim(),
-      email: _emailController.text.trim(),
-      phone: _fullPhoneNumber,
-      password: _passwordController.text,
-      affiliateCode: _affiliateCodeController.text.trim(),
-    );
-
-    if (!mounted) return;
-    Navigator.of(context).pop(); // Cierra el loading
-
-    final userName = response['user']['name'];
-    
-    // Mostrar mensaje de bienvenida
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('¡Bienvenido, $userName! Registro exitoso.'),
-        backgroundColor: FrutiaColors.success,
+  Future<void> signUp() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
+        ),
       ),
     );
 
-    // 🆕 Navegar a HomePage después del registro exitoso
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const HomePage()),
-      (route) => false, // Elimina todas las rutas anteriores
-    );
-    
-  } on AuthException catch (e) {
-    if (!mounted) return;
-    Navigator.of(context).pop();
+    try {
+      final response = await _authService.register(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: _fullPhoneNumber,
+        password: _passwordController.text,
+        affiliateCode: _affiliateCodeController.text.trim(),
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(e.message),
-        backgroundColor: FrutiaColors.error,
-      ),
-    );
-  } catch (e) {
-    if (!mounted) return;
-    Navigator.of(context).pop();
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Close the loading dialog
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Ocurrió un error inesperado. Por favor, inténtalo de nuevo.'),
-        backgroundColor: FrutiaColors.error,
-      ),
-    );
+      final userName = response['user']['name'];
+
+      // Show welcome message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Welcome, $userName! Registration successful.'),
+          backgroundColor: FrutiaColors.success,
+        ),
+      );
+
+      // 🆕 Navigate to HomePage after successful registration
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const HomePage()),
+        (route) => false, // Remove all previous routes
+      );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+          backgroundColor: FrutiaColors.error,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An unexpected error occurred. Please try again.'),
+          backgroundColor: FrutiaColors.error,
+        ),
+      );
+    }
   }
-}
 
   bool validateRegister() {
     if (_passwordController.text.isNotEmpty &&
         _confirmPasswordController.text.isNotEmpty &&
         _passwordController.text != _confirmPasswordController.text) {
-      showErrorSnackBar("Las contraseñas no coinciden");
+      showErrorSnackBar("Passwords do not match");
       return false;
     }
 
@@ -177,20 +176,20 @@ Future<void> signUp() async {
         _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty ||
         _nameController.text.isEmpty) {
-      showErrorSnackBar("Por favor complete todos los campos obligatorios");
+      showErrorSnackBar("Please fill in all required fields");
       return false;
     }
 
     if (!_emailController.text.contains('@')) {
-      showErrorSnackBar("Correo electrónico inválido");
+      showErrorSnackBar("Invalid email address");
       return false;
     }
     if (_nameController.text.contains(RegExp(r'[^a-zA-Z\s]'))) {
-      showErrorSnackBar("El nombre solo debe contener letras");
+      showErrorSnackBar("The name must only contain letters");
       return false;
     }
     if (_passwordController.text.length < 6) {
-      showErrorSnackBar("La contraseña debe tener al menos 6 caracteres");
+      showErrorSnackBar("Password must be at least 6 characters");
       return false;
     }
 
@@ -223,18 +222,18 @@ Future<void> signUp() async {
             end: Alignment.bottomCenter,
             colors: [
               FrutiaColors.primary, // Slate Teal
-              FrutiaColors.accent    // Lime
+              FrutiaColors.accent // Lime
             ],
           ),
         ),
         child: SafeArea(
           child: Stack(
             children: [
-              // Contenido principal
+              // Main content
               Column(
                 children: [
                   AppBar(
-                    title: const Text("Registro"),
+                    title: const Text("Sign Up"),
                     titleTextStyle: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -279,7 +278,7 @@ Future<void> signUp() async {
                                     SizedBox(height: 20),
                                     // Welcome Text
                                     Text(
-                                      "Bienvenido, Completa tu registro.",
+                                      "Welcome, Complete your registration.",
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.lato(
                                         fontSize: 18,
@@ -311,7 +310,7 @@ Future<void> signUp() async {
                                               width: 1.5,
                                             ),
                                           ),
-                                          labelText: "Nombre completo",
+                                          labelText: "Full Name",
                                           labelStyle: TextStyle(
                                               color: FrutiaColors.primaryText),
                                           prefixIcon: Icon(
@@ -351,7 +350,7 @@ Future<void> signUp() async {
                                               width: 1.5,
                                             ),
                                           ),
-                                          labelText: "Correo electrónico",
+                                          labelText: "Email",
                                           labelStyle: TextStyle(
                                               color: FrutiaColors.primaryText),
                                           prefixIcon: Icon(
@@ -367,12 +366,12 @@ Future<void> signUp() async {
                                       ),
                                     ),
                                     SizedBox(height: 20),
-                                    // Phone Field con selector de país
+                                    // Phone Field with country selector
                                     SlideTransition(
                                       position: _slideAnimation,
                                       child: IntlPhoneField(
                                         decoration: InputDecoration(
-                                          labelText: 'Número de teléfono',
+                                          labelText: 'Phone Number',
                                           enabledBorder: OutlineInputBorder(
                                             borderRadius:
                                                 BorderRadius.circular(12),
@@ -405,10 +404,10 @@ Future<void> signUp() async {
                                         validator: (phoneNumber) {
                                           if (phoneNumber == null ||
                                               phoneNumber.number.isEmpty) {
-                                            return 'Por favor ingresa un número';
+                                            return 'Please enter a number';
                                           }
                                           if (!phoneNumber.isValidNumber()) {
-                                            return 'El número de teléfono no es válido para el país seleccionado.';
+                                            return 'The phone number is not valid for the selected country.';
                                           }
                                           return null;
                                         },
@@ -443,7 +442,7 @@ Future<void> signUp() async {
                                               width: 1.5,
                                             ),
                                           ),
-                                          labelText: "Contraseña",
+                                          labelText: "Password",
                                           labelStyle: TextStyle(
                                               color: FrutiaColors.primaryText),
                                           prefixIcon: Icon(
@@ -496,7 +495,7 @@ Future<void> signUp() async {
                                               width: 1.5,
                                             ),
                                           ),
-                                          labelText: "Confirmar Contraseña",
+                                          labelText: "Confirm Password",
                                           labelStyle: TextStyle(
                                               color: FrutiaColors.primaryText),
                                           prefixIcon: Icon(
@@ -525,7 +524,7 @@ Future<void> signUp() async {
                                             TextStyle(color: FrutiaColors.primaryText),
                                       ),
                                     ),
- 
+
                                     SizedBox(height: 40),
 
                                     // Sign Up Button
@@ -547,7 +546,7 @@ Future<void> signUp() async {
                                             elevation: 8,
                                           ),
                                           child: Text(
-                                            "Crea tu cuenta",
+                                            "Create your account",
                                             style: GoogleFonts.inter(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
@@ -558,7 +557,7 @@ Future<void> signUp() async {
                                       ),
                                     ),
                                     SizedBox(height: 20),
-                                    
+
                                     /*
                                     SlideTransition(
                                       position: _slideAnimation,
@@ -596,7 +595,7 @@ Future<void> signUp() async {
                                               ),
                                               SizedBox(width: 10),
                                               Text(
-                                                "Unirse con Google",
+                                                "Sign in with Google",
                                                 style: GoogleFonts.inter(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.bold,
@@ -608,8 +607,7 @@ Future<void> signUp() async {
                                         ),
                                       ),
                                     ),
-
-                                  */
+                                    */
                                   ],
                                 ),
                               ),
