@@ -138,28 +138,28 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
 
           const SizedBox(height: 32),
 
-          // Navigation buttons
+          // Navigation buttons - CORREGIDOS para misma altura
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: widget.onBack,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 10),
-                    side: BorderSide(color: FrutiaColors.primary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  height: 56, // Altura fija para ambos botones
+                  child: OutlinedButton(
+                    onPressed: widget.onBack,
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: FrutiaColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    'Back: Court Details',
-                    textAlign: TextAlign.center, // ← Agrega esto
-
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: FrutiaColors.primary,
+                    child: Text(
+                      'Back: Court Details',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primary,
+                      ),
                     ),
                   ),
                 ),
@@ -167,31 +167,33 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
               const SizedBox(width: 16),
               Expanded(
                 flex: 2,
-                child: ElevatedButton(
-                  onPressed:
-                      _areAllPlayersFilled() ? widget.onStartSession : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: FrutiaColors.primary,
-                    disabledBackgroundColor: FrutiaColors.disabledText,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.play_arrow, color: Colors.white),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Start Session',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                child: SizedBox(
+                  height: 56, // Misma altura fija
+                  child: ElevatedButton(
+                    onPressed:
+                        _areAllPlayersFilled() ? widget.onStartSession : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: FrutiaColors.accent,
+                      disabledBackgroundColor: FrutiaColors.disabledText,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.play_arrow, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Start Session',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -232,7 +234,6 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
       ),
     ).animate().fadeIn(duration: 300.ms);
   }
-
 Widget _buildPlayerRow(int index) {
   final player = widget.sessionData.players[index];
 
@@ -263,10 +264,11 @@ Widget _buildPlayerRow(int index) {
             ),
             const SizedBox(width: 12),
 
-            // First Name
+            // First Name - CORREGIDO: agregado textCapitalization
             Expanded(
               child: TextFormField(
                 controller: _firstNameControllers[index],
+                textCapitalization: TextCapitalization.characters, // ← Esto activa el auto-caps
                 decoration: InputDecoration(
                   labelText: 'First Name',
                   isDense: true,
@@ -288,7 +290,7 @@ Widget _buildPlayerRow(int index) {
             ),
             const SizedBox(width: 12),
 
-            // Last Name
+            // Last Name (ya tiene textCapitalization.characters)
             Expanded(
               child: TextFormField(
                 controller: _lastInitialControllers[index],

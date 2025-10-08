@@ -96,56 +96,60 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
 
           const SizedBox(height: 32),
 
-          // Navigation buttons
-         // Navigation buttons
-Row(
-  children: [
-    Expanded(
-      child: OutlinedButton(
-        onPressed: widget.onBack,
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          side: BorderSide(color: FrutiaColors.primary),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+          // Navigation buttons - CORREGIDOS para misma altura
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 56, // Altura fija para ambos botones
+                  child: OutlinedButton(
+                    onPressed: widget.onBack,
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: BorderSide(color: FrutiaColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Back: Session Type',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: SizedBox(
+                  height: 56, // Misma altura fija
+                  child: ElevatedButton(
+                    onPressed: widget.onNext,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: FrutiaColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Next: Player Details',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-        child: Text(
-          'Back: Session Details',
-          textAlign: TextAlign.center,  // ← Agrega esto
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: FrutiaColors.primary,
-          ),
-        ),
-      ),
-    ),
-    const SizedBox(width: 16),
-    Expanded(
-      flex: 2,
-      child: ElevatedButton(
-        onPressed: widget.onNext,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: FrutiaColors.primary,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Text(
-          'Next: Player Details',
-          textAlign: TextAlign.center,  // ← Y también aquí
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    ),
-  ],
-),
         ],
       ),
     ).animate().fadeIn(duration: 300.ms);

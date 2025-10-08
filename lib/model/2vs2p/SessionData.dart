@@ -23,7 +23,7 @@ class SessionData {
   void initializeCourts() {
     courtNames = List.generate(
       numberOfCourts,
-      (index) => 'Cancha ${String.fromCharCode(65 + index)}', // A, B, C, D
+      (index) => 'Court ${String.fromCharCode(65 + index)}', // A, B, C, D
     );
   }
 

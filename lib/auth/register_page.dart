@@ -31,10 +31,9 @@ class _RegisterPageState extends State<RegisterPage>
   final _phoneController = TextEditingController();
   final _ageController = TextEditingController();
   final _authService = AuthService();
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId:
-        '237230625824-uhg81q3ro2at559t31bnorjqrlooe3lr.apps.googleusercontent.com',
-  );
+ final GoogleSignIn _googleSignIn = GoogleSignIn(
+  clientId: '943019607563-jnuk83jvn36jpq1il30mtackaff3jfhk.apps.googleusercontent.com',
+);
 
   final _affiliateCodeController = TextEditingController();
 
@@ -216,16 +215,7 @@ class _RegisterPageState extends State<RegisterPage>
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              FrutiaColors.primary, // Slate Teal
-              FrutiaColors.accent // Lime
-            ],
-          ),
-        ),
+        color: Colors.white,
         child: SafeArea(
           child: Stack(
             children: [
@@ -235,7 +225,7 @@ class _RegisterPageState extends State<RegisterPage>
                   AppBar(
                     title: const Text("Sign Up"),
                     titleTextStyle: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -243,7 +233,7 @@ class _RegisterPageState extends State<RegisterPage>
                     elevation: 0,
                     leading: IconButton(
                       icon: const Icon(Icons.arrow_back_ios,
-                          color: Colors.white),
+                          color: Colors.black),
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
@@ -267,9 +257,20 @@ class _RegisterPageState extends State<RegisterPage>
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Container(
-                              height: size.height * 0.75,
-                              width: size.width * 0.9,
+                          child: Container(
+                      height: size.height * 0.75,
+                    width: size.width * 0.9,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white,
+                          FrutiaColors.primary.withOpacity(0.05), // Verde muy sutil
+                        ],
+                      ),
+                    ),
                               padding: EdgeInsets.all(16.0),
                               child: SingleChildScrollView(
                                 child: Column(
@@ -558,7 +559,7 @@ class _RegisterPageState extends State<RegisterPage>
                                     ),
                                     SizedBox(height: 20),
 
-                                    /*
+                                    
                                     SlideTransition(
                                       position: _slideAnimation,
                                       child: Container(
@@ -607,7 +608,7 @@ class _RegisterPageState extends State<RegisterPage>
                                         ),
                                       ),
                                     ),
-                                    */
+                                    
                                   ],
                                 ),
                               ),

@@ -105,6 +105,89 @@ class CustomDrawer extends StatelessWidget {
     }
   }
 
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.info_outline, color: FrutiaColors.primary, size: 28),
+              const SizedBox(width: 12),
+              Text(
+                'About PickleBracket',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: FrutiaColors.primaryText,
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'PickleBracket makes Open Play sessions more organized, varied, and fun.',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: FrutiaColors.primaryText,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'It takes the guesswork out of who plays with whom — using smart scheduling to create balanced, dynamic matchups so everyone gets great games.',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: FrutiaColors.primaryText,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'At the end of each session, PickleBracket shows how everyone performed, giving you simple, session-only insights — not permanent ratings or public rankings. You\'ll see how well you played without the stress or stakes of official DUPR matches.',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: FrutiaColors.primaryText,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Behind the scenes, PickleBracket uses intelligent pairing logic to keep rotations fair, results meaningful, and Open Play running smoothly from start to finish.',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: FrutiaColors.primaryText,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Close',
+                style: GoogleFonts.lato(
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -135,28 +218,36 @@ class CustomDrawer extends StatelessWidget {
                       Navigator.pop(context);
                     },
                   ),
-                _buildDrawerItem(
-  icon: Icons.history,
-  title: 'History',
-  onTap: () {
-    Navigator.pop(context);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const HistoryScreen()),
-    );
-  },
-),
-_buildDrawerItem(
-  icon: Icons.group_outlined,
-  title: 'Players',
-  onTap: () {
-    Navigator.pop(context);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const PlayersScreen()),
-    );
-  },
-),
+                  _buildDrawerItem(
+                    icon: Icons.history,
+                    title: 'History',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const HistoryScreen()),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.group_outlined,
+                    title: 'Players',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PlayersScreen()),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.info_outline,
+                    title: 'About',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showAboutDialog(context);
+                    },
+                  ),
                   _buildDrawerItem(
                     icon: Icons.help_outline,
                     title: 'Help',

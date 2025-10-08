@@ -1,45 +1,45 @@
 {
   "project_info": {
-    "project_number": "730095641142",
-    "project_id": "frutia-fd201",
-    "storage_bucket": "frutia-fd201.firebasestorage.app"
+    "project_number": "943019607563",
+    "project_id": "vs2-962e9",
+    "storage_bucket": "vs2-962e9.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:730095641142:android:6e7642ef6da9db1093ee97",
+        "mobilesdk_app_id": "1:943019607563:android:7d712721d5bc84a1b2e90e",
         "android_client_info": {
           "package_name": "com.app.sport.session"
         }
       },
       "oauth_client": [
         {
-          "client_id": "730095641142-aa4kufvsl8gojl0i96g9t27s10kdbtak.apps.googleusercontent.com",
+          "client_id": "943019607563-2irvre7paqiu3u9li107mkktv154eh2c.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.app.sport.session",
-            "certificate_hash": "2572a8ad1accb6888f5f8f26f9be92dafff43b0a"
+            "certificate_hash": "8cf7ea9963061a9e50ebfaee920994f1255d66a4"
           }
         },
         {
-          "client_id": "730095641142-2sc256o1n605r12hshom8sop83l5p4sk.apps.googleusercontent.com",
+          "client_id": "943019607563-jnuk83jvn36jpq1il30mtackaff3jfhk.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyA991Y_0g-2UISi8R5Ckp-wKxmksWFxCl0"
+          "current_key": "AIzaSyC__9Ol17GDIhC4qbPJ-BoyRlqcabr_Ki0"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "730095641142-2sc256o1n605r12hshom8sop83l5p4sk.apps.googleusercontent.com",
+              "client_id": "943019607563-jnuk83jvn36jpq1il30mtackaff3jfhk.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "730095641142-qj58r88ha7vnjlro9b5gsmb8upo9idcu.apps.googleusercontent.com",
+              "client_id": "943019607563-ogk5mui0a1n86u120oif2afvqbs3u5lv.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.app.sport.session"

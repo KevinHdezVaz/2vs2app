@@ -1,3 +1,4 @@
+import 'package:Frutia/pages/screens/SessionControl/SessionControlPanel.dart';
 import 'package:Frutia/services/2vs2/HistoryService.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -154,148 +155,170 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildSessionCard(Map<String, dynamic> session) {
-    final completedAt = DateTime.parse(session['completed_at']);
-    final formattedDate = DateFormat('MMM dd, yyyy').format(completedAt);
-    final formattedTime = DateFormat('hh:mm a').format(completedAt);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      elevation: 2,
-      child: InkWell(
-        onTap: () {
-          // Navegar al detalle de la sesión si es necesario
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      session['session_name'],
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: FrutiaColors.primaryText,
-                      ),
+// Agregar este método en la clase _HistoryScreenState
+String _formatDuration(int? minutes) {
+  if (minutes == null) return 'N/A';
+  
+  if (minutes < 60) {
+    return '${minutes}min';
+  } else {
+    final hours = minutes ~/ 60;
+    final mins = minutes % 60;
+    return mins > 0 ? '${hours}h ${mins}min' : '${hours}h';
+  }
+}
+
+// Actualizar el widget _buildSessionCard
+Widget _buildSessionCard(Map<String, dynamic> session) {
+  final completedAt = DateTime.parse(session['completed_at']);
+  final formattedDate = DateFormat('MMM dd, yyyy').format(completedAt);
+  final formattedTime = DateFormat('hh:mm a').format(completedAt);
+
+  return Card(
+    margin: const EdgeInsets.only(bottom: 16),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+    elevation: 2,
+    child: InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SessionControlPanel(
+              sessionId: session['id'],
+              isSpectator: true,
+            ),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    session['session_name'],
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: FrutiaColors.primaryText,
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: FrutiaColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      _getSessionTypeLabel(session['session_type']),
-                      style: GoogleFonts.lato(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: FrutiaColors.primary,
-                      ),
-                    ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(
-                    Icons.calendar_today,
-                    size: 16,
-                    color: FrutiaColors.secondaryText,
+                  decoration: BoxDecoration(
+                    color: FrutiaColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    formattedDate,
+                  child: Text(
+                    _getSessionTypeLabel(session['session_type']),
                     style: GoogleFonts.lato(
-                      fontSize: 14,
-                      color: FrutiaColors.secondaryText,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: FrutiaColors.primary,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Icon(
-                    Icons.access_time,
-                    size: 16,
-                    color: FrutiaColors.secondaryText,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    formattedTime,
-                    style: GoogleFonts.lato(
-                      fontSize: 14,
-                      color: FrutiaColors.secondaryText,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _buildInfoChip(
-                    Icons.group,
-                    '${session['number_of_players']} Players',
-                  ),
-                  const SizedBox(width: 8),
-                  _buildInfoChip(
-                    Icons.sports_tennis,
-                    '${session['number_of_courts']} Courts',
-                  ),
-                  const SizedBox(width: 8),
-                  _buildInfoChip(
-                    Icons.timer,
-                    '${session['duration_hours']}h',
-                  ),
-                ],
-              ),
-              if (session['winner'] != null) ...[
-                const SizedBox(height: 12),
-                const Divider(),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.emoji_events,
-                      color: FrutiaColors.accent,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Winner: ',
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        color: FrutiaColors.secondaryText,
-                      ),
-                    ),
-                    Text(
-                      session['winner']['display_name'] ?? 'N/A',
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: FrutiaColors.primaryText,
-                      ),
-                    ),
-                  ],
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: FrutiaColors.secondaryText,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  formattedDate,
+                  style: GoogleFonts.lato(
+                    fontSize: 14,
+                    color: FrutiaColors.secondaryText,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Icon(
+                  Icons.access_time,
+                  size: 16,
+                  color: FrutiaColors.secondaryText,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  formattedTime,
+                  style: GoogleFonts.lato(
+                    fontSize: 14,
+                    color: FrutiaColors.secondaryText,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _buildInfoChip(
+                  Icons.group,
+                  '${session['number_of_players']} Players',
+                ),
+                const SizedBox(width: 8),
+                _buildInfoChip(
+                  Icons.sports_tennis,
+                  '${session['number_of_courts']} Courts',
+                ),
+                const SizedBox(width: 8),
+                _buildInfoChip(
+                  Icons.timer,
+                  _formatDuration(session['duration_minutes']), // ← Usar el helper
+                ),
+              ],
+            ),
+            if (session['winner'] != null) ...[
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    Icons.emoji_events,
+                    color: FrutiaColors.accent,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Winner: ',
+                    style: GoogleFonts.lato(
+                      fontSize: 14,
+                      color: FrutiaColors.secondaryText,
+                    ),
+                  ),
+                  Text(
+                    session['winner']['display_name'] ?? 'N/A',
+                    style: GoogleFonts.lato(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: FrutiaColors.primaryText,
+                    ),
+                  ),
+                ],
+              ),
             ],
-          ),
+          ],
         ),
       ),
-    );
-  }
-
+    ),
+  );
+}
   Widget _buildInfoChip(IconData icon, String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

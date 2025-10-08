@@ -22,10 +22,12 @@ class SessionControlPanel extends StatefulWidget {
   State<SessionControlPanel> createState() => _SessionControlPanelState();
 }
 
-class _SessionControlPanelState extends State<SessionControlPanel> with SingleTickerProviderStateMixin {
+class _SessionControlPanelState extends State<SessionControlPanel>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Timer? _refreshTimer;
   Timer? _sessionTimer;
+  bool _hasShownCompletedDialog = false;
 
   Map<String, dynamic>? _sessionData;
   List<dynamic> _liveGames = [];
@@ -55,7 +57,7 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
   }
 
   void _startTimers() {
-    _refreshTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
       _loadSessionData(silent: true);
     });
 
@@ -83,16 +85,20 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
       final session = sessionResponse['session'];
 
       final liveGames = widget.isSpectator
-          ? await SessionService.getPublicGamesByStatus(widget.sessionId, 'active')
+          ? await SessionService.getPublicGamesByStatus(
+              widget.sessionId, 'active')
           : await SessionService.getGamesByStatus(widget.sessionId, 'active');
 
       final nextGames = widget.isSpectator
-          ? await SessionService.getPublicGamesByStatus(widget.sessionId, 'pending')
+          ? await SessionService.getPublicGamesByStatus(
+              widget.sessionId, 'pending')
           : await SessionService.getGamesByStatus(widget.sessionId, 'pending');
 
       final completedGames = widget.isSpectator
-          ? await SessionService.getPublicGamesByStatus(widget.sessionId, 'completed')
-          : await SessionService.getGamesByStatus(widget.sessionId, 'completed');
+          ? await SessionService.getPublicGamesByStatus(
+              widget.sessionId, 'completed')
+          : await SessionService.getGamesByStatus(
+              widget.sessionId, 'completed');
 
       final players = widget.isSpectator
           ? await SessionService.getPublicPlayerStats(widget.sessionId)
@@ -109,6 +115,17 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
           _isLoading = false;
         });
 
+        // 👇 DETENER TIMERS SI LA SESIÓN ESTÁ COMPLETADA
+        if (session['status'] == 'completed') {
+          _sessionTimer?.cancel();
+          _refreshTimer?.cancel();
+
+          // Opcional: Mostrar mensaje de sesión completada
+          if (!widget.isSpectator) {
+            _showSessionCompletedDialog();
+          }
+        }
+
         if (!widget.isSpectator) {
           _checkForStageOrPlayoffCompletion();
         }
@@ -116,6 +133,72 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
     } catch (e) {
       print('[SessionControlPanel] Error: $e');
     }
+  }
+
+  void _showSessionCompletedDialog() {
+    // Solo mostrar una vez
+    if (_hasShownCompletedDialog) return;
+    _hasShownCompletedDialog = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            insetPadding: const EdgeInsets.symmetric(
+                horizontal: 32, vertical: 24), // Larger dialog
+            titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+            contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+            actionsPadding: const EdgeInsets.only(bottom: 12, right: 16),
+
+            title: Row(
+              children: [
+                Icon(Icons.check_circle, color: FrutiaColors.success, size: 32),
+                const SizedBox(width: 12),
+                Text(
+                  'Session Completed',
+                  style: GoogleFonts.poppins(
+                    color: FrutiaColors.primaryText,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+
+            content: Text(
+              'All games have been completed! Check the final statistics in the Rankings tab to see the results.',
+              style: GoogleFonts.lato(
+                color: FrutiaColors.secondaryText,
+                fontSize: 16,
+                height: 1.5,
+              ),
+            ),
+
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  _tabController.animateTo(3); // Go to Rankings tab
+                },
+                child: Text(
+                  'View Rankings',
+                  style: GoogleFonts.lato(
+                    color: FrutiaColors.primary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    });
   }
 
   void _checkForStageOrPlayoffCompletion() {
@@ -128,60 +211,141 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
 
     if (sessionType == 'T') {
       final currentStage = _sessionData!['current_stage'] ?? 1;
-
       final hasActiveGames = _liveGames.isNotEmpty;
-      final hasPendingGamesInCurrentStage = _nextGames.any((game) => game['stage'] == currentStage);
+      final hasPendingGamesInCurrentStage =
+          _nextGames.any((game) => game['stage'] == currentStage);
 
-      if (!hasActiveGames && !hasPendingGamesInCurrentStage && currentStage < 3 && !_hasShownStageDialog) {
+      if (!hasActiveGames &&
+          !hasPendingGamesInCurrentStage &&
+          currentStage < 3 &&
+          !_hasShownStageDialog) {
         _hasShownStageDialog = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => StageCompleteDialog(
-                sessionId: widget.sessionId,
-                currentStage: currentStage,
-                onStageAdvanced: () {
-                  _hasShownStageDialog = false;
-                  _loadSessionData();
-                },
-              ),
-            );
+            _showStageAdvanceDialog('Advance to Stage ${currentStage + 1}');
           }
         });
       }
     }
 
+    // 👇 CAMBIO AQUÍ: P4 y P8
     if (sessionType == 'P4' || sessionType == 'P8') {
-      final hasPlayoffGames = _liveGames.any((game) => game['is_playoff_game'] == true) ||
-          _nextGames.any((game) => game['is_playoff_game'] == true) ||
-          _completedGames.any((game) => game['is_playoff_game'] == true);
+      final hasPlayoffGames =
+          _liveGames.any((game) => game['is_playoff_game'] == true) ||
+              _nextGames.any((game) => game['is_playoff_game'] == true) ||
+              _completedGames.any((game) => game['is_playoff_game'] == true);
 
-      if (!hasPlayoffGames && _liveGames.isEmpty && _nextGames.isEmpty && !_hasShownPlayoffDialog) {
+      if (!hasPlayoffGames &&
+          _liveGames.isEmpty &&
+          _nextGames.isEmpty &&
+          !_hasShownPlayoffDialog) {
         _hasShownPlayoffDialog = true;
-        final playersToTake = sessionType == 'P4' ? 4 : 8;
-        final topPlayers = _players.take(playersToTake).toList();
 
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => PlayoffBracketDialog(
-                sessionId: widget.sessionId,
-                sessionType: sessionType,
-                topPlayers: topPlayers,
-                onBracketGenerated: () {
-                  _hasShownPlayoffDialog = false;
-                  _loadSessionData();
-                },
-              ),
-            );
+            _showStageAdvanceDialog('Advance to Playoffs');
           }
         });
       }
     }
+  }
+
+  void _showStageAdvanceDialog(String title) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.celebration, color: FrutiaColors.primary, size: 28),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.poppins(
+                  color: FrutiaColors.primaryText,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'All games in this phase are complete! New matches will be created based on current rankings.',
+          style:
+              GoogleFonts.lato(color: FrutiaColors.secondaryText, fontSize: 15),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              if (mounted) Navigator.pop(context); // ✅ Verificar mounted
+            },
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.lato(color: FrutiaColors.secondaryText),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              // ✅ Guardar el BuildContext antes de operaciones async
+              final dialogContext = context;
+              final scaffoldContext = this.context;
+
+              if (mounted)
+                Navigator.pop(dialogContext); // Cerrar el diálogo primero
+
+              final sessionType = _sessionData?['session_type'];
+
+              try {
+                if (sessionType == 'P4' || sessionType == 'P8') {
+                  await SessionService.generatePlayoffBracket(widget.sessionId);
+                } else if (sessionType == 'T') {
+                  await SessionService.advanceStage(widget.sessionId);
+                }
+
+                _hasShownPlayoffDialog = false;
+                _hasShownStageDialog = false;
+
+                // ✅ Recargar datos sin mostrar mensaje
+                await _loadSessionData();
+
+                // ✅ Solo mostrar SnackBar si el widget sigue montado
+                if (mounted) {
+                  ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                    SnackBar(
+                      content: Text('Advanced successfully!'),
+                      backgroundColor: FrutiaColors.success,
+                    ),
+                  );
+                }
+              } catch (e) {
+                // ✅ Solo mostrar error si el widget sigue montado
+                if (mounted) {
+                  ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Error: ${e.toString()}', // ← Error no necesita !
+                        style: TextStyle(fontSize: 17), // ← Agregué fontSize
+                      ),
+                      backgroundColor: FrutiaColors.error,
+                    ),
+                  );
+                }
+              }
+            },
+            child: Text(
+              'Continue',
+              style: GoogleFonts.lato(
+                color: FrutiaColors.primary,
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   String _formatTimer(int seconds) {
@@ -198,13 +362,13 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
         backgroundColor: FrutiaColors.secondaryBackground,
         appBar: AppBar(
           title: const Text('Loading...'),
-         leading: IconButton(
-  icon: const Icon(Icons.arrow_back, color: Colors.white),
-  onPressed: () async {
-    Navigator.of(context).popUntil((route) => route.isFirst);
-    // Forzar recarga llamando al método del HomePage
-  },
-),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () async {
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              // Forzar recarga llamando al método del HomePage
+            },
+          ),
         ),
         body: const Center(
           child: CircularProgressIndicator(
@@ -295,58 +459,75 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Container(
-            height: 4,
-            child: LinearProgressIndicator(
-              value: progressPercentage / 100,
-              backgroundColor: FrutiaColors.tertiaryBackground,
-              valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
+    // En la parte del build method, reemplaza la sección del TabBar con esto:
+body: Column(
+  children: [
+    Container(
+      height: 4,
+      child: LinearProgressIndicator(
+        value: progressPercentage / 100,
+        backgroundColor: FrutiaColors.tertiaryBackground,
+        valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
+      ),
+    ),
+    // TabBar con espacio mejorado
+    Container(
+      color: FrutiaColors.primaryBackground,
+      padding: const EdgeInsets.only(top: 14),
+      child: TabBar(
+        controller: _tabController,
+        labelColor: FrutiaColors.primary,
+        unselectedLabelColor: FrutiaColors.disabledText,
+        indicatorColor: FrutiaColors.primary,
+        indicatorWeight: 3, // ← Grosor de la línea
+         labelPadding: const EdgeInsets.only(bottom: 9), // ← TEXTOS MÁS ARRIBA
+        tabs: [
+          Tab(
+            icon: const Icon(Icons.play_circle_filled),
+            child: Text(
+              'Live\n(${_liveGames.length})',
+              textAlign: TextAlign.center,
             ),
           ),
-
-          Container(
-            color: FrutiaColors.primaryBackground,
-            child: TabBar(
-              controller: _tabController,
-              labelColor: FrutiaColors.primary,
-              unselectedLabelColor: FrutiaColors.disabledText,
-              indicatorColor: FrutiaColors.primary,
-              tabs: [
-                Tab(
-                  icon: const Icon(Icons.play_circle_filled),
-                  text: 'Live (${_liveGames.length})',
-                ),
-                Tab(
-                  icon: const Icon(Icons.queue),
-                  text: 'Upcoming (${_nextGames.length})',
-                ),
-                Tab(
-                  icon: const Icon(Icons.check_circle),
-                  text: 'Completed (${_completedGames.length})',
-                ),
-                Tab(
-                  icon: const Icon(Icons.leaderboard),
-                  text: 'Rankings',
-                ),
-              ],
+          Tab(
+            icon: const Icon(Icons.queue),
+            child: Text(
+              'Next\n(${_nextGames.length})',
+              textAlign: TextAlign.center,
             ),
           ),
-
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildLiveGamesTab(),
-                _buildNextGamesTab(),
-                _buildCompletedGamesTab(),
-                _buildPlayerStatsTab(),
-              ],
+          Tab(
+            icon: const Icon(Icons.check_circle),
+            child: Text(
+              'Completed\n(${_completedGames.length})',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13),
+            ),
+          ),
+          Tab(
+            icon: const Icon(Icons.leaderboard),
+            child: Text(
+              'Rankings',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13),
             ),
           ),
         ],
       ),
+    ),
+    Expanded(
+      child: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildLiveGamesTab(),
+          _buildNextGamesTab(),
+          _buildCompletedGamesTab(),
+          _buildPlayerStatsTab(),
+        ],
+      ),
+    ),
+  ],
+),
     );
   }
 
@@ -356,8 +537,8 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.sports_tennis, size: 64, color: FrutiaColors.disabledText),
-            const SizedBox(height: 16),
+            Image(image: AssetImage('assets/icons/raaqueta.png'), width: 120),
+            SizedBox(height: 16),
             Text(
               'No active games',
               style: GoogleFonts.lato(
@@ -414,7 +595,7 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
           if (index == _nextGames.length) {
             return _buildAdvanceStageButton();
           }
-          
+
           return _buildGameCard(
             _nextGames[index],
             queuePosition: index + 1,
@@ -424,12 +605,14 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
     );
   }
 
+// Reemplaza el método _buildAdvanceStageButton en SessionControlPanel:
+
   Widget _buildAdvanceStageButton() {
     final sessionType = _sessionData?['session_type'];
     final currentStage = _sessionData?['current_stage'] ?? 1;
-    
-    // Don't show button if there are active games
-    if (_liveGames.isNotEmpty) {
+
+    // Don't show button if there are active OR pending games
+    if (_liveGames.isNotEmpty || _nextGames.isNotEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -509,28 +692,35 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
     );
 
     if (confirm == true) {
+      // ✅ Guardar el BuildContext ANTES de operaciones async
+      final scaffoldContext = context;
+
       try {
         final sessionType = _sessionData?['session_type'];
-        
+
         if (sessionType == 'P4' || sessionType == 'P8') {
           await SessionService.generatePlayoffBracket(widget.sessionId);
         } else if (sessionType == 'T') {
           await SessionService.advanceStage(widget.sessionId);
         }
-        
-        _loadSessionData();
-        
+
+        await _loadSessionData();
+
+        // ✅ Solo mostrar mensaje si el widget sigue montado
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          ScaffoldMessenger.of(scaffoldContext).showSnackBar(
             SnackBar(
-              content: Text('Advanced to next stage successfully'),
+              content: Text(
+                'Advanced to next stage successfully!', // ← Ya tiene !
+                style: TextStyle(fontSize: 17), // ← Agregué fontSize
+              ),
               backgroundColor: FrutiaColors.success,
             ),
           );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          ScaffoldMessenger.of(scaffoldContext).showSnackBar(
             SnackBar(
               content: Text('Error: ${e.toString()}'),
               backgroundColor: FrutiaColors.error,
@@ -547,7 +737,8 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle, size: 64, color: FrutiaColors.disabledText),
+            Icon(Icons.check_circle,
+                size: 64, color: FrutiaColors.disabledText),
             const SizedBox(height: 16),
             Text(
               'No completed games',
@@ -593,8 +784,8 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
         itemBuilder: (context, index) {
           final player = _players[index];
           final rank = player['current_rank'] ?? (index + 1);
-          
-          // Podium colors for top 3
+
+          // 🎖 Podium colors for top 3
           Color? podiumColor;
           Color? borderColor;
           if (rank == 1) {
@@ -617,98 +808,110 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
                 color: borderColor ?? FrutiaColors.tertiaryBackground,
                 width: rank <= 3 ? 2 : 1,
               ),
-              boxShadow: rank <= 3 ? [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ] : null,
+              boxShadow: rank <= 3
+                  ? [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10), // ← Reducido horizontal padding
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Rank badge
+                  // 🏅 Rank badge - MOVIDO MÁS A LA IZQUIERDA
                   Container(
-                    width: 36,
-                    height: 36,
+                    width: 32, // ← Ligeramente más pequeño
+                    height: 32,
                     decoration: BoxDecoration(
                       color: rank <= 3
-                        ? (rank == 1 ? const Color(0xFFFFD700) :
-                           rank == 2 ? const Color(0xFFC0C0C0) :
-                           const Color(0xFFCD7F32))
-                        : FrutiaColors.secondaryBackground,
+                          ? (rank == 1
+                              ? const Color(0xFFFFD700)
+                              : rank == 2
+                                  ? const Color(0xFFC0C0C0)
+                                  : const Color(0xFFCD7F32))
+                          : FrutiaColors.secondaryBackground,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: Text(
                         rank.toString(),
                         style: GoogleFonts.poppins(
-                          fontSize: 16,
+                          fontSize: 14, // ← Fuente ligeramente más pequeña
                           fontWeight: FontWeight.bold,
-                          color: rank <= 3 ? Colors.white : FrutiaColors.primaryText,
+                          color: rank <= 3
+                              ? Colors.white
+                              : FrutiaColors.primaryText,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  
-                  // Player name
-                  Expanded(
-                    flex: 3,
+                  const SizedBox(width: 10), // ← Reducido de 12 a 10
+
+                  // 👤 Player name - CON ANCHO FIJO Y TRUNCAMIENTO
+                  Container(
+                    width: 100, // ← ANCHO FIJO para nombres
                     child: Text(
-                      '${player['first_name']} ${player['last_initial']}.',
+                      _truncateName(
+                          '${player['first_name']} ${player['last_initial']}.'),
                       style: GoogleFonts.poppins(
-                        fontSize: 14,
+                        fontSize: 13, // ← Fuente ligeramente más pequeña
                         fontWeight: FontWeight.w600,
                         color: FrutiaColors.primaryText,
                       ),
                       overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
-                  
-                  // Stats
+
+                  // 📊 Stats section - CON ANCHOS FIJOS Y MEJOR DISTRIBUCIÓN
                   Expanded(
-                    flex: 4,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment
+                          .spaceEvenly, // ← Distribución uniforme
                       children: [
-                        // Games played
                         _buildStatColumn(
                           '${player['games_played'] ?? 0}',
                           'Games',
+                          width: 40, // ← ANCHO FIJO
                         ),
-                        const SizedBox(width: 12),
-                        
-                        // Win %
+
                         _buildStatColumn(
                           '${player['win_percentage']?.toInt() ?? 0}%',
                           'Win',
+                          width: 40, // ← ANCHO FIJO
                         ),
-                        const SizedBox(width: 12),
-                        
-                        // Points %
+
                         _buildStatColumn(
                           '${player['points_won_percentage']?.toInt() ?? 0}%',
                           'Pts',
+                          width: 40, // ← ANCHO FIJO
                         ),
-                        const SizedBox(width: 12),
-                        
-                        // Rating
+
+                        // ⭐ Rating con ancho fijo
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          width: 45, // ← ANCHO FIJO ligeramente reducido
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 4), // ← Padding reducido
                           decoration: BoxDecoration(
                             color: FrutiaColors.primary.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             player['current_rating']?.toInt().toString() ?? '0',
+                            textAlign: TextAlign.center,
                             style: GoogleFonts.robotoMono(
-                              fontSize: 13,
+                              fontSize: 12, // ← Fuente ligeramente más pequeña
                               fontWeight: FontWeight.bold,
                               color: FrutiaColors.primary,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -723,461 +926,677 @@ class _SessionControlPanelState extends State<SessionControlPanel> with SingleTi
     );
   }
 
-  Widget _buildStatColumn(String value, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          value,
-          style: GoogleFonts.robotoMono(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: FrutiaColors.primaryText,
+// Método auxiliar para truncar nombres
+  String _truncateName(String fullName) {
+    const maxLength = 12; // ← MÁXIMO 12 CARACTERES
+    if (fullName.length <= maxLength) {
+      return fullName;
+    }
+    return '${fullName.substring(0, maxLength - 1)}…';
+  }
+
+// Widget _buildStatColumn actualizado para aceptar ancho fijo
+  Widget _buildStatColumn(String value, String label, {double width = 40}) {
+    return Container(
+      width: width, // ← ANCHO FIJO
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            value,
+            style: GoogleFonts.robotoMono(
+              fontSize: 12, // ← Fuente ligeramente más pequeña
+              fontWeight: FontWeight.w600,
+              color: FrutiaColors.primaryText,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.lato(
-            fontSize: 9,
-            color: FrutiaColors.secondaryText,
+          Text(
+            label,
+            style: GoogleFonts.lato(
+              fontSize: 9,
+              color: FrutiaColors.secondaryText,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildGameCard(Map<String, dynamic> game, {bool isLive = false, bool isCompleted = false, int? queuePosition}) {
+  Widget _buildGameCard(Map<String, dynamic> game,
+      {bool isLive = false, bool isCompleted = false, int? queuePosition}) {
     final team1Player1 = game['team1_player1'];
     final team1Player2 = game['team1_player2'];
     final team2Player1 = game['team2_player1'];
     final team2Player2 = game['team2_player2'];
     final court = game['court'];
     final isPending = !isLive && !isCompleted;
+    final isPlayoffGame = game['is_playoff_game'] == true;
+    final hasCourtAssigned = game['court_id'] != null;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: isLive ? FrutiaColors.success.withOpacity(0.1) : FrutiaColors.primaryBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isLive ? FrutiaColors.success : FrutiaColors.tertiaryBackground,
-          width: isLive ? 2 : 1,
+        margin: const EdgeInsets.only(bottom: 12),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Queue number card (solo si es pending)
+              if (queuePosition != null) ...[
+                Container(
+                  width: 50,
+                  decoration: BoxDecoration(
+                    color: FrutiaColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: FrutiaColors.primary.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '#',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: FrutiaColors.primary,
+                          ),
+                        ),
+                        Text(
+                          queuePosition.toString(),
+                          style: GoogleFonts.poppins(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: FrutiaColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+
+              // Main game card
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isLive
+                        ? FrutiaColors.success.withOpacity(0.1)
+                        : (isPlayoffGame && isCompleted)
+                            ? FrutiaColors.accent.withOpacity(0.05)
+                            : FrutiaColors.primaryBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isLive
+                          ? FrutiaColors.success
+                          : (isPlayoffGame && isCompleted)
+                              ? FrutiaColors.accent
+                              : FrutiaColors.tertiaryBackground,
+                      width: (isLive || (isPlayoffGame && isCompleted)) ? 2 : 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        // Header: Court info and action buttons
+                        Row(
+                          children: [
+                            if (court != null) ...[
+                              Transform.rotate(
+                                angle: 90 *
+                                    3.1416 /
+                                    180, // 90 grados convertidos a radianes
+                                child: Image.asset(
+                                  'assets/icons/padel.png',
+                                  width: 28,
+                                  height: 28,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                court['court_name'] ?? 'Court',
+                                style: GoogleFonts.lato(
+                                  fontSize: 12,
+                                  color: FrutiaColors.secondaryText,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                            if (isPlayoffGame && isCompleted) ...[
+                              if (court != null) const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: FrutiaColors.accent,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.emoji_events,
+                                        size: 12, color: Colors.white),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      game['playoff_round']?.toUpperCase() ??
+                                          'PLAYOFF',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 10,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            if (isLive) ...[
+                              if (court != null) const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: FrutiaColors.success,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  'LIVE',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 10,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            const Spacer(),
+
+                            // Skip the Line button (solo para pending sin cancha)
+                            if (isPending &&
+                                !hasCourtAssigned &&
+                                !widget.isSpectator) ...[
+                              InkWell(
+                                onTap: () => _showSkipLineConfirmation(game),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        FrutiaColors.primary.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.skip_next,
+                                    size: 18,
+                                    color: FrutiaColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+
+                            // Edit button for completed games
+                            if (isCompleted && !widget.isSpectator) ...[
+                              InkWell(
+                                onTap: () async {
+                                  final shouldEdit = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: Text(
+                                        'Edit Score?',
+                                        style: GoogleFonts.poppins(
+                                            color: FrutiaColors.primaryText),
+                                      ),
+                                      content: Text(
+                                        'Any changes to scores will recalculate ratings and rankings as if this game was replayed NOW - these changes cannot be reverted.',
+                                        style: GoogleFonts.lato(
+                                            color: FrutiaColors.secondaryText),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: Text(
+                                            'Cancel',
+                                            style: GoogleFonts.lato(
+                                                color:
+                                                    FrutiaColors.secondaryText),
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: Text(
+                                            'Continue',
+                                            style: GoogleFonts.lato(
+                                                color: FrutiaColors.primary,
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (shouldEdit == true && mounted) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => ScoreEntryDialog(
+                                        game: game,
+                                        session: _sessionData!,
+                                        onScoreSubmitted: () {
+                                          _loadSessionData();
+                                        },
+                                        isEditing: true,
+                                      ),
+                                    );
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        FrutiaColors.warning.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.edit,
+                                    size: 18,
+                                    color: FrutiaColors.warning,
+                                  ),
+                                ),
+                              ),
+                            ],
+
+                            // Cancel button for live games
+                            if (isLive && !widget.isSpectator) ...[
+                              InkWell(
+                                onTap: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: Text(
+                                        'Cancel game?',
+                                        style: GoogleFonts.poppins(
+                                            color: FrutiaColors.primaryText),
+                                      ),
+                                      content: Text(
+                                        'Are you sure you want to cancel this game? It will be moved back to the list of pending matches.',
+                                        style: GoogleFonts.lato(
+                                            color: FrutiaColors.secondaryText),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: Text(
+                                            "Don't cancel",
+                                            style: GoogleFonts.lato(
+                                              fontWeight: FontWeight.bold,
+                                              color: FrutiaColors.primary,
+                                            ),
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: Text(
+                                            'Cancel',
+                                            style: GoogleFonts.lato(
+                                                fontWeight: FontWeight.bold,
+                                                color: FrutiaColors.error),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirm == true) {
+                                    try {
+                                      await GameService.cancelGame(game['id']);
+                                      _loadSessionData();
+
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Game canceled!', // ← Agregué !
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      17), // ← Agregué fontSize
+                                            ),
+                                            backgroundColor:
+                                                FrutiaColors.success,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content:
+                                                Text('Error: ${e.toString()}'),
+                                            backgroundColor: FrutiaColors.error,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: FrutiaColors.error.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 18,
+                                    color: FrutiaColors.error,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // Game matchup
+                        Row(
+                          children: [
+                            // Team 1
+                            Expanded(
+                              child: Container(
+                                padding: isCompleted
+                                    ? const EdgeInsets.all(8)
+                                    : null,
+                                decoration: isCompleted &&
+                                        (game['team1_score'] ?? 0) >
+                                            (game['team2_score'] ?? 0)
+                                    ? BoxDecoration(
+                                        color: FrutiaColors.accent
+                                            .withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(8),
+                                      )
+                                    : null,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: FrutiaColors.primaryText,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: FrutiaColors.primaryText,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+
+                            // Score or VS
+                            if (isCompleted)
+                              Text(
+                                '${game['team1_score']} - ${game['team2_score']}',
+                                style: GoogleFonts.robotoMono(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: FrutiaColors.primary,
+                                ),
+                              )
+                            else
+                              Text(
+                                'VS',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: FrutiaColors.disabledText,
+                                ),
+                              ),
+                            const SizedBox(width: 12),
+
+                            // Team 2
+                            Expanded(
+                              child: Container(
+                                padding: isCompleted
+                                    ? const EdgeInsets.all(8)
+                                    : null,
+                                decoration: isCompleted &&
+                                        (game['team2_score'] ?? 0) >
+                                            (game['team1_score'] ?? 0)
+                                    ? BoxDecoration(
+                                        color: FrutiaColors.accent
+                                            .withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(8),
+                                      )
+                                    : null,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      '${team2Player1['first_name']} ${team2Player1['last_initial']}.',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: FrutiaColors.primaryText,
+                                      ),
+                                      textAlign: TextAlign.right,
+                                    ),
+                                    Text(
+                                      '${team2Player2['first_name']} ${team2Player2['last_initial']}.',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: FrutiaColors.primaryText,
+                                      ),
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Action buttons
+                        if (!widget.isSpectator) ...[
+                          // Live game button
+                          if (isLive) ...[
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => ScoreEntryDialog(
+                                      game: game,
+                                      session: _sessionData!,
+                                      onScoreSubmitted: () {
+                                        _loadSessionData();
+                                      },
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: FrutiaColors.primary,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Record Result',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+
+                          // Pending game button (solo Start Game si tiene cancha Y la cancha está disponible)
+                          if (isPending && hasCourtAssigned) ...[
+                            const SizedBox(height: 16),
+
+                            // ✅ VERIFICAR si la cancha está disponible
+                            Builder(
+                              builder: (context) {
+                                final courtStatus =
+                                    court?['status'] ?? 'unknown';
+                                final isCourtAvailable =
+                                    courtStatus == 'available';
+
+                                if (!isCourtAvailable) {
+                                  // Mostrar mensaje informativo en lugar del botón
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12, horizontal: 16),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          FrutiaColors.warning.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: FrutiaColors.warning
+                                            .withOpacity(0.3),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.hourglass_empty,
+                                          size: 18,
+                                          color: FrutiaColors.warning,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        
+                                      ],
+                                    ),
+                                  );
+                                }
+
+                                // Mostrar botón solo si la cancha está disponible
+                                return SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () => _startGame(game),
+                                    icon:
+                                        const Icon(Icons.play_arrow, size: 18),
+                                    label: Text(
+                                      'Start Game',
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: FrutiaColors.success,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ));
+  }
+
+// Método para confirmar Skip the Line
+  Future<void> _showSkipLineConfirmation(Map<String, dynamic> game) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Skip the Line?',
+          style: GoogleFonts.poppins(color: FrutiaColors.primaryText),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+        content: Text(
+          'Are you sure you want this game to skip the line and be played next?',
+          style: GoogleFonts.lato(color: FrutiaColors.secondaryText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.lato(color: FrutiaColors.secondaryText),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Skip the Line',
+              style: GoogleFonts.lato(
+                color: FrutiaColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Header: Queue position or Court info
-            Row(
-              children: [
-                if (queuePosition != null) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: FrutiaColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '#$queuePosition',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: FrutiaColors.primary,
-                      ),
-                    ),
-                  ),
-                ] else if (court != null) ...[
-                Image.asset(
-  'assets/icons/padel.png',
-  width: 32,
-  height: 32,
-),
-const SizedBox(width: 4),
-Text(
-  court['court_name'] ?? 'Court',
-  style: GoogleFonts.lato(
-    fontSize: 12,
-    color: FrutiaColors.secondaryText,
-    fontWeight: FontWeight.w600,
-  ),
-),
-                ],
-                if (isLive) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: FrutiaColors.success,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      'LIVE',
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-                const Spacer(),
-                // Cancel button for live games
-                if (isLive && !widget.isSpectator) ...[
-                  InkWell(
-                    onTap: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(
-                            'Cancel game?',
-                            style: GoogleFonts.poppins(color: FrutiaColors.primaryText),
-                          ),
-                          content: Text(
-                            'The game will return to the pending queue.',
-                            style: GoogleFonts.lato(color: FrutiaColors.secondaryText),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: Text(
-                                'No',
-                                style: GoogleFonts.lato(color: FrutiaColors.primary),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: Text(
-                                'Yes, cancel',
-                                style: GoogleFonts.lato(color: FrutiaColors.error),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (confirm == true) {
-                        try {
-                          await GameService.cancelGame(game['id']);
-                          _loadSessionData();
-
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Game canceled'),
-                                backgroundColor: FrutiaColors.primary,
-                              ),
-                            );
-                          }
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Error: ${e.toString()}'),
-                                backgroundColor: FrutiaColors.error,
-                              ),
-                            );
-                          }
-                        }
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: FrutiaColors.error.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.close,
-                        size: 18,
-                        color: FrutiaColors.error,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: isCompleted ? const EdgeInsets.all(8) : null,
-                    decoration: isCompleted && (game['team1_score'] ?? 0) > (game['team2_score'] ?? 0)
-                      ? BoxDecoration(
-                          color: FrutiaColors.accent.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        )
-                      : null,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: FrutiaColors.primaryText,
-                          ),
-                        ),
-                        Text(
-                          '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: FrutiaColors.primaryText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 12),
-
-                if (isCompleted)
-                  Text(
-                    '${game['team1_score']} - ${game['team2_score']}',
-                    style: GoogleFonts.robotoMono(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: FrutiaColors.primary,
-                    ),
-                  )
-                else
-                  Text(
-                    'VS',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: FrutiaColors.disabledText,
-                    ),
-                  ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-                  child: Container(
-                    padding: isCompleted ? const EdgeInsets.all(8) : null,
-                    decoration: isCompleted && (game['team2_score'] ?? 0) > (game['team1_score'] ?? 0)
-                      ? BoxDecoration(
-                          color: FrutiaColors.accent.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        )
-                      : null,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '${team2Player1['first_name']} ${team2Player1['last_initial']}.',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: FrutiaColors.primaryText,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                        Text(
-                          '${team2Player2['first_name']} ${team2Player2['last_initial']}.',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: FrutiaColors.primaryText,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            if (!widget.isSpectator) ...[
-              // Edit score button (completed games)
-              if (isCompleted) ...[
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      final shouldEdit = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(
-                            'Edit Score?',
-                            style: GoogleFonts.poppins(color: FrutiaColors.primaryText),
-                          ),
-                          content: Text(
-                            'Any changes to scores will recalculate ratings and rankings as if this game was replayed NOW - these changes cannot be reverted.',
-                            style: GoogleFonts.lato(color: FrutiaColors.secondaryText),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: Text(
-                                'Cancel',
-                                style: GoogleFonts.lato(color: FrutiaColors.secondaryText),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: Text(
-                                'Continue',
-                                style: GoogleFonts.lato(color: FrutiaColors.primary, fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (shouldEdit == true && mounted) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => ScoreEntryDialog(
-                            game: game,
-                            session: _sessionData!,
-                            onScoreSubmitted: () {
-                              _loadSessionData();
-                            },
-                            isEditing: true,
-                          ),
-                        );
-                      }
-                    },
-                    icon: const Icon(Icons.edit, size: 18),
-                    label: Text(
-                      'Edit Score',
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: FrutiaColors.warning,
-                      side: BorderSide(color: FrutiaColors.warning, width: 1.5),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-
-              // Live game buttons
-              if (isLive) ...[
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => ScoreEntryDialog(
-                          game: game,
-                          session: _sessionData!,
-                          onScoreSubmitted: () {
-                            _loadSessionData();
-                          },
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: FrutiaColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text(
-                      'Record Result',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-
-              // Pending game buttons
-              if (isPending) ...[
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _skipToCourt(game),
-                        icon: const Icon(Icons.skip_next, size: 18),
-                        label: Text(
-                          'Skip to Court',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: FrutiaColors.primary,
-                          side: BorderSide(color: FrutiaColors.primary, width: 1.5),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (game['court_id'] != null) ...[
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _startGame(game),
-                          icon: const Icon(Icons.play_arrow, size: 18),
-                          label: Text(
-                            'Start Game',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: FrutiaColors.success,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ],
-          ],
-        ),
-      ),
     );
+
+    if (confirm == true) {
+      _skipToCourt(game);
+    }
   }
 
   Future<void> _skipToCourt(Map<String, dynamic> game) async {
     try {
       await GameService.skipToCourt(game['id']);
       _loadSessionData();
-      
-      // Switch to Live tab
       _tabController.animateTo(0);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Game moved to court'),
+            content: Text(
+              'Game moved to court!', // ← Agregué !
+              style: TextStyle(fontSize: 17), // ← Agregué fontSize
+            ),
             backgroundColor: FrutiaColors.success,
           ),
         );
@@ -1186,8 +1605,14 @@ Text(
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: Text(
+              e.toString().contains('No courts available')
+                  ? 'No courts available. Complete active games first.'
+                  : 'Error: ${e.toString()}',
+              style: TextStyle(fontSize: 16),
+            ),
             backgroundColor: FrutiaColors.error,
+            duration: Duration(seconds: 4),
           ),
         );
       }
@@ -1198,28 +1623,38 @@ Text(
     try {
       await GameService.startGame(game['id']);
       _loadSessionData();
-      
-      // Switch to Live tab
       _tabController.animateTo(0);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Game started'),
+            content: Text(
+              'Game started!', // ← Agregué !
+              style: TextStyle(fontSize: 17), // ← Agregué fontSize
+            ),
             backgroundColor: FrutiaColors.success,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = 'Error: ${e.toString()}';
+
+        // Personalizar mensaje si la cancha está ocupada
+        if (e.toString().contains('ocupada') ||
+            e.toString().contains('occupied')) {
+          errorMessage =
+              'This court is already in use. Complete active games first or use "Skip the Line".';
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: Text(errorMessage),
             backgroundColor: FrutiaColors.error,
+            duration: Duration(seconds: 4),
           ),
         );
       }
     }
   }
-    
-    }
+}

@@ -103,8 +103,8 @@ class _SplashScreenState extends State<SplashScreen>
                     child: FadeTransition(
                       opacity: _fadeAnimation,
                       child: Container(
-                        width: 180,
-                        height: 180,
+                        width: 250,
+                        height: 250,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
@@ -119,8 +119,8 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Center(
                           child: Image.asset(
                             'assets/icons/LogoAppWorkana.png',
-                            width: 200,
-                            height: 200,
+                            width: 220,
+                            height: 220,
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -129,31 +129,15 @@ class _SplashScreenState extends State<SplashScreen>
                   );
                 },
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 50),
               // Nombre de la app con animación
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: Column(
                   children: [
-                    Text(
-                      'PickleBracket',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 3,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 10.0,
-                            color: Colors.black.withOpacity(0.3),
-                            offset: const Offset(2, 2),
-                          ),
-                        ],
-                      ),
-                    ),
                     const SizedBox(height: 10),
                     Text(
-                      'Your sports partner',
+                      'Your next Open Play session starts here!',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white.withOpacity(0.9),
@@ -163,16 +147,16 @@ class _SplashScreenState extends State<SplashScreen>
                   ],
                 ),
               ),
-              const SizedBox(height: 80),
-              // Indicador de carga
+              const SizedBox(height: 100),
+              // Loading bar
               FadeTransition(
                 opacity: _fadeAnimation,
-                child: const SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: CircularProgressIndicator(
+                child: SizedBox(
+                  width: 200,
+                  child: LinearProgressIndicator(
+                    backgroundColor: Colors.white.withOpacity(0.3),
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    strokeWidth: 3,
+                    minHeight: 4,
                   ),
                 ),
               ),

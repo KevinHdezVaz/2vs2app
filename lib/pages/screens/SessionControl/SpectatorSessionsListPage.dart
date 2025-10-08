@@ -102,6 +102,29 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
     );
   }
 
+
+  // Reemplaza el Container del badge "LIVE" con este código:
+
+Widget _buildStatusBadge(Map<String, dynamic> session) {
+  final isCompleted = (session['progress_percentage'] ?? 0) >= 100;
+  
+  return Container(
+    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    decoration: BoxDecoration(
+      color: isCompleted ? FrutiaColors.primary : FrutiaColors.success,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Text(
+      isCompleted ? 'COMPLETED' : 'LIVE',
+      style: GoogleFonts.lato(
+        fontSize: 10,
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  );
+} 
+
   Widget _buildSessionCard(Map<String, dynamic> session) {
     return Container(
       margin: EdgeInsets.only(bottom: 12),
@@ -142,21 +165,8 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
                       ),
                     ),
                   ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: FrutiaColors.success,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'LIVE',
-                      style: GoogleFonts.lato(
-                        fontSize: 10,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  _buildStatusBadge(session),
+
                 ],
               ),
               SizedBox(height: 12),

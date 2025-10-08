@@ -26,9 +26,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId:
-        '237230625824-uhg81q3ro2at559t31bnorjqrlooe3lr.apps.googleusercontent.com',
-  );
+  clientId: '943019607563-jnuk83jvn36jpq1il30mtackaff3jfhk.apps.googleusercontent.com',
+);
   final _authService = AuthService();
 
   // Animations
@@ -300,16 +299,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              FrutiaColors.primary, // Slate Teal
-              FrutiaColors.accent // Lime
-            ],
-          ),
-        ),
+        color: Colors.white, // ← Fondo blanco limpio
         child: SafeArea(
           child: Stack(
             children: [
@@ -326,8 +316,19 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         borderRadius: BorderRadius.circular(30),
                       ),
                       color: Colors.white.withOpacity(0.9),
-                      child: Container(
-                        width: size.width * 0.9,
+                  child: Container(
+                     width: size.width * 0.9,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white,
+                          FrutiaColors.primary.withOpacity(0.05), // Verde muy sutil
+                        ],
+                      ),
+                    ),
                         padding: EdgeInsets.all(24.0),
                         child: SingleChildScrollView(
                           child: Column(
@@ -346,7 +347,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                               ),
                               SizedBox(height: 10),
                               Text(
-                                "Enter your credentials to continue",
+                                "Sign in to create & launch your Open Play session",
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.lato(
                                   fontSize: 16,
@@ -540,7 +541,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                               ),
                               SizedBox(height: 20),
-                              /*
+                    
                               SlideTransition(
                                 position: _slideAnimation,
                                 child: Container(
@@ -620,7 +621,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   ),
                                 ),
                               ),
-                              */
+                          
                               // After the "Sign in with Google" button (line ~448)
                               SizedBox(height: 10),
 
@@ -656,7 +657,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                       children: [
                                         Icon(
                                           Icons.remove_red_eye_outlined,
-                                          color: FrutiaColors.warning,
+                                          color: Colors.black,
                                           size: 24,
                                         ),
                                         SizedBox(width: 10),
@@ -665,7 +666,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                           style: GoogleFonts.lato(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
-                                            color: FrutiaColors.warning,
+                                            color: Colors.black,
                                           ),
                                         ),
                                       ],
@@ -678,16 +679,16 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
                               TextButton(
                                 onPressed: widget.showLoginPage,
-                                child: Text(
-                                  "Create your account",
-                                  style: GoogleFonts.lato(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: FrutiaColors.primary,
-                                    decoration: TextDecoration.underline,
-                                    decorationColor: FrutiaColors.primary,
-                                  ),
-                                ),
+                              child: Text(
+  "Create your account",
+  style: GoogleFonts.lato(
+    fontSize: 18,
+    fontWeight: FontWeight.bold, // ← Cambiado aquí
+    color: FrutiaColors.primary,
+    decoration: TextDecoration.underline,
+    decorationColor: FrutiaColors.primary,
+  ),
+),
                               ),
                             ],
                           ),

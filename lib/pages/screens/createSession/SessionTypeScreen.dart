@@ -38,7 +38,7 @@ class _SessionTypeScreenState extends State<SessionTypeScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Choose how you want to play',
+            'Pick the Open Session type that best fits your group.',
             style: GoogleFonts.lato(
               fontSize: 14,
               color: FrutiaColors.secondaryText,
@@ -67,7 +67,7 @@ _buildSessionTypeCard('T'),
           ),
         ),
         child: Text(
-          'Back: Detail Session',
+          'Back: Session Detail',
           textAlign: TextAlign.center,  // ← Agrega esto
           style: GoogleFonts.poppins(
             fontSize: 12,

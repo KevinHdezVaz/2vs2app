@@ -131,12 +131,15 @@ Future<void> _submitScore() async {
     Navigator.pop(context);
     widget.onScoreSubmitted();
 
-    ScaffoldMessenger.of(context).showSnackBar(
+  ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(widget.isEditing ? 'Score updated successfully' : 'Score registered successfully'),
+        content: Text(
+          widget.isEditing ? 'Score updated successfully' : 'Score registered successfully!',
+          style: TextStyle(fontSize: 18), // Increased font size
+        ),
         backgroundColor: Colors.green,
       ),
-    );
+);
   } catch (e) {
     print('[ScoreEntryDialog] Error: $e');
 

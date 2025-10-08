@@ -22,15 +22,16 @@ class AuthService {
 
   final storage = StorageService();
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
-    // Configuración para iOS:
-    clientId: Platform.isIOS
-        ? '730095641142-qj58r88ha7vnjlro9b5gsmb8upo9idcu.apps.googleusercontent.com' // De GoogleService-Info.plist
-        : null,
-    serverClientId:
-        '730095641142-2sc256o1n605r12hshom8sop83l5p4sk.apps.googleusercontent.com', // De google-services.json (client_type 3)
-  );
+final GoogleSignIn _googleSignIn = GoogleSignIn(
+  scopes: ['email', 'profile'],
+  // Para Android: NO especifiques clientId, usa solo serverClientId
+  // Para iOS: usa el client_id de tipo 2 (iOS) del google-services.json
+  clientId: Platform.isIOS
+      ? '943019607563-ogk5mui0a1n86u120oif2afvqbs3u5lv.apps.googleusercontent.com' // iOS client
+      : null,
+  serverClientId:
+      '943019607563-jnuk83jvn36jpq1il30mtackaff3jfhk.apps.googleusercontent.com', // Web client (tipo 3)
+);
 // En AuthService.dart
 
   Future<Map<String, dynamic>> register({
@@ -111,38 +112,74 @@ class AuthService {
       throw AuthException('Error inesperado al iniciar sesión con Google');
     }
   }
+ Future<bool> sendTokenToBackend(String firebaseToken, String provider) async {
+  try {
+    final endpoint = provider == 'google' ? 'google-login' : 'facebook-login';
+    final url = '$baseUrl/$endpoint';
+    
+    debugPrint('====================================');
+    debugPrint('🔵 ENVIANDO TOKEN AL BACKEND');
+    debugPrint('🔵 URL COMPLETA: $url');
+    debugPrint('🔵 Provider: $provider');
+    debugPrint('🔵 Token (primeros 50 chars): ${firebaseToken.substring(0, firebaseToken.length > 50 ? 50 : firebaseToken.length)}...');
+    debugPrint('====================================');
+    
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: json.encode({'id_token': firebaseToken}),
+    );
 
-  Future<bool> sendTokenToBackend(String firebaseToken, String provider) async {
-    try {
-      final endpoint = provider == 'google' ? 'google-login' : 'facebook-login';
-      final response = await http.post(
-        Uri.parse('$baseUrl/$endpoint'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'id_token': firebaseToken}),
-      );
+    debugPrint('====================================');
+    debugPrint('🟢 RESPUESTA DEL BACKEND');
+    debugPrint('🟢 Status code: ${response.statusCode}');
+    debugPrint('🟢 Content-Type: ${response.headers['content-type']}');
+    debugPrint('🟢 Body (primeros 300 chars): ${response.body.substring(0, response.body.length > 300 ? 300 : response.body.length)}');
+    debugPrint('====================================');
 
-      final data = json.decode(response.body);
-
-      if (response.statusCode == 200) {
-        await _storage.saveToken(data['token']);
-
-        if (data['user'] != null) {
-          await _storage.saveUser(frutia.User.fromJson(data['user']));
-        }
-        return true;
-      } else {
-        String errorMessage =
-            data['message'] ?? 'Error en autenticación con Google';
-        if (data['errors'] != null) {
-          errorMessage = data['errors'].values.first[0];
-        }
-        throw AuthException(errorMessage);
-      }
-    } catch (e) {
-      debugPrint('Error en _sendTokenToBackend: $e');
-      throw AuthException(e.toString());
+    // Verifica que sea JSON antes de decodificar
+    if (response.headers['content-type']?.contains('application/json') != true) {
+      debugPrint('❌ ERROR: El servidor NO devolvió JSON');
+      debugPrint('❌ Devolvió: ${response.headers['content-type']}');
+      throw AuthException('El servidor devolvió HTML en lugar de JSON. Verifica que la URL sea correcta y que el backend esté funcionando.');
     }
+
+    final data = json.decode(response.body);
+
+    if (response.statusCode == 200) {
+      debugPrint('✅ Token validado correctamente');
+      await _storage.saveToken(data['token']);
+      debugPrint('✅ Token guardado en storage');
+
+      if (data['user'] != null) {
+        await _storage.saveUser(frutia.User.fromJson(data['user']));
+        debugPrint('✅ Usuario guardado: ${data['user']['name']}');
+      }
+      return true;
+    } else {
+      debugPrint('❌ Error del backend: ${response.statusCode}');
+      String errorMessage =
+          data['message'] ?? 'Error en autenticación con Google';
+      if (data['errors'] != null) {
+        errorMessage = data['errors'].values.first[0];
+      }
+      throw AuthException(errorMessage);
+    }
+  } on FormatException catch (e) {
+    debugPrint('❌ FormatException: No se pudo parsear JSON');
+    debugPrint('❌ Error: $e');
+    throw AuthException('Respuesta inválida del servidor (HTML en lugar de JSON)');
+  } catch (e) {
+    debugPrint('❌ Error inesperado en sendTokenToBackend');
+    debugPrint('❌ Tipo: ${e.runtimeType}');
+    debugPrint('❌ Error: $e');
+    if (e is AuthException) rethrow;
+    throw AuthException('Error al comunicarse con el servidor: $e');
   }
+}
 
 
 Future<Map<String, dynamic>> login(String email, String password) async {

@@ -1,6 +1,7 @@
 // lib/pages/screens/home/HomePage.dart
 import 'package:Frutia/pages/screens/SessionControl/SessionControlPanel.dart';
 import 'package:Frutia/pages/screens/createSession/CreateSessionFlow.dart';
+import 'package:Frutia/services/2vs2/HistoryService.dart';
 import 'package:Frutia/services/2vs2/SessionService.dart';
 import 'package:Frutia/services/storage_service.dart';
 import 'package:Frutia/utils/CustomDrawer.dart';
@@ -26,6 +27,7 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> _activeSessions = [];
   List<dynamic> _recentSessions = [];
   bool _isLoading = true;
+  List<dynamic> _completedSessions = [];
 
   @override
   void initState() {
@@ -34,13 +36,11 @@ class _HomePageState extends State<HomePage> {
     _loadData();
   }
 
-
-@override
-void didChangeDependencies() {
-  super.didChangeDependencies();
-  // Esto se llama cada vez que regresas a esta pantalla
-  _loadData();
-}
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadData();
+  }
 
   Future<void> _loadUserData() async {
     try {
@@ -80,9 +80,12 @@ void didChangeDependencies() {
         return dateComparison;
       });
 
+      final completedSessions = await HistoryService.getHistory();
+
       setState(() {
         _activeSessions = activeSessions;
         _recentSessions = activeSessions;
+        _completedSessions = completedSessions;
         _isLoading = false;
       });
     } catch (e) {
@@ -195,24 +198,22 @@ void didChangeDependencies() {
           ),
         ),
         leadingWidth: 40,
-        title: Image.asset(
-          'assets/icons/LogoAppWorkana.png',
-          height: 59,
-          fit: BoxFit.contain,
+        title: Text(
+          'Dashboard',
+          style: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
         ),
-        titleSpacing: 0,
+        titleSpacing: 16,
         actions: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 120),
-              child: Text(
-                'Session Manager', // 👈 Tu texto aquí
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
-                ),
-              ),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Image.asset(
+              'assets/icons/LogoAppWorkana.png',
+              height: 50,
+              fit: BoxFit.contain,
             ),
           ),
         ],
@@ -233,10 +234,6 @@ void didChangeDependencies() {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildWelcomeHeader2(),
-                    const SizedBox(height: 10),
-                    Divider(thickness: 1, color: Colors.black.withOpacity(0.1)),
-                    const SizedBox(height: 24),
                     _buildWelcomeHeader(),
                     const SizedBox(height: 24),
                     _buildAccountSummary(),
@@ -250,32 +247,6 @@ void didChangeDependencies() {
               ),
             ),
     );
-  }
-
-  Widget _buildWelcomeHeader2() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Row(
-        children: [
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Create & Manage your Open Play Sessions.",
-                  style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: const Color.fromARGB(255, 62, 87, 22),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.2);
   }
 
   Widget _buildWelcomeHeader() {
@@ -333,7 +304,7 @@ void didChangeDependencies() {
                 Text(
                   _userName,
                   style: GoogleFonts.poppins(
-                    fontSize: 22,
+                    fontSize: 26,
                     fontWeight: FontWeight.bold,
                     color: FrutiaColors.primaryText,
                   ),
@@ -346,95 +317,185 @@ void didChangeDependencies() {
     ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.2);
   }
 
-  Widget _buildAccountSummary() {
-    int activeSessions = _activeSessions.length;
-    int totalPlayers = 0;
+Widget _buildAccountSummary() {
+  int activeSessions = _activeSessions.length;
+  int completedSessions = _completedSessions.length;
+  int totalPlayers = 0;
 
-    for (var session in _activeSessions) {
-      totalPlayers += (session['number_of_players'] as int? ?? 0);
-    }
+  for (var session in _activeSessions) {
+    totalPlayers += (session['number_of_players'] as int? ?? 0);
+  }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20.0),
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Account Summary',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: FrutiaColors.primaryText,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16), // ← Reducido horizontal padding
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                FrutiaColors.primary,
+                FrutiaColors.primary.withOpacity(0.9)
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: FrutiaColors.primary.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildSummaryItem(
+                icon: Icons.check_circle_outline,
+                value: completedSessions.toString(),
+                label: 'Completed',
+              ),
+              Container(height: 40, width: 1, color: Colors.white30),
+              _buildSummaryItem(
+                icon: Icons.play_circle_outline,
+                value: activeSessions.toString(),
+                label: 'In Progress',
+              ),
+              Container(height: 40, width: 1, color: Colors.white30),
+              _buildSummaryItem(
+                icon: Icons.group_outlined,
+                value: totalPlayers.toString(),
+                label: 'Participants', // ← Cambiado de 'Total Participants'
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
+}
+
+Widget _buildSummaryItem({
+  required IconData icon,
+  required String value,
+  required String label,
+}) {
+  return Row(
+    children: [
+      Icon(icon, color: Colors.white70, size: 22), // ← Icono ligeramente más pequeño
+      const SizedBox(width: 6), // ← Reducido de 8 a 6
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 18, // ← Reducido de 20 a 18
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          Text(
+            label,
+            style: GoogleFonts.lato(
+              fontSize: 10, // ← Reducido de 11 a 10
+              color: Colors.white70,
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
+Widget _buildPrimaryActionButton({
+  required IconData icon,
+  required String title,
+  required String subtitle,
+  required List<Color> gradientColors,
+  required VoidCallback onTap,
+}) {
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(16),
+    child: Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [FrutiaColors.primary, FrutiaColors.primary.withOpacity(0.9)],
+          colors: gradientColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: FrutiaColors.primary.withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: gradientColors[0].withOpacity(0.4),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            'Account Summary',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 30), // ← Reducido de 32 a 30
+          ),
+          const SizedBox(width: 14), // ← Reducido de 16 a 14
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 18, // ← Reducido de 20 a 18
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.lato(
+                    fontSize: 13, // ← Reducido de 14 a 13
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildSummaryItem(
-                icon: Icons.check_circle_outline,
-                value: '0',
-                label: 'Completed',
-              ),
-              Container(height: 50, width: 1, color: Colors.white30),
-              _buildSummaryItem(
-                icon: Icons.play_circle_outline,
-                value: activeSessions.toString(),
-                label: 'In Progress',
-              ),
-              Container(height: 50, width: 1, color: Colors.white30),
-              _buildSummaryItem(
-                icon: Icons.group_outlined,
-                value: totalPlayers.toString(),
-                label: 'Players',
-              ),
-            ],
-          ),
+          const SizedBox(width: 8), // ← Agregado espacio antes de la flecha
+          const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18), // ← Reducido de 20 a 18
         ],
       ),
-    ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
-  }
+    ),
+  );
+}
 
-  Widget _buildSummaryItem({
-    required IconData icon,
-    required String value,
-    required String label,
-  }) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white70, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.lato(fontSize: 11, color: Colors.white70),
-        ),
-      ],
-    );
-  }
+ 
 
   Widget _buildMainActions() {
     return Padding(
@@ -443,7 +504,7 @@ void didChangeDependencies() {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'New Sessions',
+            'New Session',
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -454,7 +515,7 @@ void didChangeDependencies() {
           _buildPrimaryActionButton(
             icon: Icons.add_circle,
             title: 'Create New Session',
-            subtitle: 'Start a new Optimized or playoff',
+            subtitle: 'Tap here to start a new Open Play session.',
             gradientColors: [
               FrutiaColors.success,
               FrutiaColors.success.withOpacity(0.8)
@@ -477,75 +538,7 @@ void didChangeDependencies() {
     ).animate().fadeIn(delay: 400.ms);
   }
 
-  Widget _buildPrimaryActionButton({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required List<Color> gradientColors,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: gradientColors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: gradientColors[0].withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: Colors.white, size: 32),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.lato(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSecondaryActionButton({
+   Widget _buildSecondaryActionButton({
     required IconData icon,
     required String title,
     required Color color,
@@ -728,8 +721,9 @@ void didChangeDependencies() {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                'Type: '+ getSessionTypeName(
-                                    session['session_type'] ?? ''),
+                                'Type: ' +
+                                    getSessionTypeName(
+                                        session['session_type'] ?? ''),
                                 style: GoogleFonts.lato(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
