@@ -85,12 +85,12 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Number of Courts
+            // Number of Courts - QUITADO LÍMITE MÁXIMO
             _buildNumberSelector(
               label: 'Number of Courts',
               value: widget.sessionData.numberOfCourts,
               min: 1,
-              max: 4,
+              max: 10, // Aumentado para permitir más pruebas
               icon: Icons.sports_tennis,
               onChanged: (value) {
                 setState(() {
@@ -100,12 +100,12 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               },
             ),
 
-            // Duration
+            // Duration - QUITADO LÍMITE MÁXIMO
             _buildNumberSelector(
               label: 'Duration (Hours)',
               value: widget.sessionData.durationHours,
               min: 1,
-              max: 3,
+              max: 10, // Aumentado para permitir más pruebas
               icon: Icons.timer,
               onChanged: (value) {
                 setState(() {
@@ -114,12 +114,12 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               },
             ),
 
-            // Number of Players
+            // Number of Players - QUITADO LÍMITE BASADO EN CANCHAS
             _buildNumberSelector(
               label: 'Number of Players',
               value: widget.sessionData.numberOfPlayers,
-              min: widget.sessionData.numberOfCourts * 4,
-              max: widget.sessionData.numberOfCourts * 8,
+              min: 2, // Mínimo absoluto
+              max: 50, // Máximo alto para pruebas
               icon: Icons.group,
               onChanged: (value) {
                 setState(() {
@@ -219,14 +219,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
   }
 
   void _updatePlayerLimits() {
-    final minPlayers = widget.sessionData.numberOfCourts * 4;
-    final maxPlayers = widget.sessionData.numberOfCourts * 8;
-
-    if (widget.sessionData.numberOfPlayers < minPlayers) {
-      widget.sessionData.numberOfPlayers = minPlayers;
-    } else if (widget.sessionData.numberOfPlayers > maxPlayers) {
-      widget.sessionData.numberOfPlayers = maxPlayers;
-    }
+    // QUITADA LA LÓGICA QUE LIMITABA JUGADORES BASADO EN CANCHAS
+    // Ahora los jugadores pueden ser cualquier número entre min y max
   }
 
   Widget _buildNumberSelector({

@@ -21,7 +21,9 @@ static Future<Map<String, String>> getAuthHeaders() async {
 
  
 
- static Future<void> generatePlayoffBracket(int sessionId) async {
+// REEMPLAZAR los métodos existentes en SessionService.dart
+// REEMPLAZAR los métodos existentes en SessionService.dart
+static Future<void> generatePlayoffBracket(int sessionId) async {
   print('[SessionService] Generando bracket de playoffs para sesión: $sessionId');
   final token = await _storage.getToken();
   
@@ -39,7 +41,10 @@ static Future<Map<String, String>> getAuthHeaders() async {
       },
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode == 200) {
+      print('[SessionService] Bracket de playoffs generado exitosamente');
+      return;
+    } else {
       final errorBody = json.decode(response.body);
       throw Exception(errorBody['message'] ?? 'Error al generar bracket.');
     }
@@ -49,8 +54,42 @@ static Future<Map<String, String>> getAuthHeaders() async {
   }
 }
 
-static Future<void> advanceStage(int sessionId) async {
-  print('[SessionService] Avanzando stage para sesión: $sessionId');
+
+
+static Future<void> generateP8Finals(int sessionId) async {
+  print('[SessionService] Generating P8 finals for session: $sessionId');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('User not authenticated.');
+  }
+
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/sessions/$sessionId/generate-p8-finals'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('[SessionService] P8 finals generated successfully');
+      return;
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Error generating finals.');
+    }
+  } catch (e) {
+    print('[SessionService] Exception: $e');
+    throw Exception('Connection error: $e');
+  }
+}
+
+
+static Future<void> advanceToNextStage(int sessionId) async {
+  print('[SessionService] Avanzando al siguiente stage para sesión: $sessionId');
   final token = await _storage.getToken();
   
   if (token == null) {
@@ -67,9 +106,12 @@ static Future<void> advanceStage(int sessionId) async {
       },
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode == 200) {
+      print('[SessionService] Stage avanzado exitosamente');
+      return;
+    } else {
       final errorBody = json.decode(response.body);
-      throw Exception(errorBody['message'] ?? 'Error al avanzar stage.');
+      throw Exception(errorBody['message'] ?? 'Error al avanzar al siguiente stage.');
     }
   } catch (e) {
     print('[SessionService] Excepción: $e');
@@ -77,6 +119,37 @@ static Future<void> advanceStage(int sessionId) async {
   }
 }
 
+// AGREGAR método para verificar si se puede avanzar
+static Future<Map<String, dynamic>> canAdvanceStage(int sessionId) async {
+  print('[SessionService] Verificando si se puede avanzar para sesión: $sessionId');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('Usuario no autenticado.');
+  }
+
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/sessions/$sessionId/can-advance'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error al verificar avance.');
+    }
+  } catch (e) {
+    print('[SessionService] Excepción: $e');
+    throw Exception('Error de conexión: $e');
+  }
+}
+
+  
 
 // Método para espectadores (sin autenticación)
 static Future<List<dynamic>> getPublicActiveSessions() async {

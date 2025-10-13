@@ -96,12 +96,12 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
 
           const SizedBox(height: 32),
 
-          // Navigation buttons - CORREGIDOS para misma altura
+          // Navigation buttons - UNIFICADOS
           Row(
             children: [
               Expanded(
                 child: SizedBox(
-                  height: 56, // Altura fija para ambos botones
+                  height: 56,
                   child: OutlinedButton(
                     onPressed: widget.onBack,
                     style: OutlinedButton.styleFrom(
@@ -115,7 +115,7 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
                       'Back: Session Type',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
-                        fontSize: 10,
+                        fontSize: 12, // ← aumentado para igualar estilo
                         fontWeight: FontWeight.w600,
                         color: FrutiaColors.primary,
                       ),
@@ -127,11 +127,12 @@ class _CourtDetailsScreenState extends State<CourtDetailsScreen> {
               Expanded(
                 flex: 2,
                 child: SizedBox(
-                  height: 56, // Misma altura fija
+                  height: 56,
                   child: ElevatedButton(
                     onPressed: widget.onNext,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: FrutiaColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

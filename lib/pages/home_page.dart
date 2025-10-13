@@ -28,6 +28,7 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> _recentSessions = [];
   bool _isLoading = true;
   List<dynamic> _completedSessions = [];
+  bool _isCompletedExpanded = false; // Estado del dropdown
 
   @override
   void initState() {
@@ -164,9 +165,9 @@ class _HomePageState extends State<HomePage> {
                   ),
                   trailing: Icon(Icons.arrow_forward_ios,
                       size: 16, color: FrutiaColors.primary),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(context);
-                    Navigator.push(
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => SessionControlPanel(
@@ -174,6 +175,10 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     );
+
+                    if (result == true && mounted) {
+                      _loadData();
+                    }
                   },
                 );
               }).toList(),
@@ -241,6 +246,8 @@ class _HomePageState extends State<HomePage> {
                     _buildMainActions(),
                     const SizedBox(height: 28),
                     _buildRecentSessions(),
+                    const SizedBox(height: 28),
+                    _buildCompletedSessions(), // Nueva sección
                     const SizedBox(height: 100),
                   ],
                 ).animate().fadeIn(duration: 500.ms),
@@ -317,185 +324,183 @@ class _HomePageState extends State<HomePage> {
     ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.2);
   }
 
-Widget _buildAccountSummary() {
-  int activeSessions = _activeSessions.length;
-  int completedSessions = _completedSessions.length;
-  int totalPlayers = 0;
+  Widget _buildAccountSummary() {
+    int activeSessions = _activeSessions.length;
+    int completedSessions = _completedSessions.length;
+    int totalPlayers = 0;
 
-  for (var session in _activeSessions) {
-    totalPlayers += (session['number_of_players'] as int? ?? 0);
-  }
+    for (var session in _activeSessions) {
+      totalPlayers += (session['number_of_players'] as int? ?? 0);
+    }
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Account Summary',
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: FrutiaColors.primaryText,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16), // ← Reducido horizontal padding
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                FrutiaColors.primary,
-                FrutiaColors.primary.withOpacity(0.9)
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: FrutiaColors.primary.withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildSummaryItem(
-                icon: Icons.check_circle_outline,
-                value: completedSessions.toString(),
-                label: 'Completed',
-              ),
-              Container(height: 40, width: 1, color: Colors.white30),
-              _buildSummaryItem(
-                icon: Icons.play_circle_outline,
-                value: activeSessions.toString(),
-                label: 'In Progress',
-              ),
-              Container(height: 40, width: 1, color: Colors.white30),
-              _buildSummaryItem(
-                icon: Icons.group_outlined,
-                value: totalPlayers.toString(),
-                label: 'Participants', // ← Cambiado de 'Total Participants'
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
-}
-
-Widget _buildSummaryItem({
-  required IconData icon,
-  required String value,
-  required String label,
-}) {
-  return Row(
-    children: [
-      Icon(icon, color: Colors.white70, size: 22), // ← Icono ligeramente más pequeño
-      const SizedBox(width: 6), // ← Reducido de 8 a 6
-      Column(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            value,
+            'Account Summary',
             style: GoogleFonts.poppins(
-              fontSize: 18, // ← Reducido de 20 a 18
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: FrutiaColors.primaryText,
             ),
           ),
-          Text(
-            label,
-            style: GoogleFonts.lato(
-              fontSize: 10, // ← Reducido de 11 a 10
-              color: Colors.white70,
-            ),
-          ),
-        ],
-      ),
-    ],
-  );
-}
-
-Widget _buildPrimaryActionButton({
-  required IconData icon,
-  required String title,
-  required String subtitle,
-  required List<Color> gradientColors,
-  required VoidCallback onTap,
-}) {
-  return InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(16),
-    child: Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: gradientColors,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: gradientColors[0].withOpacity(0.4),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
+          const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: Colors.white, size: 30), // ← Reducido de 32 a 30
-          ),
-          const SizedBox(width: 14), // ← Reducido de 16 a 14
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 18, // ← Reducido de 20 a 18
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+              gradient: LinearGradient(
+                colors: [
+                  FrutiaColors.primary,
+                  FrutiaColors.primary.withOpacity(0.9)
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: FrutiaColors.primary.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.lato(
-                    fontSize: 13, // ← Reducido de 14 a 13
-                    color: Colors.white.withOpacity(0.9),
-                  ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildSummaryItem(
+                  icon: Icons.check_circle_outline,
+                  value: completedSessions.toString(),
+                  label: 'Completed',
+                ),
+                Container(height: 40, width: 1, color: Colors.white30),
+                _buildSummaryItem(
+                  icon: Icons.play_circle_outline,
+                  value: activeSessions.toString(),
+                  label: 'In Progress',
+                ),
+                Container(height: 40, width: 1, color: Colors.white30),
+                _buildSummaryItem(
+                  icon: Icons.group_outlined,
+                  value: totalPlayers.toString(),
+                  label: 'Participants',
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8), // ← Agregado espacio antes de la flecha
-          const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18), // ← Reducido de 20 a 18
         ],
       ),
-    ),
-  );
-}
+    ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
+  }
 
- 
+  Widget _buildSummaryItem({
+    required IconData icon,
+    required String value,
+    required String label,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.white70, size: 22),
+        const SizedBox(width: 6),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              label,
+              style: GoogleFonts.lato(
+                fontSize: 10,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPrimaryActionButton({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required List<Color> gradientColors,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: gradientColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: gradientColors[0].withOpacity(0.4),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: Colors.white, size: 30),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.lato(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildMainActions() {
     return Padding(
@@ -538,7 +543,7 @@ Widget _buildPrimaryActionButton({
     ).animate().fadeIn(delay: 400.ms);
   }
 
-   Widget _buildSecondaryActionButton({
+  Widget _buildSecondaryActionButton({
     required IconData icon,
     required String title,
     required Color color,
@@ -622,6 +627,202 @@ Widget _buildPrimaryActionButton({
     ).animate().fadeIn(delay: 500.ms);
   }
 
+  // Nueva sección de Completed Sessions
+  Widget _buildCompletedSessions() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isCompletedExpanded = !_isCompletedExpanded;
+              });
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Completed Sessions',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: FrutiaColors.primaryText,
+                  ),
+                ),
+                Icon(
+                  _isCompletedExpanded
+                      ? Icons.keyboard_arrow_up
+                      : Icons.keyboard_arrow_down,
+                  color: FrutiaColors.primaryText,
+                ),
+              ],
+            ),
+          ),
+          if (_isCompletedExpanded) ...[
+            const SizedBox(height: 12),
+            if (_completedSessions.isEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(40.0),
+                  child: Column(
+                    children: [
+                      Icon(Icons.check_circle_outline,
+                          size: 64, color: FrutiaColors.disabledText),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No completed sessions',
+                        style: GoogleFonts.lato(
+                          fontSize: 16,
+                          color: FrutiaColors.secondaryText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ..._completedSessions
+                  .map((session) => _buildCompletedSessionCard(session))
+                  .toList(),
+          ],
+        ],
+      ),
+    ).animate().fadeIn(delay: 600.ms);
+  }
+
+  // Card compacto para sesiones completadas
+  Widget _buildCompletedSessionCard(Map<String, dynamic> session) {
+    String getSessionTypeAbbreviation(String type) {
+      switch (type) {
+        case 'T':
+          return 'Opt';
+        case 'P4':
+          return 'P4';
+        case 'P8':
+          return 'P8';
+        default:
+          return 'S';
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: FrutiaColors.primaryBackground,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.08),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SessionControlPanel(
+                sessionId: session['id'],
+              ),
+            ),
+          );
+
+          if (result == true && mounted) {
+            _loadData();
+          }
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  session['session_name'] ?? 'No name',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: FrutiaColors.primaryText,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Row(
+                children: [
+                  Icon(Icons.group_outlined,
+                      size: 14, color: FrutiaColors.secondaryText),
+                  const SizedBox(width: 3),
+                  Text(
+                    '${session['number_of_players']}',
+                    style: GoogleFonts.lato(
+                      fontSize: 12,
+                      color: FrutiaColors.secondaryText,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 10),
+            Row(
+  children: [
+    Image.asset(
+      'assets/icons/cancha_home.png', // Ruta de tu icono en assets
+      width: 14, // Tamaño similar al icono anterior
+      height: 14,
+     ),
+    const SizedBox(width: 3),
+    Text(
+      '${session['number_of_courts']}',
+      style: GoogleFonts.lato(
+        fontSize: 12,
+        color: FrutiaColors.secondaryText,
+      ),
+    ),
+  ],
+),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: FrutiaColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  getSessionTypeAbbreviation(session['session_type'] ?? ''),
+                  style: GoogleFonts.lato(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: FrutiaColors.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Row(
+                children: [
+                  Icon(Icons.calendar_today,
+                      size: 12, color: FrutiaColors.secondaryText),
+                  const SizedBox(width: 3),
+                  Text(
+                    _formatDateCompact(session['completed_at']),
+                    style: GoogleFonts.lato(
+                      fontSize: 11,
+                      color: FrutiaColors.secondaryText,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSessionCard(Map<String, dynamic> session) {
     String status = session['status'] ?? 'pending';
     Color statusColor;
@@ -672,14 +873,19 @@ Widget _buildPrimaryActionButton({
         ],
       ),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  SessionControlPanel(sessionId: session['id']),
+              builder: (context) => SessionControlPanel(
+                sessionId: session['id'],
+              ),
             ),
           );
+
+          if (result == true && mounted) {
+            _loadData();
+          }
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -749,15 +955,20 @@ Widget _buildPrimaryActionButton({
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _buildSessionInfoChip(
+                  _buildSessionInfoChipWithIcon(
                     Icons.group_outlined,
                     '${session['number_of_players']} Players',
                   ),
                   const SizedBox(width: 12),
-                  _buildSessionInfoChip(
-                    Icons.sports_tennis,
-                    '${session['number_of_courts']} Court${session['number_of_courts'] > 1 ? 's' : ''}',
-                  ),
+                _buildSessionInfoChip(
+  Image.asset(
+    'assets/icons/cancha_home.png',
+    width: 16,
+    height: 16,
+   ),
+  '${session['number_of_courts']} Court${session['number_of_courts'] > 1 ? 's' : ''}',
+),
+
                   const Spacer(),
                   Text(
                     statusText,
@@ -811,21 +1022,41 @@ Widget _buildPrimaryActionButton({
     );
   }
 
-  Widget _buildSessionInfoChip(IconData icon, String label) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: FrutiaColors.secondaryText),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: GoogleFonts.lato(
-            fontSize: 12,
-            color: FrutiaColors.secondaryText,
-          ),
+Widget _buildSessionInfoChip(Widget icon, String label) {
+  return Row(
+    children: [
+      icon,
+      const SizedBox(width: 4),
+      Text(
+        label,
+        style: GoogleFonts.lato(
+          fontSize: 12,
+          color: FrutiaColors.secondaryText,
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
+
+
+// Función para iconos (IconData) - MANTÉN ESTA
+Widget _buildSessionInfoChipWithIcon(IconData icon, String label) {
+  return Row(
+    children: [
+      Icon(icon, size: 16, color: FrutiaColors.secondaryText),
+      const SizedBox(width: 4),
+      Text(
+        label,
+        style: GoogleFonts.lato(
+          fontSize: 12,
+          color: FrutiaColors.secondaryText,
+        ),
+      ),
+    ],
+  );
+}
+
+
 
   String _formatDate(dynamic date) {
     if (date == null) return 'Date not available';
@@ -834,6 +1065,16 @@ Widget _buildPrimaryActionButton({
       return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     } catch (e) {
       return 'Invalid date';
+    }
+  }
+
+  String _formatDateCompact(dynamic date) {
+    if (date == null) return 'N/A';
+    try {
+      final DateTime dateTime = DateTime.parse(date.toString());
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year.toString().substring(2)}';
+    } catch (e) {
+      return 'N/A';
     }
   }
 }

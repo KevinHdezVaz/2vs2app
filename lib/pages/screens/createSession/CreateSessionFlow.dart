@@ -197,8 +197,9 @@ Future<void> _handleStartSession() async {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Session started successfully!'),
+        content: Text('Session started successfully!', style: TextStyle(fontSize: 17)),
         backgroundColor: Colors.green,
+
         duration: Duration(seconds: 2),
       ),
     );

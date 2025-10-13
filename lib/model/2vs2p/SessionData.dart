@@ -20,12 +20,14 @@ class SessionData {
   // Jugadores
   List<PlayerData> players = [];
 
-  void initializeCourts() {
-    courtNames = List.generate(
-      numberOfCourts,
-      (index) => 'Court ${String.fromCharCode(65 + index)}', // A, B, C, D
-    );
-  }
+void initializeCourts() {
+  courtNames = List.generate(
+    numberOfCourts,
+    (index) => 'Court ${index + 1}', // Court 1, Court 2, Court 3...
+  );
+}
+
+
 
   void initializePlayers() {
     players = List.generate(

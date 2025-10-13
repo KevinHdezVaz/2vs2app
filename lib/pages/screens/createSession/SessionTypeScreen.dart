@@ -67,7 +67,7 @@ _buildSessionTypeCard('T'),
           ),
         ),
         child: Text(
-          'Back: Session Detail',
+          'Back: Session Details',
           textAlign: TextAlign.center,  // ← Agrega esto
           style: GoogleFonts.poppins(
             fontSize: 12,

@@ -1,6 +1,3 @@
-
-
-
 // lib/pages/screens/sessionControl/widgets/ScoreEntryDialog.dart
 import 'package:Frutia/services/2vs2/SessionService.dart';
 import 'package:Frutia/utils/colors.dart';
@@ -8,20 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-
 class ScoreEntryDialog extends StatefulWidget {
   final Map<String, dynamic> game;
   final Map<String, dynamic> session;
   final VoidCallback onScoreSubmitted;
-  final bool isEditing; // ← Agregar esta línea
+  final bool isEditing;
 
   const ScoreEntryDialog({
     super.key,
     required this.game,
     required this.session,
     required this.onScoreSubmitted,
-    this.isEditing = false, // ← Agregar esta línea
+    this.isEditing = false,
   });
+
   @override
   State<ScoreEntryDialog> createState() => _ScoreEntryDialogState();
 }
@@ -32,19 +29,15 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
   bool _isSubmitting = false;
   String? _errorMessage;
 
-
-
-
-
-@override
-void initState() {
-  super.initState();
-  // Pre-fill scores if editing
-  if (widget.isEditing) {
-    _team1Controller.text = widget.game['team1_score']?.toString() ?? '';
-    _team2Controller.text = widget.game['team2_score']?.toString() ?? '';
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isEditing) {
+      _team1Controller.text = widget.game['team1_score']?.toString() ?? '';
+      _team2Controller.text = widget.game['team2_score']?.toString() ?? '';
+    }
   }
-}
+
   @override
   void dispose() {
     _team1Controller.dispose();
@@ -64,6 +57,17 @@ void initState() {
       return false;
     }
 
+    final pointsPerGame = widget.session['points_per_game'] as int;
+    final winBy = widget.session['win_by'] as int;
+
+    // ✅ VALIDACIÓN 1: No se puede exceder el puntaje máximo configurado
+    if (team1Score > pointsPerGame || team2Score > pointsPerGame) {
+      setState(() {
+        _errorMessage = 'Games are to $pointsPerGame points.';
+      });
+      return false;
+    }
+
     // No ties allowed
     if (team1Score == team2Score) {
       setState(() {
@@ -71,9 +75,6 @@ void initState() {
       });
       return false;
     }
-
-    final pointsPerGame = widget.session['points_per_game'] as int;
-    final winBy = widget.session['win_by'] as int;
 
     final winnerScore = team1Score > team2Score ? team1Score : team2Score;
     final loserScore = team1Score > team2Score ? team2Score : team1Score;
@@ -100,55 +101,55 @@ void initState() {
     return true;
   }
 
-Future<void> _submitScore() async {
-  if (!_isScoreValid()) return;
-
-  setState(() {
-    _isSubmitting = true;
-  });
-
-  try {
-    final team1Score = int.parse(_team1Controller.text);
-    final team2Score = int.parse(_team2Controller.text);
-
-    // Usar updateScore si está editando, submitScore si es nuevo
-    if (widget.isEditing) {
-      await GameService.updateScore(
-        widget.game['id'],
-        team1Score,
-        team2Score,
-      );
-    } else {
-      await GameService.submitScore(
-        widget.game['id'],
-        team1Score,
-        team2Score,
-      );
-    }
-
-    if (!mounted) return;
-
-    Navigator.pop(context);
-    widget.onScoreSubmitted();
-
-  ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          widget.isEditing ? 'Score updated successfully' : 'Score registered successfully!',
-          style: TextStyle(fontSize: 18), // Increased font size
-        ),
-        backgroundColor: Colors.green,
-      ),
-);
-  } catch (e) {
-    print('[ScoreEntryDialog] Error: $e');
+  Future<void> _submitScore() async {
+    if (!_isScoreValid()) return;
 
     setState(() {
-      _isSubmitting = false;
-      _errorMessage = 'Error ${widget.isEditing ? 'updating' : 'registering'}: ${e.toString()}';
+      _isSubmitting = true;
     });
+
+    try {
+      final team1Score = int.parse(_team1Controller.text);
+      final team2Score = int.parse(_team2Controller.text);
+
+      if (widget.isEditing) {
+        await GameService.updateScore(
+          widget.game['id'],
+          team1Score,
+          team2Score,
+        );
+      } else {
+        await GameService.submitScore(
+          widget.game['id'],
+          team1Score,
+          team2Score,
+        );
+      }
+
+      if (!mounted) return;
+
+      Navigator.pop(context);
+      widget.onScoreSubmitted();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.isEditing ? 'Score updated successfully' : 'Score registered successfully!',
+            style: TextStyle(fontSize: 18),
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      print('[ScoreEntryDialog] Error: $e');
+
+      setState(() {
+        _isSubmitting = false;
+        _errorMessage = 'Error ${widget.isEditing ? 'updating' : 'registering'}: ${e.toString()}';
+      });
+    }
   }
-}
+
   Widget _buildTeamRow({
     required String player1Name,
     required String player2Name,
@@ -223,7 +224,7 @@ Future<void> _submitScore() async {
                 filled: true,
                 fillColor: FrutiaColors.primaryBackground,
               ),
-              onChanged: (_) => _isScoreValid(),
+              // ✅ ELIMINADO: onChanged que validaba en tiempo real
             ),
           ),
         ],
@@ -251,8 +252,7 @@ Future<void> _submitScore() async {
             children: [
               // Title
               Text(
-                 widget.isEditing ? 'Edit Score' : 'Submit Score',  // ← AQUÍ cambia esta línea
-
+                widget.isEditing ? 'Edit Score' : 'Submit Score',
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -358,7 +358,7 @@ Future<void> _submitScore() async {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: (_isScoreValid() && !_isSubmitting) ? _submitScore : null,
+                      onPressed: !_isSubmitting ? _submitScore : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: FrutiaColors.primary,
                         disabledBackgroundColor: FrutiaColors.tertiaryBackground,
@@ -377,7 +377,7 @@ Future<void> _submitScore() async {
                               ),
                             )
                           : Text(
-        widget.isEditing ? 'Update' : 'Submit',  // ← AQUÍ cambia esta línea
+                              widget.isEditing ? 'Update' : 'Submit',
                               style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,

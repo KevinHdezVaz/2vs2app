@@ -235,7 +235,7 @@ Future<Map<String, dynamic>> login(String email, String password) async {
       return data;
     } else {
       print('❌ Login fallido: ${data['message']}');
-      throw AuthException(data['message'] ?? 'Credenciales inválidas.');
+      throw AuthException(data['message'] ?? 'Invalid credentials.');
     }
   } on SocketException catch (e) {
     print('❌ SocketException: $e');

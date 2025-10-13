@@ -156,7 +156,7 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                       'Back: Court Details',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: FrutiaColors.primary,
                       ),
@@ -178,11 +178,13 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      elevation: 4, // ← Más sombra al botón
+                      shadowColor: FrutiaColors.accent.withOpacity(0.4), // ← Color de sombra
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.play_arrow, color: Colors.white),
+                        const Icon(Icons.play_arrow, color: Colors.white, size: 28), // ← Icono más grande (28)
                         const SizedBox(width: 8),
                         Text(
                           'Start Session',
@@ -234,6 +236,7 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
       ),
     ).animate().fadeIn(duration: 300.ms);
   }
+
 Widget _buildPlayerRow(int index) {
   final player = widget.sessionData.players[index];
 
@@ -264,21 +267,30 @@ Widget _buildPlayerRow(int index) {
             ),
             const SizedBox(width: 12),
 
-            // First Name - CORREGIDO: agregado textCapitalization
+            // First Name - CAMBIADO: Initial Caps en lugar de ALL CAPS
             Expanded(
               child: TextFormField(
                 controller: _firstNameControllers[index],
-                textCapitalization: TextCapitalization.characters, // ← Esto activa el auto-caps
+                textCapitalization: TextCapitalization.words, // ← Cambiado de .characters a .words
                 decoration: InputDecoration(
                   labelText: 'First Name',
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFFDDE5DC)), // ← Borde más sutil
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFFDDE5DC)), // ← Borde más sutil
+                  ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
                   ),
                   labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
                 style: GoogleFonts.lato(color: FrutiaColors.primaryText),
                 onChanged: (value) {
@@ -290,22 +302,31 @@ Widget _buildPlayerRow(int index) {
             ),
             const SizedBox(width: 12),
 
-            // Last Name (ya tiene textCapitalization.characters)
+            // Last Name - CAMBIADO: Initial Caps en lugar de ALL CAPS
             Expanded(
               child: TextFormField(
                 controller: _lastInitialControllers[index],
-                textCapitalization: TextCapitalization.characters,
+                textCapitalization: TextCapitalization.words, // ← Cambiado de .characters a .words
                 decoration: InputDecoration(
                   labelText: 'Last Name',
                   counterText: '',
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFFDDE5DC)), // ← Borde más sutil
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Color(0xFFDDE5DC)), // ← Borde más sutil
+                  ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
                   ),
                   labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
                 style: GoogleFonts.lato(color: FrutiaColors.primaryText),
                 onChanged: (value) {
