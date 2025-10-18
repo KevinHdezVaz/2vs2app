@@ -45,61 +45,121 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     super.dispose();
   }
 
-  bool _isScoreValid() {
-    if (_team1Controller.text.isEmpty || _team2Controller.text.isEmpty) {
-      return false;
+
+bool _isScoreValid() {
+  if (_team1Controller.text.isEmpty || _team2Controller.text.isEmpty) {
+    return false;
+  }
+
+  final team1Score = int.tryParse(_team1Controller.text);
+  final team2Score = int.tryParse(_team2Controller.text);
+
+  if (team1Score == null || team2Score == null) {
+    return false;
+  }
+
+  final pointsPerGame = widget.session['points_per_game'] as int;
+  final winBy = widget.session['win_by'] as int;
+
+  // ✅ No empates
+  if (team1Score == team2Score) {
+    setState(() {
+      _errorMessage = 'Ties are not allowed';
+    });
+    return false;
+  }
+
+  final winnerScore = team1Score > team2Score ? team1Score : team2Score;
+  final loserScore = team1Score > team2Score ? team2Score : team1Score;
+  final scoreDiff = winnerScore - loserScore;
+
+  // ✅ VALIDACIÓN PARA "WIN BY 2"
+  if (winBy == 2) {
+    // CASO A: Ganador tiene exactamente pointsPerGame puntos (juego normal)
+    if (winnerScore == pointsPerGame) {
+      // El perdedor debe tener (pointsPerGame - 2) puntos o menos
+      if (loserScore > pointsPerGame - 2) {
+        setState(() {
+          _errorMessage = 'With winner at $pointsPerGame, loser cannot have more than ${pointsPerGame - 2} points';
+        });
+        return false;
+      }
     }
-
-    final team1Score = int.tryParse(_team1Controller.text);
-    final team2Score = int.tryParse(_team2Controller.text);
-
-    if (team1Score == null || team2Score == null) {
-      return false;
+    // CASO B: Ganador tiene más de pointsPerGame puntos (juego extendido)
+    else if (winnerScore > pointsPerGame) {
+      // 1. El perdedor debe tener al menos (pointsPerGame - 1) puntos
+      if (loserScore < pointsPerGame - 1) {
+        setState(() {
+          _errorMessage = 'With winner above $pointsPerGame, loser must have at least ${pointsPerGame - 1} points';
+        });
+        return false;
+      }
+      
+      // 2. Debe haber diferencia de exactamente 2 puntos
+      if (scoreDiff != 2) {
+        setState(() {
+          _errorMessage = 'With scores above $pointsPerGame, must win by exactly 2 points';
+        });
+        return false;
+      }
+      
+      // 3. Límite máximo razonable: pointsPerGame + 10
+      if (winnerScore > pointsPerGame + 10) {
+        setState(() {
+          _errorMessage = 'Score too high. Maximum allowed is ${pointsPerGame + 10} points';
+        });
+        return false;
+      }
     }
-
-    final pointsPerGame = widget.session['points_per_game'] as int;
-    final winBy = widget.session['win_by'] as int;
-
-    // ✅ VALIDACIÓN 1: No se puede exceder el puntaje máximo configurado
-    if (team1Score > pointsPerGame || team2Score > pointsPerGame) {
+    // CASO C: Ganador tiene menos de pointsPerGame puntos - INVÁLIDO
+    else {
       setState(() {
-        _errorMessage = 'Games are to $pointsPerGame points.';
+        _errorMessage = 'Winner must have at least $pointsPerGame points';
       });
       return false;
     }
+  }
 
-    // No ties allowed
-    if (team1Score == team2Score) {
-      setState(() {
-        _errorMessage = 'Ties are not allowed';
-      });
-      return false;
-    }
-
-    final winnerScore = team1Score > team2Score ? team1Score : team2Score;
-    final loserScore = team1Score > team2Score ? team2Score : team1Score;
-
-    // Winner must reach minimum points
+  // ✅ VALIDACIÓN PARA "WIN BY 1"
+  if (winBy == 1) {
+    // 1. Ganador debe tener al menos pointsPerGame puntos
     if (winnerScore < pointsPerGame) {
       setState(() {
         _errorMessage = 'Winner must have at least $pointsPerGame points';
       });
       return false;
     }
-
-    // Verify win-by margin
-    if ((winnerScore - loserScore) < winBy) {
+    
+    // 2. Debe ganar por al menos 1 punto
+    if (scoreDiff < 1) {
       setState(() {
-        _errorMessage = 'Must win by at least $winBy point${winBy > 1 ? 's' : ''}';
+        _errorMessage = 'Must win by at least 1 point';
       });
       return false;
     }
-
-    setState(() {
-      _errorMessage = null;
-    });
-    return true;
+    
+    // 3. Si ganador tiene exactamente pointsPerGame, perdedor máximo (pointsPerGame - 1)
+    if (winnerScore == pointsPerGame && loserScore >= pointsPerGame) {
+      setState(() {
+        _errorMessage = 'With winner at $pointsPerGame, loser cannot have $pointsPerGame or more points';
+      });
+      return false;
+    }
+    
+    // 4. Límite máximo razonable
+    if (winnerScore > pointsPerGame + 10) {
+      setState(() {
+        _errorMessage = 'Score too high. Maximum allowed is ${pointsPerGame + 10} points';
+      });
+      return false;
+    }
   }
+
+  setState(() {
+    _errorMessage = null;
+  });
+  return true;
+}
 
   Future<void> _submitScore() async {
     if (!_isScoreValid()) return;

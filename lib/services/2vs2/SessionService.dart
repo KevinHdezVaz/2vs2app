@@ -56,6 +56,40 @@ static Future<void> generatePlayoffBracket(int sessionId) async {
 
 
 
+
+
+  static Future<Map<String, dynamic>> finalizeSession(int sessionId) async {
+  print('[SessionService] Finalizing session: $sessionId');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('User not authenticated.');
+  }
+
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/sessions/$sessionId/finalize'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('[SessionService] Session finalized successfully');
+      return json.decode(response.body);
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Error finalizing session.');
+    }
+  } catch (e) {
+    print('[SessionService] Exception: $e');
+    throw Exception('Connection error: $e');
+  }
+}
+
+
 static Future<void> generateP8Finals(int sessionId) async {
   print('[SessionService] Generating P8 finals for session: $sessionId');
   final token = await _storage.getToken();
@@ -98,7 +132,7 @@ static Future<void> advanceToNextStage(int sessionId) async {
 
   try {
     final response = await http.post(
-      Uri.parse('$baseUrl/sessions/$sessionId/advance-stage'),
+Uri.parse('$baseUrl/sessions/$sessionId/advance-to-next-stage') ,
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -208,7 +242,7 @@ static Future<List<dynamic>> getPublicGamesByStatus(int sessionId, String status
       final data = json.decode(response.body);
       return data['games'] ?? [];
     } else {
-      throw Exception('Error al obtener juegos.');
+      throw Exception('Error, recharge the view.');
     }
   } catch (e) {
     throw Exception('Error de conexión: $e');
@@ -229,7 +263,7 @@ static Future<List<dynamic>> getPublicPlayerStats(int sessionId) async {
       final data = json.decode(response.body);
       return data['players'] ?? [];
     } else {
-      throw Exception('Error al obtener estadísticas.');
+        throw Exception('Error, please recharge the view.');
     }
   } catch (e) {
     throw Exception('Error de conexión: $e');
@@ -327,6 +361,35 @@ static Future<List<dynamic>> getPublicPlayerStats(int sessionId) async {
   }
 }
   
+  static Future<Map<String, dynamic>> getPrimaryActiveGame(int sessionId) async {
+  print('[SessionService] Getting primary active game for session: $sessionId');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('User not authenticated.');
+  }
+
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/sessions/$sessionId/primary-active-game'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error getting primary active game.');
+    }
+  } catch (e) {
+    print('[SessionService] Exception: $e');
+    throw Exception('Connection error: $e');
+  }
+}
+
   
   static Future<Map<String, dynamic>> startSession(int sessionId) async {
   print('[SessionService] Starting session with ID: $sessionId');
@@ -453,7 +516,7 @@ static Future<List<dynamic>> getPublicPlayerStats(int sessionId) async {
         final data = json.decode(response.body);
         return data['games'] ?? [];
       } else {
-        throw Exception('Error al obtener juegos.');
+      throw Exception('Error, recharge the view.');
       }
     } catch (e) {
       print('[SessionService] Excepción: $e');
@@ -483,7 +546,7 @@ static Future<List<dynamic>> getPublicPlayerStats(int sessionId) async {
         final data = json.decode(response.body);
         return data['players'] ?? [];
       } else {
-        throw Exception('Error al obtener estadísticas.');
+        throw Exception('Error, please recharge the view.');
       }
     } catch (e) {
       print('[SessionService] Excepción: $e');
@@ -583,7 +646,7 @@ static Future<Map<String, dynamic>> updateScore(
     }
   }
 
-
+ 
 
   static Future<Map<String, dynamic>> startGame(int gameId) async {
     print('[GameService] Iniciando juego ID: $gameId');
@@ -613,6 +676,10 @@ static Future<Map<String, dynamic>> updateScore(
       throw Exception('Error de conexión: $e');
     }
   }
+
+
+ 
+
 static Future<Map<String, dynamic>> submitScore(
   int gameId,
   int team1Score,

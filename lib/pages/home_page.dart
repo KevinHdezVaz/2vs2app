@@ -373,19 +373,19 @@ class _HomePageState extends State<HomePage> {
                 _buildSummaryItem(
                   icon: Icons.check_circle_outline,
                   value: completedSessions.toString(),
-                  label: 'Completed',
+                  label: 'Sessions \nCompleted',
                 ),
                 Container(height: 40, width: 1, color: Colors.white30),
                 _buildSummaryItem(
                   icon: Icons.play_circle_outline,
                   value: activeSessions.toString(),
-                  label: 'In Progress',
+                  label: 'Sessions \nIn Progress',
                 ),
                 Container(height: 40, width: 1, color: Colors.white30),
                 _buildSummaryItem(
                   icon: Icons.group_outlined,
                   value: totalPlayers.toString(),
-                  label: 'Participants',
+                  label: 'Total \nParticipants',
                 ),
               ],
             ),

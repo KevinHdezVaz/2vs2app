@@ -55,35 +55,42 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Session Name
-            TextFormField(
-              controller: _sessionNameController,
-              decoration: InputDecoration(
-                labelText: 'Session Name',
-                hintText: 'e.g., Weekend Optimized',
-                prefixIcon: Icon(Icons.sports_tennis, color: FrutiaColors.primary),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
-                ),
-                labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
-                hintStyle: GoogleFonts.lato(color: FrutiaColors.disabledText),
-              ),
-              style: GoogleFonts.lato(color: FrutiaColors.primaryText),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a session name';
-                }
-                return null;
-              },
-              onChanged: (value) {
-                widget.sessionData.sessionName = value;
-              },
-            ),
-            const SizedBox(height: 20),
+           // Session Name (cambio en TextFormField)
+TextFormField(
+  controller: _sessionNameController,
+  decoration: InputDecoration(
+    labelText: 'Session Name',
+    hintText: 'e.g., Weekend Optimized',
+    prefixIcon: Padding(
+      padding: const EdgeInsets.all(8.0), // Reduce el padding interno
+      child: Image.asset(
+        'assets/icons/raaqueta.png',
+        width: 12, // Tamaño aún más pequeño
+        height: 12,
+        color: FrutiaColors.primary,
+      ),
+    ),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
+    ),
+    labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
+    hintStyle: GoogleFonts.lato(color: FrutiaColors.disabledText),
+  ),
+  style: GoogleFonts.lato(color: FrutiaColors.primaryText),
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a session name';
+    }
+    return null;
+  },
+  onChanged: (value) {
+    widget.sessionData.sessionName = value;
+  },
+),            const SizedBox(height: 20),
 
             // Number of Courts - QUITADO LÍMITE MÁXIMO
             _buildNumberSelector(
@@ -91,7 +98,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               value: widget.sessionData.numberOfCourts,
               min: 1,
               max: 10, // Aumentado para permitir más pruebas
-              icon: Icons.sports_tennis,
+              icon: Icons.sports_tennis, // Este ya no se usa directamente, pero lo mantenemos por si acaso
               onChanged: (value) {
                 setState(() {
                   widget.sessionData.numberOfCourts = value;
@@ -228,9 +235,22 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     required int value,
     required int min,
     required int max,
-    required IconData icon,
+    required IconData icon, // Seguimos recibiendo icon por compatibilidad, pero lo ignoramos para Courts
     required Function(int) onChanged,
   }) {
+    // Determinar si usar imagen personalizada o ícono estándar
+    final bool useCustomIcon = label == 'Number of Courts';
+   final Widget iconWidget = useCustomIcon
+    ? Transform.rotate(
+        angle: 1.5708, // 90 degrees in radians (pi/2) for horizontal rotation
+        child: Image.asset(
+          'assets/icons/padel.png',
+          width: 24,
+          height: 24,
+         ),
+      )
+    : Icon(icon, color: FrutiaColors.primary, size: 24);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -254,7 +274,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                Icon(icon, color: FrutiaColors.primary, size: 24),
+                iconWidget,
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(

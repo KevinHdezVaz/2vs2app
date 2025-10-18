@@ -4,7 +4,7 @@ class SessionData {
   String sessionName = '';
   int numberOfCourts = 1;
   int durationHours = 2;
-  int numberOfPlayers = 4;
+  int numberOfPlayers = 6;
   
   // Configuración del juego
   int pointsPerGame = 11;

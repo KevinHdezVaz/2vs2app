@@ -23,7 +23,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
   bool _isCreating = false;
 
   void _nextPage() {
-    if (_currentPage < 3) {  // Cambiado de 2 a 3 porque ahora hay 4 páginas (0,1,2,3)
+    if (_currentPage < 3) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -61,12 +61,12 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
       ),
       body: Column(
         children: [
-          // Progress indicator - ACTUALIZADO A 4 PASOS
+          // Progress indicator
           Container(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                for (int i = 0; i < 4; i++) ...[  // Cambiado de 3 a 4
+                for (int i = 0; i < 4; i++) ...[
                   Expanded(
                     child: Container(
                       height: 4,
@@ -78,7 +78,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                       ),
                     ),
                   ),
-                  if (i < 3) const SizedBox(width: 8),  // Cambiado de 2 a 3
+                  if (i < 3) const SizedBox(width: 8),
                 ],
               ],
             ),
@@ -94,24 +94,24 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                 });
               },
               children: [
-                // Página 1: Session Details (nombre, canchas, duración, jugadores, settings)
+                // Página 1: Session Details
                 SessionDetailsScreen(
                   sessionData: _sessionData,
                   onNext: _nextPage,
                 ),
-                // Página 2: Session Type (Tournament, Playoff 4, Playoff 8)
+                // Página 2: Session Type
                 SessionTypeScreen(
                   sessionData: _sessionData,
                   onNext: _nextPage, 
                   onBack: _previousPage,
                 ),
-                // Página 3: Court Details (nombres de canchas)
+                // Página 3: Court Details
                 CourtDetailsScreen(
                   sessionData: _sessionData,
                   onNext: _nextPage,
                   onBack: _previousPage,
                 ),
-                // Página 4: Player Details (nombres de jugadores)
+                // Página 4: Player Details
                 PlayerDetailsScreen(
                   sessionData: _sessionData,
                   onBack: _previousPage,
@@ -151,218 +151,211 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
     );
   }
 
-Future<void> _handleStartSession() async {
-  final confirmed = await _showConfirmationDialog();
-  if (!confirmed) return;
+  Future<void> _handleStartSession() async {
+    final confirmed = await _showConfirmationDialog();
+    if (!confirmed) return;
 
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Starting session...', // ← Cambiado de 'Creating session...'
-            style: GoogleFonts.lato(
-              color: Colors.white,
-              fontSize: 16,
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
             ),
-          ),
-        ],
-      ),
-    ),
-  );
-
-  try {
-    print('[CreateSessionFlow] Creating session...');
-
-    final response = await SessionService.createSession(_sessionData.toJson());
-    print('[CreateSessionFlow] Session created: ${response['session']['id']}');
-
-    final sessionId = response['session']['id'];
-
-    print('[CreateSessionFlow] Starting session...');
-    await SessionService.startSession(sessionId);
-    print('[CreateSessionFlow] Session started successfully');
-
-    if (!mounted) return;
-
-    Navigator.of(context).pop(); // Close loading
-    Navigator.of(context).pop(); // Close CreateSessionFlow
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Session started successfully!', style: TextStyle(fontSize: 17)),
-        backgroundColor: Colors.green,
-
-        duration: Duration(seconds: 2),
+            SizedBox(height: 16),
+            Text(
+              'Creating session...',
+              style: GoogleFonts.lato(
+                color: Colors.white,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
       ),
     );
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (context) => SessionControlPanel(sessionId: sessionId),
-      ),
-      (route) => route.isFirst,
-    );
-  } catch (e) {
-    print('[CreateSessionFlow] Error: $e');
+    try {
+      print('[CreateSessionFlow] Creating session...');
 
-    if (!mounted) return;
+      final response = await SessionService.createSession(_sessionData.toJson());
+      print('[CreateSessionFlow] Session created: ${response['session']['id']}');
 
-    Navigator.of(context).pop(); // Close loading
+      final sessionId = response['session']['id'];
 
-    // ✅ MEJORADO: Detectar errores de configuración vs errores generales
-    String errorMessage = e.toString();
-    
-    // Si es un error de template no encontrado o jugadores insuficientes
-    if (errorMessage.contains('configuration has not been created') ||
-        errorMessage.contains('You need at least') ||
-        errorMessage.contains('players for')) {
+      // ✅ ELIMINADO: Ya no llamamos a startSession
+      // La sesión se crea directamente en estado 'active' desde el backend
+      print('[CreateSessionFlow] Session created and ready!');
+
+      if (!mounted) return;
+
+      Navigator.of(context).pop(); // Close loading
+      Navigator.of(context).pop(); // Close CreateSessionFlow
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Session created successfully!', style: TextStyle(fontSize: 17)),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => SessionControlPanel(sessionId: sessionId),
+        ),
+        (route) => route.isFirst,
+      );
+    } catch (e) {
+      print('[CreateSessionFlow] Error: $e');
+
+      if (!mounted) return;
+
+      Navigator.of(context).pop(); // Close loading
+
+      String errorMessage = e.toString();
       
-      // Mostrar diálogo con mensaje más amigable
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.info_outline, color: FrutiaColors.warning, size: 28),
-              SizedBox(width: 12),
-              Expanded(
+      // Si es un error de configuración
+      if (errorMessage.contains('configuration has not been created') ||
+          errorMessage.contains('You need at least') ||
+          errorMessage.contains('players for')) {
+        
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.info_outline, color: FrutiaColors.warning, size: 28),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Configuration Not Available',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              errorMessage.replaceAll('Exception: ', ''),
+              style: GoogleFonts.lato(
+                fontSize: 15,
+                height: 1.5,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
                 child: Text(
-                  'Configuration Not Available',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
+                  'OK',
+                  style: GoogleFonts.lato(
+                    color: FrutiaColors.primary,
                     fontWeight: FontWeight.w600,
+                    fontSize: 16,
                   ),
                 ),
               ),
             ],
           ),
-          content: Text(
-            errorMessage.replaceAll('Exception: ', ''),
-            style: GoogleFonts.lato(
-              fontSize: 15,
-              height: 1.5,
-            ),
+        );
+      } else {
+        // Para otros errores
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error creating session: $errorMessage'),
+            backgroundColor: FrutiaColors.error,
+            duration: const Duration(seconds: 4),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'OK',
-                style: GoogleFonts.lato(
-                  color: FrutiaColors.primary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
+        );
+      }
+    }
+  }
+
+  Future<bool> _showConfirmationDialog() async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.play_circle_outline, color: FrutiaColors.primary, size: 28),
+            SizedBox(width: 12),
+            Text(
+              'Start Session',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: FrutiaColors.primaryText,
               ),
             ),
           ],
         ),
-      );
-    } else {
-      // Para otros errores, mostrar SnackBar normal
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error starting session: $errorMessage'), // ← Cambiado de 'creating' a 'starting'
-          backgroundColor: FrutiaColors.error,
-          duration: const Duration(seconds: 4),
+        content: Text(
+          'All set! Ready to start? Remember that once a Session begins, settings cannot be changed.',
+          style: GoogleFonts.lato(
+            fontSize: 16,
+            color: FrutiaColors.secondaryText,
+            height: 1.5,
+          ),
         ),
-      );
-    }
-  }
-}
-
-Future<bool> _showConfirmationDialog() async {
-  return await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      title: Row(
-        children: [
-          Icon(Icons.play_circle_outline, color: FrutiaColors.primary, size: 28),
-          SizedBox(width: 12),
-          Text(
-            'Start Session',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: FrutiaColors.primaryText,
-            ),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: BorderSide(color: FrutiaColors.primary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Go Back',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: FrutiaColors.primary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FrutiaColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'Start Session',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
-      content: Text(
-        'Are you sure you want to proceed? Most settings cannot be changed once the Session is Live.',
-        style: GoogleFonts.lato(
-          fontSize: 16,
-          color: FrutiaColors.secondaryText,
-          height: 1.5,
-        ),
-      ),
-      actions: [
-        // Botones en la misma fila
-        Row(
-          children: [
-            // Botón "GO BACK" con estilo ghost/outline
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(context, false),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  side: BorderSide(color: FrutiaColors.primary),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  'GO BACK',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primary,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Botón "START SESSION"
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: FrutiaColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  'START SESSION',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  ) ?? false;
+    ) ?? false;
+  }
 }
-
- }
