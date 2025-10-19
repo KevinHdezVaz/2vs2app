@@ -55,7 +55,31 @@ static Future<void> generatePlayoffBracket(int sessionId) async {
 }
 
 
+ static Future<Map<String, dynamic>> findSessionByCode(String code) async {
+    print('[SessionService] Buscando sesión con código: $code');
+    
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/sessions/code/${code.toUpperCase()}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          // NO incluir Authorization - es público
+        },
+      );
 
+      if (response.statusCode == 200) {
+        print('[SessionService] Sesión encontrada exitosamente');
+        return json.decode(response.body);
+      } else {
+        final errorBody = json.decode(response.body);
+        throw Exception(errorBody['message'] ?? 'Session not found or not active');
+      }
+    } catch (e) {
+      print('[SessionService] Error buscando sesión: $e');
+      throw Exception('Session not found or not active');
+    }
+  }
 
 
   static Future<Map<String, dynamic>> finalizeSession(int sessionId) async {

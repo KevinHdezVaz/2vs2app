@@ -2,6 +2,7 @@ import 'package:Frutia/pages/home_page.dart';
 import 'package:Frutia/pages/screens/SessionControl/SessionControlPanel.dart';
 import 'package:Frutia/pages/screens/SessionControl/SpectatorSessionsListPage.dart';
 import 'package:Frutia/services/2vs2/SessionService.dart';
+import 'package:Frutia/utils/SpectatorCodeDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -26,8 +27,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-  clientId: '943019607563-jnuk83jvn36jpq1il30mtackaff3jfhk.apps.googleusercontent.com',
-);
+    clientId:
+        '943019607563-jnuk83jvn36jpq1il30mtackaff3jfhk.apps.googleusercontent.com',
+  );
   final _authService = AuthService();
 
   // Animations
@@ -316,19 +318,20 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                         borderRadius: BorderRadius.circular(30),
                       ),
                       color: Colors.white.withOpacity(0.9),
-                  child: Container(
-                     width: size.width * 0.9,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white,
-                          FrutiaColors.primary.withOpacity(0.05), // Verde muy sutil
-                        ],
-                      ),
-                    ),
+                      child: Container(
+                        width: size.width * 0.9,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.white,
+                              FrutiaColors.primary
+                                  .withOpacity(0.05), // Verde muy sutil
+                            ],
+                          ),
+                        ),
                         padding: EdgeInsets.all(24.0),
                         child: SingleChildScrollView(
                           child: Column(
@@ -541,7 +544,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                               ),
                               SizedBox(height: 20),
-                    
+
                               SlideTransition(
                                 position: _slideAnimation,
                                 child: Container(
@@ -621,74 +624,66 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   ),
                                 ),
                               ),
-                          
+
                               // After the "Sign in with Google" button (line ~448)
                               SizedBox(height: 10),
-
-                              // 🆕 Join as Spectator Button
-                              SlideTransition(
-                                position: _slideAnimation,
-                                child: Container(
-                                  width: size.width * 0.8,
-                                  child: OutlinedButton(
-                                    onPressed: () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              SpectatorSessionsListPage(), // 👈 First to the list
-                                        ),
-                                      );
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      backgroundColor:
-                                          FrutiaColors.warning.withOpacity(0.1),
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 16),
-                                      side: BorderSide(
-                                          color: FrutiaColors.warning,
-                                          width: 1.5),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.remove_red_eye_outlined,
-                                          color: Colors.black,
-                                          size: 24,
-                                        ),
-                                        SizedBox(width: 10),
-                                        Text(
-                                          "Join as Spectator",
-                                          style: GoogleFonts.lato(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-
+ 
+SlideTransition(
+  position: _slideAnimation,
+  child: Container(
+    width: size.width * 0.8,
+    child: OutlinedButton(
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (context) => const SpectatorCodeDialog(),
+        );
+      },
+      style: OutlinedButton.styleFrom(
+        backgroundColor: FrutiaColors.warning.withOpacity(0.1),
+        padding: EdgeInsets.symmetric(vertical: 16),
+        side: BorderSide(color: FrutiaColors.warning, width: 1.5),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.remove_red_eye_outlined,
+            color: Colors.black,
+            size: 24,
+          ),
+          SizedBox(width: 10),
+          Text(
+            "Join as Spectator",
+            style: GoogleFonts.lato(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+),
                               SizedBox(height: 40),
 
                               TextButton(
                                 onPressed: widget.showLoginPage,
-                              child: Text(
-  "Create your account",
-  style: GoogleFonts.lato(
-    fontSize: 18,
-    fontWeight: FontWeight.bold, // ← Cambiado aquí
-    color: FrutiaColors.primary,
-    decoration: TextDecoration.underline,
-    decorationColor: FrutiaColors.primary,
-  ),
-),
+                                child: Text(
+                                  "Create your account",
+                                  style: GoogleFonts.lato(
+                                    fontSize: 18,
+                                    fontWeight:
+                                        FontWeight.bold, // ← Cambiado aquí
+                                    color: FrutiaColors.primary,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: FrutiaColors.primary,
+                                  ),
+                                ),
                               ),
                             ],
                           ),

@@ -395,7 +395,7 @@ class _RegisterPageState extends State<RegisterPage>
                                           labelStyle: TextStyle(
                                               color: FrutiaColors.primaryText),
                                         ),
-                                        initialCountryCode: 'MX',
+                                        initialCountryCode: 'US',
                                         onChanged: (phone) {
                                           setState(() {
                                             _fullPhoneNumber =
@@ -557,58 +557,7 @@ class _RegisterPageState extends State<RegisterPage>
                                         ),
                                       ),
                                     ),
-                                    SizedBox(height: 20),
-
-                                    
-                                    SlideTransition(
-                                      position: _slideAnimation,
-                                      child: Container(
-                                        width: size.width * 0.8,
-                                        child: OutlinedButton(
-                                          onPressed: () => signInWithGoogle(),
-                                          style: OutlinedButton.styleFrom(
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 16),
-                                            side: BorderSide(
-                                                color: FrutiaColors.primary,
-                                                width: 1.5),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Image.asset(
-                                                'assets/icons/google.png',
-                                                height: 24,
-                                                width: 24,
-                                                errorBuilder: (context, error,
-                                                    stackTrace) {
-                                                  return Icon(
-                                                    Icons.account_circle,
-                                                    color: FrutiaColors.primary,
-                                                    size: 24,
-                                                  );
-                                                },
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                "Sign in with Google",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: FrutiaColors.primary,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    
+  
                                   ],
                                 ),
                               ),

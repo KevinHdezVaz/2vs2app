@@ -5,6 +5,7 @@ import 'package:Frutia/services/2vs2/HistoryService.dart';
 import 'package:Frutia/services/2vs2/SessionService.dart';
 import 'package:Frutia/services/storage_service.dart';
 import 'package:Frutia/utils/CustomDrawer.dart';
+import 'package:Frutia/utils/SpectatorCodeDialog.dart';
 import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -59,53 +60,62 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
+Future<void> _loadData() async {
+  if (!mounted) return; // ✅ Verificar ANTES de setState
+  
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    final activeSessions = await SessionService.getActiveSessions();
+
+    activeSessions.sort((a, b) {
+      final dateA = DateTime.parse(a['created_at'] ?? '2000-01-01');
+      final dateB = DateTime.parse(b['created_at'] ?? '2000-01-01');
+      final dateComparison = dateB.compareTo(dateA);
+
+      if (dateComparison == 0) {
+        final progressA = (a['progress_percentage'] ?? 0).toDouble();
+        final progressB = (b['progress_percentage'] ?? 0).toDouble();
+        return progressB.compareTo(progressA);
+      }
+
+      return dateComparison;
     });
 
-    try {
-      final activeSessions = await SessionService.getActiveSessions();
+    final completedSessions = await HistoryService.getHistory();
 
-      activeSessions.sort((a, b) {
-        final dateA = DateTime.parse(a['created_at'] ?? '2000-01-01');
-        final dateB = DateTime.parse(b['created_at'] ?? '2000-01-01');
-        final dateComparison = dateB.compareTo(dateA);
+    // ✅ Verificar ANTES de setState
+    if (!mounted) return;
+    
+    setState(() {
+      _activeSessions = activeSessions;
+      _recentSessions = activeSessions;
+      _completedSessions = completedSessions;
+      _isLoading = false;
+    });
+  } catch (e) {
+    print('[HomePage] Error loading data: $e');
+    
+    // ✅ Verificar ANTES de setState
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoading = false;
+    });
 
-        if (dateComparison == 0) {
-          final progressA = (a['progress_percentage'] ?? 0).toDouble();
-          final progressB = (b['progress_percentage'] ?? 0).toDouble();
-          return progressB.compareTo(progressA);
-        }
-
-        return dateComparison;
-      });
-
-      final completedSessions = await HistoryService.getHistory();
-
-      setState(() {
-        _activeSessions = activeSessions;
-        _recentSessions = activeSessions;
-        _completedSessions = completedSessions;
-        _isLoading = false;
-      });
-    } catch (e) {
-      print('[HomePage] Error loading data: $e');
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading sessions: ${e.toString()}'),
-            backgroundColor: FrutiaColors.error,
-          ),
-        );
-      }
+    // ✅ Verificar ANTES de mostrar SnackBar
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading sessions: ${e.toString()}'),
+          backgroundColor: FrutiaColors.error,
+        ),
+      );
     }
   }
-
+}
   void _showActiveSessionsList() {
     showModalBottomSheet(
       context: context,
@@ -245,6 +255,11 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 28),
                     _buildMainActions(),
                     const SizedBox(height: 28),
+
+                    // En el dashboard, después de "New Session" y antes de "Active Sessions"
+
+ 
+
                     _buildRecentSessions(),
                     const SizedBox(height: 28),
                     _buildCompletedSessions(), // Nueva sección
@@ -502,46 +517,66 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildMainActions() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'New Session',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: FrutiaColors.primaryText,
-            ),
+Widget _buildMainActions() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Actions',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: FrutiaColors.primaryText,
           ),
-          const SizedBox(height: 16),
-          _buildPrimaryActionButton(
-            icon: Icons.add_circle,
-            title: 'Create New Session',
-            subtitle: 'Tap here to start a new Open Play session.',
-            gradientColors: [
-              FrutiaColors.success,
-              FrutiaColors.success.withOpacity(0.8)
-            ],
-            onTap: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const CreateSessionFlow()),
-              );
+        ),
+        const SizedBox(height: 16),
+        
+        // ✅ Botón "Create New Session"
+        _buildPrimaryActionButton(
+          icon: Icons.add_circle,
+          title: 'Create New Session',
+          subtitle: 'Start a new Open Play session',
+          gradientColors: [
+            FrutiaColors.success,
+            FrutiaColors.success.withOpacity(0.8)
+          ],
+          onTap: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const CreateSessionFlow()),
+            );
 
-              if (result == true) {
-                _loadData();
-              }
-            },
-          ),
-          const SizedBox(height: 12),
-        ],
-      ),
-    ).animate().fadeIn(delay: 400.ms);
-  }
+            if (result == true) {
+              _loadData();
+            }
+          },
+        ),
+        
+        const SizedBox(height: 12),
+        
+        // ✅ NUEVO: Botón "Join as Spectator" con mismo estilo
+        _buildPrimaryActionButton(
+          icon: Icons.remove_red_eye,
+          title: 'Join as Spectator',
+          subtitle: 'Watch a live session with a code',
+          gradientColors: [
+            FrutiaColors.warning.withOpacity(0.8),
+            FrutiaColors.warning.withOpacity(0.5)
+          ],
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) => const SpectatorCodeDialog(),
+            );
+          },
+        ),
+      ],
+    ),
+  ).animate().fadeIn(delay: 400.ms);
+}
 
   Widget _buildSecondaryActionButton({
     required IconData icon,
