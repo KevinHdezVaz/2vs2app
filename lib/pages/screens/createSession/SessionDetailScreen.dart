@@ -244,9 +244,11 @@ TextFormField(
     ? Transform.rotate(
         angle: 1.5708, // 90 degrees in radians (pi/2) for horizontal rotation
         child: Image.asset(
-          'assets/icons/padel.png',
+           'assets/icons/padel.png',
           width: 24,
           height: 24,
+          color: FrutiaColors.primary
+
          ),
       )
     : Icon(icon, color: FrutiaColors.primary, size: 24);

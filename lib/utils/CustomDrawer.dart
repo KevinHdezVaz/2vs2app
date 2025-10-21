@@ -1,9 +1,10 @@
 import 'package:Frutia/pages/screens/drawer/HistoryScreen.dart';
 import 'package:Frutia/pages/screens/drawer/PlayersScreen.dart';
+import 'package:Frutia/services/2vs2/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:Frutia/services/storage_service.dart';
-import 'package:Frutia/auth/auth_page_check.dart';
+ import 'package:Frutia/auth/auth_page_check.dart';
 import 'package:Frutia/utils/colors.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -107,7 +108,6 @@ class CustomDrawer extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          // Make the dialog slightly wider
           insetPadding: const EdgeInsets.symmetric(horizontal: 20),
           title: Row(
             children: [
@@ -131,7 +131,7 @@ class CustomDrawer extends StatelessWidget {
                 Text(
                   'PickleBracket is designed to make your Open Play sessions more organized, varied, and fun by taking the stress out of managing matches.',
                   style: GoogleFonts.lato(
-                    fontSize: 14, // Smaller font size
+                    fontSize: 14,
                     color: FrutiaColors.primaryText,
                     height: 1.5,
                   ),
@@ -441,132 +441,263 @@ class CustomDrawer extends StatelessWidget {
     );
   }
 
+  // ✅ MÉTODO ACTUALIZADO CON DATOS REALES
   Future<void> _showYourAccountDialog(BuildContext context) async {
-    final bool? confirmDelete = await showDialog<bool>(
+    // Variables para guardar los datos
+    late String accountCreatedDate;
+    late int sessionsCompleted;
+    late int activeSessions;
+    
+    // Mostrar loading
+    showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: Row(
-            children: [
-              Icon(Icons.account_circle_outlined, color: FrutiaColors.primary, size: 28),
-              const SizedBox(width: 12),
-              Text(
-                'Your Account',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: FrutiaColors.primaryText,
-                ),
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      // Obtener datos reales del usuario
+      final userProfile = await UserService.getUserProfile();
+      
+      // Guardar los datos
+      accountCreatedDate = userProfile['created_at'] ?? 'N/A';
+      sessionsCompleted = userProfile['sessions_completed'] ?? 0;
+      activeSessions = userProfile['active_sessions'] ?? 0;
+      
+      if (!context.mounted) return;
+      
+      // Cerrar loading
+      Navigator.pop(context);
+      
+      // Esperar un frame antes de mostrar el siguiente diálogo
+      await Future.delayed(const Duration(milliseconds: 100));      
+      if (!context.mounted) return;
+
+      final bool? confirmDelete = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+            title: Row(
               children: [
+                Icon(Icons.account_circle_outlined, color: FrutiaColors.primary, size: 28),
+                const SizedBox(width: 12),
                 Text(
-                  'Account Information',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
+                  'Your Account',
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
                     fontWeight: FontWeight.w600,
                     color: FrutiaColors.primaryText,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Name: $userName\nEmail: $userEmail',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Delete Account',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                Text(
-                  'You can delete your account below. This action is permanent and will remove all your account data, including session history.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
                   ),
                 ),
               ],
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.lato(
-                  color: FrutiaColors.disabledText,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Account Information Section
+                  Text(
+                    'Account Information',
+                    style: GoogleFonts.lato(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: FrutiaColors.primaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // Info rows
+                  _buildInfoRow('Name:', userName),
+                  const SizedBox(height: 8),
+                  _buildInfoRow('Email:', userEmail),
+                  const SizedBox(height: 8),
+                  _buildInfoRow('Account Created:', accountCreatedDate),
+                  const SizedBox(height: 8),
+                  _buildInfoRow('Sessions Completed:', sessionsCompleted.toString()),
+                  const SizedBox(height: 8),
+                  _buildInfoRow('Active Sessions:', activeSessions.toString()),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Delete Account Section - Separated with red box
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: FrutiaColors.error,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      color: FrutiaColors.error.withOpacity(0.05),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              color: FrutiaColors.error,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Delete Account',
+                              style: GoogleFonts.lato(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: FrutiaColors.error,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'This action is permanent and will remove all your account data, including session history.',
+                          style: GoogleFonts.lato(
+                            fontSize: 13,
+                            color: FrutiaColors.secondaryText,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        // Delete button - full width
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: FrutiaColors.error,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              'Delete Account',
+                              style: GoogleFonts.lato(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: FrutiaColors.error,
-                shape: RoundedRectangleBorder(
+            actions: [
+              // Single OK button with border
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: FrutiaColors.primary,
+                    width: 1.5,
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
-              ),
-              child: Text(
-                'Delete Account',
-                style: GoogleFonts.lato(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'OK',
+                    style: GoogleFonts.lato(
+                      color: FrutiaColors.primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ],
-        );
-      },
-    );
+            ],
+          );
+        },
+      );
 
-    if (confirmDelete == true && context.mounted) {
-      try {
-        // Assuming a method in StorageService to delete account data
-      //  await StorageService().deleteAccount();
-        if (context.mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const AuthPageCheck()),
-            (route) => false,
-          );
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Account deleted successfully'),
-              backgroundColor: FrutiaColors.primary,
-            ),
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error deleting account: $e'),
-              backgroundColor: FrutiaColors.error,
-            ),
-          );
+      print('🔴 [CustomDrawer] Diálogo cerrado, confirmDelete: $confirmDelete');
+
+      if (confirmDelete == true && context.mounted) {
+        try {
+          // Llamar al servicio real para eliminar la cuenta
+          await UserService.deleteAccount();
+          if (context.mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const AuthPageCheck()),
+              (route) => false,
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Account deleted successfully'),
+                backgroundColor: FrutiaColors.primary,
+              ),
+            );
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error deleting account: $e'),
+                backgroundColor: FrutiaColors.error,
+              ),
+            );
+          }
         }
       }
+    } catch (e) {
+      print('❌ [CustomDrawer] Error: $e');
+      
+      if (!context.mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error loading account information: $e'),
+          backgroundColor: FrutiaColors.error,
+        ),
+      );
     }
+  }
+
+  // ✅ NUEVO HELPER METHOD
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 140,
+          child: Text(
+            label,
+            style: GoogleFonts.lato(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: FrutiaColors.secondaryText,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: GoogleFonts.lato(
+              fontSize: 14,
+              color: FrutiaColors.primaryText,
+              height: 1.3,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -601,9 +732,10 @@ class CustomDrawer extends StatelessWidget {
                   _buildDrawerItem(
                     icon: Icons.account_circle_outlined,
                     title: 'Your Account',
-                    onTap: () {
-                      Navigator.pop(context);
-                      _showYourAccountDialog(context);
+                    onTap: () async {
+                      // ✅ NO cerrar el drawer todavía
+                      // Llamar al método que ahora cerrará el drawer después
+                      await _showYourAccountDialog(context);
                     },
                   ),
                   _buildDrawerItem(
@@ -614,23 +746,22 @@ class CustomDrawer extends StatelessWidget {
                       _showAboutDialog(context);
                     },
                   ),
-                  
-                _buildDrawerItem(
-  icon: Icons.privacy_tip_outlined,
-  title: 'Privacy Policy',
-  onTap: () {
-    Navigator.pop(context);
-    _showPrivacyPolicyDialog(context); // ¡Error! Debería ser _showPrivacyPolicyDialog
-  },
-),
-_buildDrawerItem(
-  icon: Icons.book_outlined,
-  title: 'Terms of Service',
-  onTap: () {
-    Navigator.pop(context);
-    _showTermsOfServiceDialog(context); // ¡Error! Debería ser _showTermsOfServiceDialog
-  },
-),
+                  _buildDrawerItem(
+                    icon: Icons.privacy_tip_outlined,
+                    title: 'Privacy Policy',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showPrivacyPolicyDialog(context);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.book_outlined,
+                    title: 'Terms of Service',
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showTermsOfServiceDialog(context);
+                    },
+                  ),
                 ],
               ),
             ),
