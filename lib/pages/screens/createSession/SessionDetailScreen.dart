@@ -240,18 +240,18 @@ TextFormField(
   }) {
     // Determinar si usar imagen personalizada o ícono estándar
     final bool useCustomIcon = label == 'Number of Courts';
-   final Widget iconWidget = useCustomIcon
-    ? Transform.rotate(
-        angle: 1.5708, // 90 degrees in radians (pi/2) for horizontal rotation
-        child: Image.asset(
-           'assets/icons/padel.png',
-          width: 24,
-          height: 24,
-          color: FrutiaColors.primary
-
-         ),
-      )
-    : Icon(icon, color: FrutiaColors.primary, size: 24);
+ final Widget iconWidget = useCustomIcon
+  ? Transform.rotate(
+      angle: 1.5708,
+      child: Image.asset(
+        'assets/icons/padel.png',
+        width: 24,
+        height: 24,
+        color: FrutiaColors.primary,
+        colorBlendMode: BlendMode.srcIn, // ← Esto es clave
+      ),
+    )
+  : Icon(icon, color: FrutiaColors.primary, size: 24);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),

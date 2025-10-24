@@ -12,6 +12,21 @@ class StorageService {
     await prefs.setString(tokenKey, token);
   }
 
+
+// En storage_service.dart
+
+Future<void> removeUser() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove(userKey);
+}
+
+// ✅ MEJOR AÚN: Método para limpiar todo
+Future<void> clearAll() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.clear(); // Borra TODOS los datos
+  print('🧹 SharedPreferences cleared completely');
+}
+
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString(tokenKey);

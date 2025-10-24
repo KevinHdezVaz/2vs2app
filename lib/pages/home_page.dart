@@ -21,6 +21,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final StorageService _storage = StorageService();
+int _totalUniquePlayers = 0;
 
   String _userName = "Usuario";
   String _userEmail = "";
@@ -60,8 +61,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+// En HomePage.dart - REEMPLAZAR el método _loadData()
+
+// En HomePage.dart - REEMPLAZAR el método _loadData()
+
 Future<void> _loadData() async {
-  if (!mounted) return; // ✅ Verificar ANTES de setState
+  if (!mounted) return;
   
   setState(() {
     _isLoading = true;
@@ -69,43 +74,61 @@ Future<void> _loadData() async {
 
   try {
     final activeSessions = await SessionService.getActiveSessions();
-
+    
     activeSessions.sort((a, b) {
       final dateA = DateTime.parse(a['created_at'] ?? '2000-01-01');
       final dateB = DateTime.parse(b['created_at'] ?? '2000-01-01');
       final dateComparison = dateB.compareTo(dateA);
-
+      
       if (dateComparison == 0) {
         final progressA = (a['progress_percentage'] ?? 0).toDouble();
         final progressB = (b['progress_percentage'] ?? 0).toDouble();
         return progressB.compareTo(progressA);
       }
-
       return dateComparison;
     });
 
     final completedSessions = await HistoryService.getHistory();
 
-    // ✅ Verificar ANTES de setState
-    if (!mounted) return;
+    // ✅ CORRECTO: Sumar jugadores de COMPLETADAS + ACTIVAS
+    int totalParticipants = 0;
     
+    // Sumar jugadores de sesiones completadas
+    for (var session in completedSessions) {
+      totalParticipants += (session['number_of_players'] as int?) ?? 0;
+    }
+    
+    // Sumar jugadores de sesiones activas
+    for (var session in activeSessions) {
+      totalParticipants += (session['number_of_players'] as int?) ?? 0;
+    }
+
+    if (!mounted) return;
+
     setState(() {
       _activeSessions = activeSessions;
       _recentSessions = activeSessions;
       _completedSessions = completedSessions;
+      _totalUniquePlayers = totalParticipants; // ✅ Total de TODAS las sesiones
       _isLoading = false;
     });
+
+    print('[HomePage] 📊 Dashboard Data:');
+    print('   - Active Sessions: ${activeSessions.length}');
+    print('   - Completed Sessions: ${completedSessions.length}');
+    print('   - Total Participants: $totalParticipants');
+    print('   - Breakdown:');
+    print('     • From Active: ${activeSessions.fold(0, (sum, s) => sum + ((s['number_of_players'] as int?) ?? 0))}');
+    print('     • From Completed: ${completedSessions.fold(0, (sum, s) => sum + ((s['number_of_players'] as int?) ?? 0))}');
+
   } catch (e) {
     print('[HomePage] Error loading data: $e');
-    
-    // ✅ Verificar ANTES de setState
     if (!mounted) return;
     
     setState(() {
       _isLoading = false;
     });
 
-    // ✅ Verificar ANTES de mostrar SnackBar
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -116,6 +139,8 @@ Future<void> _loadData() async {
     }
   }
 }
+ 
+
   void _showActiveSessionsList() {
     showModalBottomSheet(
       context: context,
@@ -339,76 +364,73 @@ Future<void> _loadData() async {
     ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.2);
   }
 
-  Widget _buildAccountSummary() {
-    int activeSessions = _activeSessions.length;
-    int completedSessions = _completedSessions.length;
-    int totalPlayers = 0;
 
-    for (var session in _activeSessions) {
-      totalPlayers += (session['number_of_players'] as int? ?? 0);
-    }
+// Modificar _buildAccountSummary() para usar _totalUniquePlayers
+Widget _buildAccountSummary() {
+  int activeSessions = _activeSessions.length;
+  int completedSessions = _completedSessions.length;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Account Summary',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: FrutiaColors.primaryText,
-            ),
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Account Summary',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: FrutiaColors.primaryText,
           ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  FrutiaColors.primary,
-                  FrutiaColors.primary.withOpacity(0.9)
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                FrutiaColors.primary,
+                FrutiaColors.primary.withOpacity(0.9)
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: FrutiaColors.primary.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: FrutiaColors.primary.withOpacity(0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildSummaryItem(
-                  icon: Icons.check_circle_outline,
-                  value: completedSessions.toString(),
-                  label: 'Sessions \nCompleted',
-                ),
-                Container(height: 40, width: 1, color: Colors.white30),
-                _buildSummaryItem(
-                  icon: Icons.play_circle_outline,
-                  value: activeSessions.toString(),
-                  label: 'Sessions \nIn Progress',
-                ),
-                Container(height: 40, width: 1, color: Colors.white30),
-                _buildSummaryItem(
-                  icon: Icons.group_outlined,
-                  value: totalPlayers.toString(),
-                  label: 'Total \nParticipants',
-                ),
-              ],
-            ),
+            ],
           ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
-  }
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildSummaryItem(
+                icon: Icons.check_circle_outline,
+                value: completedSessions.toString(),
+                label: 'Sessions \nCompleted',
+              ),
+              Container(height: 40, width: 1, color: Colors.white30),
+              _buildSummaryItem(
+                icon: Icons.play_circle_outline,
+                value: activeSessions.toString(),
+                label: 'Sessions \nIn Progress',
+              ),
+              Container(height: 40, width: 1, color: Colors.white30),
+              _buildSummaryItem(
+                icon: Icons.group_outlined,
+                value: _totalUniquePlayers.toString(), // ✅ CAMBIO AQUÍ
+                label: 'Total \nParticipants',
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1);
+}
 
   Widget _buildSummaryItem({
     required IconData icon,
@@ -639,8 +661,7 @@ Widget _buildMainActions() {
                 padding: const EdgeInsets.all(40.0),
                 child: Column(
                   children: [
-                    Icon(Icons.sports_tennis,
-                        size: 64, color: FrutiaColors.disabledText),
+                    Image(image:  AssetImage('assets/icons/raaqueta.png'), width: 120, height: 120, opacity: AlwaysStoppedAnimation(0.6),),
                     const SizedBox(height: 16),
                     Text(
                       'No active sessions',

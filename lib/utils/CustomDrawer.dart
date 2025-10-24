@@ -17,88 +17,102 @@ class CustomDrawer extends StatelessWidget {
     this.userEmail = "coordinator@sport.com",
   });
 
-  Future<void> _logout(BuildContext context) async {
-    final bool? confirm = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.logout, color: FrutiaColors.primary),
-              const SizedBox(width: 12),
-              Text(
-                'Log Out',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: FrutiaColors.primaryText,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            'Are you sure you want to log out?',
-            style: GoogleFonts.lato(
-              fontSize: 16,
-              color: FrutiaColors.secondaryText,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.lato(
-                  color: FrutiaColors.disabledText,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: FrutiaColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                'Log Out',
-                style: GoogleFonts.lato(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
+// En custom_drawer.dart - REEMPLAZAR el método _logout
+
+Future<void> _logout(BuildContext context) async {
+  final bool? confirm = await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(Icons.logout, color: FrutiaColors.primary),
+            const SizedBox(width: 12),
+            Text(
+              'Log Out',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: FrutiaColors.primaryText,
               ),
             ),
           ],
-        );
-      },
-    );
-
-    if (confirm == true && context.mounted) {
-      try {
-        await StorageService().removeToken();
-        if (context.mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const AuthPageCheck()),
-            (route) => false,
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error logging out: $e'),
-              backgroundColor: FrutiaColors.error,
+        ),
+        content: Text(
+          'Are you sure you want to log out?',
+          style: GoogleFonts.lato(
+            fontSize: 16,
+            color: FrutiaColors.secondaryText,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.lato(
+                color: FrutiaColors.disabledText,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          );
-        }
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: FrutiaColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Log Out',
+              style: GoogleFonts.lato(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (confirm == true && context.mounted) {
+    try {
+      // ✅ CORREGIDO: Limpiar TODOS los datos
+      final storage = StorageService();
+      
+      // Opción 1: Borrar específicamente token y user
+      await storage.removeToken();
+      await storage.removeUser();
+      
+      // Opción 2 (Recomendada): Limpiar todo
+      // await storage.clearAll();
+      
+      print('🧹 Logout: Token y datos de usuario eliminados');
+
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const AuthPageCheck()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      print('❌ Error logging out: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error logging out: $e'),
+            backgroundColor: FrutiaColors.error,
+          ),
+        );
       }
     }
   }
+}
 
   void _showAboutDialog(BuildContext context) {
     showDialog(
@@ -629,33 +643,41 @@ class CustomDrawer extends StatelessWidget {
 
       print('🔴 [CustomDrawer] Diálogo cerrado, confirmDelete: $confirmDelete');
 
-      if (confirmDelete == true && context.mounted) {
-        try {
-          // Llamar al servicio real para eliminar la cuenta
-          await UserService.deleteAccount();
-          if (context.mounted) {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => const AuthPageCheck()),
-              (route) => false,
-            );
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Account deleted successfully'),
-                backgroundColor: FrutiaColors.primary,
-              ),
-            );
-          }
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Error deleting account: $e'),
-                backgroundColor: FrutiaColors.error,
-              ),
-            );
-          }
-        }
-      }
+      // En custom_drawer.dart - Dentro de _showYourAccountDialog
+
+if (confirmDelete == true && context.mounted) {
+  try {
+    // Llamar al servicio real para eliminar la cuenta
+    await UserService.deleteAccount();
+    
+    // ✅ AGREGAR: Limpiar SharedPreferences
+    await StorageService().clearAll();
+    print('🧹 Account deleted: All data cleared');
+
+    if (context.mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const AuthPageCheck()),
+        (route) => false,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Account deleted successfully'),
+          backgroundColor: FrutiaColors.primary,
+        ),
+      );
+    }
+  } catch (e) {
+    print('❌ Error deleting account: $e');
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting account: $e'),
+          backgroundColor: FrutiaColors.error,
+        ),
+      );
+    }
+  }
+} 
     } catch (e) {
       print('❌ [CustomDrawer] Error: $e');
       
