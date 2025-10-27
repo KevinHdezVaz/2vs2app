@@ -205,6 +205,16 @@ class _SessionControlPanelState extends State<SessionControlPanel>
         if (!isReallySpectator) {
           _checkForStageOrPlayoffCompletion();
         }
+        
+        // ✅ NUEVO: Cambiar al tab "Next" si todos los juegos están ahí
+        if (liveGames.isEmpty && nextGames.isNotEmpty && !silent) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _tabController.index == 0) {
+              _tabController.animateTo(1); // Ir al tab "Next"
+              print('📍 Auto-navegando al tab Next (Live vacío, Next tiene ${nextGames.length} juegos)');
+            }
+          });
+        }
       }
     } catch (e) {
       print('[SessionControlPanel] Error loading session data: $e');
@@ -635,27 +645,43 @@ Widget _buildLiveGamesTab() {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Opacity(
-                  opacity: 0.6,
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.mode(
-                      Colors.grey.shade400,
-                      BlendMode.modulate,
-                    ),
-                    child: Image(
-                      image: AssetImage('assets/icons/raaqueta.png'),
-                      width: 120,
+                // ✅ BOTONES DE ACCIÓN (igual que en Next tab)
+                if (_shouldShowFinalizeButton()) 
+                  _buildFinalizeButton()
+                else if (_shouldShowStartFinalsButton())
+                  _buildStartFinalsButton()
+                else if (_sessionData != null &&
+                    (_sessionData!['session_type'] == 'P4' ||
+                        _sessionData!['session_type'] == 'P8' ||
+                        _sessionData!['session_type'] == 'T') &&
+                    !_shouldShowFinalizeButton() &&
+                    !_shouldShowStartFinalsButton() &&
+                    _nextGames.isEmpty)
+                  _buildAdvanceStageButton()
+                // ✅ ÍCONO Y TEXTO (solo si no hay botones de acción)
+                else ...[
+                  Opacity(
+                    opacity: 0.6,
+                    child: ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        Colors.grey.shade400,
+                        BlendMode.modulate,
+                      ),
+                      child: Image(
+                        image: AssetImage('assets/icons/raaqueta.png'),
+                        width: 120,
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'No active games',
-                  style: GoogleFonts.lato(
-                    fontSize: 16,
-                    color: FrutiaColors.secondaryText,
+                  SizedBox(height: 16),
+                  Text(
+                    'No active games',
+                    style: GoogleFonts.lato(
+                      fontSize: 16,
+                      color: FrutiaColors.secondaryText,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -696,41 +722,34 @@ Widget _buildLiveGamesTab() {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // ✅ PRIORIDAD 1: Botón de finalizar
-                    if (shouldShowFinalizeButton) _buildFinalizeButton(),
-
-                    // ✅ PRIORIDAD 2: Botón de finals (P8)
-                    if (!shouldShowFinalizeButton && shouldShowFinalsButton)
-                      _buildStartFinalsButton(),
-
-                    // ✅ PRIORIDAD 3: Mensaje vacío
-                    if (!shouldShowFinalizeButton &&
-                        !shouldShowFinalsButton) ...[
-                      Icon(Icons.queue,
-                          size: 64, color: FrutiaColors.disabledText),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No games in queue',
-                        style: GoogleFonts.lato(
-                          fontSize: 16,
-                          color: FrutiaColors.secondaryText,
-                        ),
+                    // ✅ BOTONES COMENTADOS: Ahora solo aparecen en Live tab
+                    // if (shouldShowFinalizeButton) _buildFinalizeButton(),
+                    // if (!shouldShowFinalizeButton && shouldShowFinalsButton)
+                    //   _buildStartFinalsButton(),
+                    // if (_sessionData != null &&
+                    //     (_sessionData!['session_type'] == 'P4' ||
+                    //         _sessionData!['session_type'] == 'P8' ||
+                    //         _sessionData!['session_type'] == 'T') &&
+                    //     _liveGames.isEmpty &&
+                    //     !shouldShowFinalsButton &&
+                    //     !shouldShowFinalizeButton &&
+                    //     !shouldShowFinalResults)
+                    //   Padding(
+                    //     padding: const EdgeInsets.only(top: 20),
+                    //     child: _buildAdvanceStageButton(),
+                    //   ),
+                    
+                    // ✅ Solo mostrar mensaje vacío
+                    Icon(Icons.queue,
+                        size: 64, color: FrutiaColors.disabledText),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No games in queue',
+                      style: GoogleFonts.lato(
+                        fontSize: 16,
+                        color: FrutiaColors.secondaryText,
                       ),
-                    ],
-
-                    // ✅ PRIORIDAD 4: Botón de avanzar stage (SOLO si no hay nada más que hacer)
-                    if (_sessionData != null &&
-                        (_sessionData!['session_type'] == 'P4' ||
-                            _sessionData!['session_type'] == 'P8' ||
-                            _sessionData!['session_type'] == 'T') &&
-                        _liveGames.isEmpty &&
-                        !shouldShowFinalsButton &&
-                        !shouldShowFinalizeButton &&
-                        !shouldShowFinalResults)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20),
-                        child: _buildAdvanceStageButton(),
-                      ),
+                    ),
                   ],
                 ),
               ),
@@ -749,30 +768,33 @@ Widget _buildLiveGamesTab() {
             color: FrutiaColors.primary,
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-              itemCount: _nextGames.length +
-                  (shouldShowFinalizeButton ? 1 : 0) +
-                  (shouldShowFinalsButton ? 1 : 0) +
-                  1,
+              itemCount: _nextGames.length,
+              // ✅ COMENTADO: Los botones ahora solo aparecen en Live tab
+              // itemCount: _nextGames.length +
+              //     (shouldShowFinalizeButton ? 1 : 0) +
+              //     (shouldShowFinalsButton ? 1 : 0) +
+              //     1,
               itemBuilder: (context, index) {
-                if (shouldShowFinalizeButton && index == 0) {
-                  return _buildFinalizeButton();
-                }
+                // ✅ COMENTADO: Los botones ahora solo aparecen en Live tab
+                // if (shouldShowFinalizeButton && index == 0) {
+                //   return _buildFinalizeButton();
+                // }
 
-                final finalizeOffset = shouldShowFinalizeButton ? 1 : 0;
+                // final finalizeOffset = shouldShowFinalizeButton ? 1 : 0;
 
-                if (shouldShowFinalsButton &&
-                    index == _nextGames.length + finalizeOffset) {
-                  return _buildStartFinalsButton();
-                }
+                // if (shouldShowFinalsButton &&
+                //     index == _nextGames.length + finalizeOffset) {
+                //   return _buildStartFinalsButton();
+                // }
 
-                if (index ==
-                    _nextGames.length +
-                        finalizeOffset +
-                        (shouldShowFinalsButton ? 1 : 0)) {
-                  return _buildAdvanceStageButton();
-                }
+                // if (index ==
+                //     _nextGames.length +
+                //         finalizeOffset +
+                //         (shouldShowFinalsButton ? 1 : 0)) {
+                //   return _buildAdvanceStageButton();
+                // }
 
-                final gameIndex = index - finalizeOffset;
+                final gameIndex = index;
                 final game = _nextGames[gameIndex];
 
                 // ✅ NUEVA LÓGICA: Determinar si mostrar "Start Game"
@@ -1572,7 +1594,7 @@ Widget _buildTop3Players() {
         children: [
           Row(
             children: [
-              Icon(Icons.emoji_events, color: FrutiaColors.accent, size: 32),
+              Icon(Icons.help_outline, color: FrutiaColors.accent, size: 28),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -1588,7 +1610,7 @@ Widget _buildTop3Players() {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Both semifinals are complete! Generate the Final and Bronze Match.',
+                      'Start Final games based on semifinal results',
                       style: GoogleFonts.lato(
                         fontSize: 14,
                         color: FrutiaColors.secondaryText,
@@ -1610,7 +1632,7 @@ Widget _buildTop3Players() {
             onPressed: () => _showStartFinalsConfirmation(),
             icon: Icon(Icons.emoji_events, color: Colors.white, size: 20),
             label: Text(
-              'Start Finals',
+              'Generate Finals',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -5141,24 +5163,52 @@ Widget _buildTop3Players() {
                           const SizedBox(width: 12),
 
                           // Score or VS
-                          if (isCompleted)
-                            Text(
-                              '${game['team1_score']} - ${game['team2_score']}',
-                              style: GoogleFonts.robotoMono(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: FrutiaColors.primary,
-                              ),
-                            )
-                          else
-                            Text(
-                              'VS',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: FrutiaColors.disabledText,
-                              ),
-                            ),
+                        // Busca el método _buildGameCard y reemplaza la sección de Score (aproximadamente línea 2150)
+
+// Dentro de _buildGameCard, reemplaza esta parte:
+// Score or VS
+if (isCompleted)
+  Column(
+    children: [
+      // Indicador de Best of 3
+      if (_sessionData?['number_of_sets'] == '3') ...[
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: FrutiaColors.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            'Best of 3',
+            style: GoogleFonts.poppins(
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+              color: FrutiaColors.primary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+      ],
+      // Marcador final
+      Text(
+        '${game['team1_score']} - ${game['team2_score']}',
+        style: GoogleFonts.robotoMono(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: FrutiaColors.primary,
+        ),
+      ),
+    ],
+  )
+else
+  Text(
+    'VS',
+    style: GoogleFonts.poppins(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      color: FrutiaColors.disabledText,
+    ),
+  ),
                           const SizedBox(width: 12),
 
                           // Team 2

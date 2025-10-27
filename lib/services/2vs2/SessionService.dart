@@ -312,6 +312,203 @@ static Future<List<dynamic>> getPublicPlayerStats(int sessionId) async {
     }
   }
 
+
+  // AGREGAR ESTOS MÉTODOS AL FINAL DE LA CLASE SessionService
+// EN: lib/services/session_service.dart
+
+  /// Submit score para Best of 1 (original)
+  static Future<Map<String, dynamic>> submitScore(
+    int gameId,
+    int team1Score,
+    int team2Score,
+  ) async {
+    print('[SessionService] Submitting score for game: $gameId');
+    final token = await _storage.getToken();
+    
+    if (token == null) {
+      throw Exception('User not authenticated.');
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/games/$gameId/score'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'team1_score': team1Score,
+          'team2_score': team2Score,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('[SessionService] Score submitted successfully');
+        return json.decode(response.body);
+      } else {
+        final errorBody = json.decode(response.body);
+        throw Exception(errorBody['message'] ?? 'Error submitting score.');
+      }
+    } catch (e) {
+      print('[SessionService] Exception: $e');
+      throw Exception('Connection error: $e');
+    }
+  }
+
+  /// Update score para Best of 1 (original)
+  static Future<Map<String, dynamic>> updateScore(
+    int gameId,
+    int team1Score,
+    int team2Score,
+  ) async {
+    print('[SessionService] Updating score for game: $gameId');
+    final token = await _storage.getToken();
+    
+    if (token == null) {
+      throw Exception('User not authenticated.');
+    }
+
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/games/$gameId/update-score'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'team1_score': team1Score,
+          'team2_score': team2Score,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('[SessionService] Score updated successfully');
+        return json.decode(response.body);
+      } else {
+        final errorBody = json.decode(response.body);
+        throw Exception(errorBody['message'] ?? 'Error updating score.');
+      }
+    } catch (e) {
+      print('[SessionService] Exception: $e');
+      throw Exception('Connection error: $e');
+    }
+  }
+
+  /// ✅ NUEVO: Submit score para Best of 3
+  static Future<Map<String, dynamic>> submitScoreBestOf3(
+    int gameId,
+    int team1TotalScore,
+    int team2TotalScore,
+    int team1Set1Score,
+    int team2Set1Score,
+    int team1Set2Score,
+    int team2Set2Score,
+    int? team1Set3Score,
+    int? team2Set3Score,
+    int team1SetsWon,
+    int team2SetsWon,
+  ) async {
+    print('[SessionService] Submitting Best of 3 score for game: $gameId');
+    final token = await _storage.getToken();
+    
+    if (token == null) {
+      throw Exception('User not authenticated.');
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/games/$gameId/score'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'team1_score': team1TotalScore,
+          'team2_score': team2TotalScore,
+          'team1_set1_score': team1Set1Score,
+          'team2_set1_score': team2Set1Score,
+          'team1_set2_score': team1Set2Score,
+          'team2_set2_score': team2Set2Score,
+          'team1_set3_score': team1Set3Score,
+          'team2_set3_score': team2Set3Score,
+          'team1_sets_won': team1SetsWon,
+          'team2_sets_won': team2SetsWon,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('[SessionService] Best of 3 score submitted successfully');
+        return json.decode(response.body);
+      } else {
+        final errorBody = json.decode(response.body);
+        throw Exception(errorBody['message'] ?? 'Error submitting score.');
+      }
+    } catch (e) {
+      print('[SessionService] Exception: $e');
+      throw Exception('Connection error: $e');
+    }
+  }
+
+  /// ✅ NUEVO: Update score para Best of 3
+  static Future<Map<String, dynamic>> updateScoreBestOf3(
+    int gameId,
+    int team1TotalScore,
+    int team2TotalScore,
+    int team1Set1Score,
+    int team2Set1Score,
+    int team1Set2Score,
+    int team2Set2Score,
+    int? team1Set3Score,
+    int? team2Set3Score,
+    int team1SetsWon,
+    int team2SetsWon,
+  ) async {
+    print('[SessionService] Updating Best of 3 score for game: $gameId');
+    final token = await _storage.getToken();
+    
+    if (token == null) {
+      throw Exception('User not authenticated.');
+    }
+
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/games/$gameId/update-score'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({
+          'team1_score': team1TotalScore,
+          'team2_score': team2TotalScore,
+          'team1_set1_score': team1Set1Score,
+          'team2_set1_score': team2Set1Score,
+          'team1_set2_score': team1Set2Score,
+          'team2_set2_score': team2Set2Score,
+          'team1_set3_score': team1Set3Score,
+          'team2_set3_score': team2Set3Score,
+          'team1_sets_won': team1SetsWon,
+          'team2_sets_won': team2SetsWon,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('[SessionService] Best of 3 score updated successfully');
+        return json.decode(response.body);
+      } else {
+        final errorBody = json.decode(response.body);
+        throw Exception(errorBody['message'] ?? 'Error updating score.');
+      }
+    } catch (e) {
+      print('[SessionService] Exception: $e');
+      throw Exception('Connection error: $e');
+    }
+  }
+  
+
  static Future<Map<String, dynamic>> getSessionRole(int sessionId) async {
     final url = Uri.parse('$baseUrl/sessions/$sessionId/role');
     

@@ -46,59 +46,62 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              'courts, players, and time \nwe’ll handle the matchups!',
-              style: GoogleFonts.lato(
-                fontSize: 16,
-                color: FrutiaColors.secondaryText,
-              ),
-            ),
-            const SizedBox(height: 24),
-
-           // Session Name (cambio en TextFormField)
-TextFormField(
-  controller: _sessionNameController,
-  decoration: InputDecoration(
-    labelText: 'Session Name',
-    hintText: 'e.g., Weekend Optimized',
-    prefixIcon: Padding(
-      padding: const EdgeInsets.all(8.0), // Reduce el padding interno
-      child: Image.asset(
-        'assets/icons/raaqueta.png',
-        width: 12, // Tamaño aún más pequeño
-        height: 12,
-        color: FrutiaColors.primary,
-      ),
-    ),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
-    ),
-    labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
-    hintStyle: GoogleFonts.lato(color: FrutiaColors.disabledText),
+          Text(
+  'courts, players, and time \nwe\'ll handle the matchups!',
+  style: GoogleFonts.lato(
+    fontSize: 16,
+    color: FrutiaColors.secondaryText,
   ),
-  style: GoogleFonts.lato(color: FrutiaColors.primaryText),
-  validator: (value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a session name';
-    }
-    return null;
-  },
-  onChanged: (value) {
-    widget.sessionData.sessionName = value;
-  },
-),            const SizedBox(height: 20),
+),
 
-            // Number of Courts - QUITADO LÍMITE MÁXIMO
+            const SizedBox(height: 24),
+            
+            // Session Name
+            TextFormField(
+              controller: _sessionNameController,
+              decoration: InputDecoration(
+                labelText: 'Session Name',
+                hintText: 'e.g., Weekend Optimized',
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(
+                    'assets/icons/raaqueta.png',
+                    width: 12,
+                    height: 12,
+                    color: FrutiaColors.primary,
+                  ),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
+                ),
+                labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                hintStyle: GoogleFonts.lato(color: FrutiaColors.disabledText),
+              ),
+              style: GoogleFonts.lato(color: FrutiaColors.primaryText),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a session name';
+                }
+                return null;
+              },
+              onChanged: (value) {
+                widget.sessionData.sessionName = value;
+              },
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // Number of Courts
             _buildNumberSelector(
               label: 'Number of Courts',
               value: widget.sessionData.numberOfCourts,
               min: 1,
-              max: 10, // Aumentado para permitir más pruebas
-              icon: Icons.sports_tennis, // Este ya no se usa directamente, pero lo mantenemos por si acaso
+              max: 10,
+              icon: Icons.sports_tennis,
               onChanged: (value) {
                 setState(() {
                   widget.sessionData.numberOfCourts = value;
@@ -106,13 +109,13 @@ TextFormField(
                 });
               },
             ),
-
-            // Duration - QUITADO LÍMITE MÁXIMO
+            
+            // Duration
             _buildNumberSelector(
               label: 'Duration (Hours)',
               value: widget.sessionData.durationHours,
               min: 1,
-              max: 10, // Aumentado para permitir más pruebas
+              max: 10,
               icon: Icons.timer,
               onChanged: (value) {
                 setState(() {
@@ -120,13 +123,13 @@ TextFormField(
                 });
               },
             ),
-
-            // Number of Players - QUITADO LÍMITE BASADO EN CANCHAS
+            
+            // Number of Players
             _buildNumberSelector(
               label: 'Number of Players',
               value: widget.sessionData.numberOfPlayers,
-              min: 2, // Mínimo absoluto
-              max: 50, // Máximo alto para pruebas
+              min: 2,
+              max: 50,
               icon: Icons.group,
               onChanged: (value) {
                 setState(() {
@@ -134,11 +137,11 @@ TextFormField(
                 });
               },
             ),
-
+            
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 24),
-
+            
             Text(
               'Game Settings',
               style: GoogleFonts.poppins(
@@ -148,7 +151,7 @@ TextFormField(
               ),
             ),
             const SizedBox(height: 16),
-
+            
             // Points per Game
             _buildDropdownField(
               label: 'Points per Game',
@@ -161,7 +164,7 @@ TextFormField(
                 });
               },
             ),
-
+            
             // Win By
             _buildDropdownField(
               label: 'Win By',
@@ -174,12 +177,12 @@ TextFormField(
                 });
               },
             ),
-
+            
             // Number of Sets
             _buildDropdownField(
               label: 'Number of Sets',
               value: widget.sessionData.numberOfSets,
-              items: ['1', 'Best of 3', 'Best of 5'],
+              items: ['1', '3'], // ✅ Solo '1' o '3'
               icon: Icons.repeat,
               onChanged: (value) {
                 setState(() {
@@ -187,9 +190,9 @@ TextFormField(
                 });
               },
             ),
-
+            
             const SizedBox(height: 24),
-           
+            
             // Next Button
             SizedBox(
               width: double.infinity,
@@ -227,7 +230,6 @@ TextFormField(
 
   void _updatePlayerLimits() {
     // QUITADA LA LÓGICA QUE LIMITABA JUGADORES BASADO EN CANCHAS
-    // Ahora los jugadores pueden ser cualquier número entre min y max
   }
 
   Widget _buildNumberSelector({
@@ -235,23 +237,22 @@ TextFormField(
     required int value,
     required int min,
     required int max,
-    required IconData icon, // Seguimos recibiendo icon por compatibilidad, pero lo ignoramos para Courts
+    required IconData icon,
     required Function(int) onChanged,
   }) {
-    // Determinar si usar imagen personalizada o ícono estándar
     final bool useCustomIcon = label == 'Number of Courts';
- final Widget iconWidget = useCustomIcon
-  ? Transform.rotate(
-      angle: 1.5708,
-      child: Image.asset(
-        'assets/icons/padel.png',
-        width: 24,
-        height: 24,
-        color: FrutiaColors.primary,
-        colorBlendMode: BlendMode.srcIn, // ← Esto es clave
-      ),
-    )
-  : Icon(icon, color: FrutiaColors.primary, size: 24);
+    final Widget iconWidget = useCustomIcon
+        ? Transform.rotate(
+            angle: 1.5708,
+            child: Image.asset(
+              'assets/icons/padel.png',
+              width: 24,
+              height: 24,
+              color: FrutiaColors.primary,
+              colorBlendMode: BlendMode.srcIn,
+            ),
+          )
+        : Icon(icon, color: FrutiaColors.primary, size: 24);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -291,16 +292,12 @@ TextFormField(
                 Row(
                   children: [
                     IconButton(
-                      onPressed: value > min
-                          ? () => onChanged(value - 1)
-                          : null,
+                      onPressed: value > min ? () => onChanged(value - 1) : null,
                       icon: const Icon(Icons.remove_circle_outline),
                       color: FrutiaColors.primary,
                     ),
                     IconButton(
-                      onPressed: value < max
-                          ? () => onChanged(value + 1)
-                          : null,
+                      onPressed: value < max ? () => onChanged(value + 1) : null,
                       icon: const Icon(Icons.add_circle_outline),
                       color: FrutiaColors.primary,
                     ),
@@ -321,6 +318,14 @@ TextFormField(
     required IconData icon,
     required Function(String?) onChanged,
   }) {
+    // ✅ Función para convertir valores a texto amigable
+    String getDisplayText(String val) {
+      if (label == 'Number of Sets') {
+        return val == '3' ? 'Best of 3' : 'Best of 1';
+      }
+      return val;
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -354,7 +359,7 @@ TextFormField(
                         return DropdownMenuItem(
                           value: item,
                           child: Text(
-                            item,
+                            getDisplayText(item), // ✅ Mostrar texto amigable
                             style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
