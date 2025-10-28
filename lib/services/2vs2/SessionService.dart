@@ -145,6 +145,44 @@ static Future<void> generateP8Finals(int sessionId) async {
   }
 }
 
+/// ✅ NUEVO: Auto-generar finals si están listas
+static Future<Map<String, dynamic>> autoGenerateFinalsIfReady(int sessionId) async {
+  try {
+    final token = await _storage.getToken();
+    if (token == null) {
+      throw Exception('User not authenticated.');
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/sessions/$sessionId/auto-generate-finals'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    print('🤖 Auto-generate finals response: ${response.statusCode}');
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print('✅ Auto-generate response: $data');
+      return data;
+    } else {
+      print('⚠️  Auto-generate returned ${response.statusCode}');
+      return {
+        'auto_generated': false,
+        'message': 'Not ready to generate'
+      };
+    }
+  } catch (e) {
+    print('❌ Error auto-generating finals: $e');
+    return {
+      'auto_generated': false,
+      'error': e.toString()
+    };
+  }
+}
 
 static Future<void> advanceToNextStage(int sessionId) async {
   print('[SessionService] Avanzando al siguiente stage para sesión: $sessionId');

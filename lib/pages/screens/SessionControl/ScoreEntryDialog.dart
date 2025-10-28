@@ -398,45 +398,102 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     return true;
   }
 
-  Future<void> _submitScore() async {
-    if (!_isScoreValid()) return;
+Future<void> _submitScore() async {
+  if (!_isScoreValid()) return;
 
-    setState(() {
-      _isSubmitting = true;
-    });
+  setState(() {
+    _isSubmitting = true;
+  });
 
-    try {
-      if (_isBestOf3()) {
-        // ✅ NUEVO: Submit para Best of 3
-        await _submitBestOf3Score();
-      } else {
-        // Submit para Best of 1 (lógica original)
-        await _submitBestOf1Score();
-      }
-
-      if (!mounted) return;
-
-      Navigator.pop(context);
-      widget.onScoreSubmitted();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            widget.isEditing ? 'Score updated successfully' : 'Score registered successfully!',
-            style: TextStyle(fontSize: 18),
-          ),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      print('[ScoreEntryDialog] Error: $e');
-
-      setState(() {
-        _isSubmitting = false;
-        _errorMessage = 'Error ${widget.isEditing ? 'updating' : 'registering'}: ${e.toString()}';
-      });
+  try {
+    if (_isBestOf3()) {
+      await _submitBestOf3Score();
+    } else {
+      await _submitBestOf1Score();
     }
+
+    if (!mounted) return;
+
+    // ✅ NUEVO: Intentar auto-generar finals si están listas
+    try {
+      final sessionId = widget.session['id'];
+      final autoGenResult = await SessionService.autoGenerateFinalsIfReady(sessionId);
+      
+      if (autoGenResult['auto_generated'] == true) {
+        // ✅ Finals generadas automáticamente
+        final message = autoGenResult['message'] ?? 'Finals created!';
+        
+        print('🎉 Finals auto-generated: $message');
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      message,
+                      style: GoogleFonts.poppins(fontSize: 15),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: FrutiaColors.accent,
+              duration: const Duration(seconds: 4),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } else {
+        // No se generaron finals (normal)
+        print('ℹ️  No finals auto-generated');
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                widget.isEditing ? 'Score updated successfully' : 'Score registered successfully!',
+                style: TextStyle(fontSize: 18),
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('⚠️  Error checking auto-generation: $e');
+      
+      // Mostrar mensaje normal si falla la auto-generación
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              widget.isEditing ? 'Score updated successfully' : 'Score registered successfully!',
+              style: TextStyle(fontSize: 18),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+
+    // Callback to refresh
+    widget.onScoreSubmitted();
+
+    // Close dialog
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  } catch (e) {
+    print('[ScoreEntryDialog] Error: $e');
+    setState(() {
+      _isSubmitting = false;
+      _errorMessage = 'Error ${widget.isEditing ? 'updating' : 'registering'}: ${e.toString()}';
+    });
   }
+}
 
   // Submit para Best of 1 (lógica original)
   Future<void> _submitBestOf1Score() async {

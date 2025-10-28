@@ -63,7 +63,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 labelText: 'Session Name',
                 hintText: 'e.g., Weekend Optimized',
                 prefixIcon: Padding(
-                  padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8), // ← Cambiado aquí
                   child: Image.asset(
                     'assets/icons/raaqueta.png',
                     width: 12,
@@ -232,84 +232,95 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
     // QUITADA LA LÓGICA QUE LIMITABA JUGADORES BASADO EN CANCHAS
   }
 
-  Widget _buildNumberSelector({
-    required String label,
-    required int value,
-    required int min,
-    required int max,
-    required IconData icon,
-    required Function(int) onChanged,
-  }) {
-    final bool useCustomIcon = label == 'Number of Courts';
-    final Widget iconWidget = useCustomIcon
-        ? Transform.rotate(
-            angle: 1.5708,
-            child: Image.asset(
-              'assets/icons/padel.png',
-              width: 24,
-              height: 24,
-              color: FrutiaColors.primary,
-              colorBlendMode: BlendMode.srcIn,
-            ),
-          )
-        : Icon(icon, color: FrutiaColors.primary, size: 24);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.lato(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: FrutiaColors.primaryText,
-            ),
+Widget _buildNumberSelector({
+  required String label,
+  required int value,
+  required int min,
+  required int max,
+  required IconData icon,
+  required Function(int) onChanged,
+}) {
+  final bool useCustomIcon = label == 'Number of Courts';
+  
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.lato(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: FrutiaColors.primaryText,
           ),
-          const SizedBox(height: 8),
-          Container(
-            decoration: BoxDecoration(
-              color: FrutiaColors.primaryBackground,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: FrutiaColors.tertiaryBackground),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                iconWidget,
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    value.toString(),
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: FrutiaColors.primaryText,
-                    ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: FrutiaColors.primaryBackground,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: FrutiaColors.tertiaryBackground),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              // Contenedor con padding derecho para mover el icono a la derecha
+              Container(
+                width: 32,
+                height: 32,
+                alignment: Alignment.center,
+                // Agregar padding a la derecha para mover el icono
+                padding: const EdgeInsets.only(right: 4), // ← Ajusta este valor
+                child: useCustomIcon
+                    ? Image.asset(
+                        'assets/icons/icono_cancha.png',
+                        width: 32,
+                        height: 32,
+                        color: FrutiaColors.primary,
+                        colorBlendMode: BlendMode.srcIn,
+                      )
+                    : Icon(
+                        icon, 
+                        color: FrutiaColors.primary, 
+                        size: 24,
+                      ),
+              ),
+              const SizedBox(width: 12), // Puedes reducir este espacio también
+              Expanded(
+                child: Text(
+                  value.toString(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: FrutiaColors.primaryText,
                   ),
                 ),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: value > min ? () => onChanged(value - 1) : null,
-                      icon: const Icon(Icons.remove_circle_outline),
-                      color: FrutiaColors.primary,
-                    ),
-                    IconButton(
-                      onPressed: value < max ? () => onChanged(value + 1) : null,
-                      icon: const Icon(Icons.add_circle_outline),
-                      color: FrutiaColors.primary,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: value > min ? () => onChanged(value - 1) : null,
+                    icon: const Icon(Icons.remove_circle_outline),
+                    color: FrutiaColors.primary,
+                    iconSize: 24,
+                  ),
+                  IconButton(
+                    onPressed: value < max ? () => onChanged(value + 1) : null,
+                    icon: const Icon(Icons.add_circle_outline),
+                    color: FrutiaColors.primary,
+                    iconSize: 24,
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildDropdownField({
     required String label,

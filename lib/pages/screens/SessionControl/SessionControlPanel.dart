@@ -6,6 +6,7 @@ import 'package:Frutia/services/2vs2/SessionService.dart';
 import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'dart:math';
@@ -198,20 +199,19 @@ class _SessionControlPanelState extends State<SessionControlPanel>
         if (session['status'] == 'completed') {
           _sessionTimer?.cancel();
           _refreshTimer?.cancel();
-
-          
         }
 
         if (!isReallySpectator) {
           _checkForStageOrPlayoffCompletion();
         }
-        
+
         // ✅ NUEVO: Cambiar al tab "Next" si todos los juegos están ahí
         if (liveGames.isEmpty && nextGames.isNotEmpty && !silent) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted && _tabController.index == 0) {
               _tabController.animateTo(1); // Ir al tab "Next"
-              print('📍 Auto-navegando al tab Next (Live vacío, Next tiene ${nextGames.length} juegos)');
+              print(
+                  '📍 Auto-navegando al tab Next (Live vacío, Next tiene ${nextGames.length} juegos)');
             }
           });
         }
@@ -618,35 +618,24 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     );
   }
 
-Widget _buildLiveGamesTab() {
-  final shouldShowFinalResults = _shouldShowFinalResults();
-  
-  // ✅ AGREGAR ESTE DEBUG
-  print('');
-  print('🔍🔍🔍 BUILD LIVE GAMES TAB 🔍🔍🔍');
-  print('shouldShowFinalResults: $shouldShowFinalResults');
-  print('_sessionData: ${_sessionData != null}');
-  print('session status: ${_sessionData?['status']}');
-  print('_liveGames.isEmpty: ${_liveGames.isEmpty}');
-  print('🔍🔍🔍🔍🔍🔍🔍🔍🔍🔍🔍🔍🔍🔍🔍');
-  print('');
+  Widget _buildLiveGamesTab() {
+    final shouldShowFinalResults = _shouldShowFinalResults();
 
-  return Column(
-    children: [
-      // ✅ RESULTADOS FINALES ARRIBA
-      if (shouldShowFinalResults) ...[
-         _buildFinalResultsCard(),
-      ],
-      
-      // ✅ CONTENIDO NORMAL DEL LIVE TAB
-      if (_liveGames.isEmpty && !shouldShowFinalResults)
-        Expanded(
-          child: Center(
+    return Column(
+      children: [
+        // ✅ RESULTADOS FINALES ARRIBA
+        if (shouldShowFinalResults) ...[
+          _buildFinalResultsCard(),
+        ],
+        // ✅ CONTENIDO NORMAL DEL LIVE TAB
+        if (_liveGames.isEmpty && !shouldShowFinalResults)
+          Expanded(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // ✅ BOTONES DE ACCIÓN (igual que en Next tab)
-                if (_shouldShowFinalizeButton()) 
+                // ✅ ESPACIADO SUPERIOR (30% de la altura)
+                Spacer(flex: 12),
+                // ✅ BOTONES DE ACCIÓN (sin ícono de fondo)
+                if (_shouldShowFinalizeButton())
                   _buildFinalizeButton()
                 else if (_shouldShowStartFinalsButton())
                   _buildStartFinalsButton()
@@ -658,7 +647,7 @@ Widget _buildLiveGamesTab() {
                     !_shouldShowStartFinalsButton() &&
                     _nextGames.isEmpty)
                   _buildAdvanceStageButton()
-                // ✅ ÍCONO Y TEXTO (solo si no hay botones de acción)
+                // ✅ ÍCONO Y TEXTO (solo si NO hay botones de acción)
                 else ...[
                   Opacity(
                     opacity: 0.6,
@@ -682,27 +671,29 @@ Widget _buildLiveGamesTab() {
                     ),
                   ),
                 ],
+                // ✅ ESPACIADO INFERIOR (70% de la altura)
+                Spacer(flex: 7),
               ],
             ),
-          ),
-        )
-      else if (_liveGames.isNotEmpty)
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () => _loadSessionData(),
-            color: FrutiaColors.primary,
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-              itemCount: _liveGames.length,
-              itemBuilder: (context, index) {
-                return _buildGameCard(_liveGames[index], isLive: true);
-              },
+          )
+        else if (_liveGames.isNotEmpty)
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () => _loadSessionData(),
+              color: FrutiaColors.primary,
+              child: ListView.builder(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+                itemCount: _liveGames.length,
+                itemBuilder: (context, index) {
+                  return _buildGameCard(_liveGames[index], isLive: true);
+                },
+              ),
             ),
           ),
-        ),
-    ],
-  );
-} 
+      ],
+    );
+  }
+
   Widget _buildNextGamesTab() {
     final shouldShowFinalsButton = _shouldShowStartFinalsButton();
     final shouldShowFinalizeButton = _shouldShowFinalizeButton();
@@ -718,28 +709,26 @@ Widget _buildLiveGamesTab() {
           if (shouldShowFinalResults) _buildFinalResultsCard(),
           if (!shouldShowFinalResults)
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // ✅ BOTONES COMENTADOS: Ahora solo aparecen en Live tab
-                    // if (shouldShowFinalizeButton) _buildFinalizeButton(),
-                    // if (!shouldShowFinalizeButton && shouldShowFinalsButton)
-                    //   _buildStartFinalsButton(),
-                    // if (_sessionData != null &&
-                    //     (_sessionData!['session_type'] == 'P4' ||
-                    //         _sessionData!['session_type'] == 'P8' ||
-                    //         _sessionData!['session_type'] == 'T') &&
-                    //     _liveGames.isEmpty &&
-                    //     !shouldShowFinalsButton &&
-                    //     !shouldShowFinalizeButton &&
-                    //     !shouldShowFinalResults)
-                    //   Padding(
-                    //     padding: const EdgeInsets.only(top: 20),
-                    //     child: _buildAdvanceStageButton(),
-                    //   ),
-                    
-                    // ✅ Solo mostrar mensaje vacío
+              child: Column(
+                children: [
+                  // ✅ ESPACIADO SUPERIOR (30% de la altura)
+                  Spacer(flex: 12),
+                  // ✅ BOTONES DE ACCIÓN (sin ícono de fondo)
+                  if (shouldShowFinalizeButton)
+                    _buildFinalizeButton()
+                  else if (shouldShowFinalsButton)
+                    _buildStartFinalsButton()
+                  else if (_sessionData != null &&
+                      (_sessionData!['session_type'] == 'P4' ||
+                          _sessionData!['session_type'] == 'P8' ||
+                          _sessionData!['session_type'] == 'T') &&
+                      _liveGames.isEmpty &&
+                      !shouldShowFinalsButton &&
+                      !shouldShowFinalizeButton &&
+                      !shouldShowFinalResults)
+                    _buildAdvanceStageButton()
+                  // ✅ ÍCONO Y TEXTO (solo si NO hay botones de acción)
+                  else ...[
                     Icon(Icons.queue,
                         size: 64, color: FrutiaColors.disabledText),
                     const SizedBox(height: 16),
@@ -751,13 +740,14 @@ Widget _buildLiveGamesTab() {
                       ),
                     ),
                   ],
-                ),
+                  // ✅ ESPACIADO INFERIOR (70% de la altura)
+                  Spacer(flex: 7),
+                ],
               ),
             ),
         ],
       );
     }
-
     // ✅ SI HAY NEXT GAMES
     return Column(
       children: [
@@ -768,31 +758,29 @@ Widget _buildLiveGamesTab() {
             color: FrutiaColors.primary,
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-              itemCount: _nextGames.length,
-              // ✅ COMENTADO: Los botones ahora solo aparecen en Live tab
-              // itemCount: _nextGames.length +
-              //     (shouldShowFinalizeButton ? 1 : 0) +
-              //     (shouldShowFinalsButton ? 1 : 0) +
-              //     1,
+              itemCount: _nextGames.length +
+                  (shouldShowFinalizeButton ? 1 : 0) +
+                  (shouldShowFinalsButton ? 1 : 0) +
+                  1,
               itemBuilder: (context, index) {
                 // ✅ COMENTADO: Los botones ahora solo aparecen en Live tab
-                // if (shouldShowFinalizeButton && index == 0) {
-                //   return _buildFinalizeButton();
-                // }
+                if (shouldShowFinalizeButton && index == 0) {
+                  return _buildFinalizeButton();
+                }
 
-                // final finalizeOffset = shouldShowFinalizeButton ? 1 : 0;
+                final finalizeOffset = shouldShowFinalizeButton ? 1 : 0;
 
-                // if (shouldShowFinalsButton &&
-                //     index == _nextGames.length + finalizeOffset) {
-                //   return _buildStartFinalsButton();
-                // }
+                if (shouldShowFinalsButton &&
+                    index == _nextGames.length + finalizeOffset) {
+                  return _buildStartFinalsButton();
+                }
 
-                // if (index ==
-                //     _nextGames.length +
-                //         finalizeOffset +
-                //         (shouldShowFinalsButton ? 1 : 0)) {
-                //   return _buildAdvanceStageButton();
-                // }
+                if (index ==
+                    _nextGames.length +
+                        finalizeOffset +
+                        (shouldShowFinalsButton ? 1 : 0)) {
+                  return _buildAdvanceStageButton();
+                }
 
                 final gameIndex = index;
                 final game = _nextGames[gameIndex];
@@ -816,585 +804,610 @@ Widget _buildLiveGamesTab() {
     );
   }
 
-Widget _buildFinalResultsCard() {
-  final sessionName = _sessionData?['session_name'] ?? 'Session';
-  final numberOfCourts = _sessionData?['number_of_courts'] ?? 0;
-  final numberOfPlayers = _sessionData?['number_of_players'] ?? 0;
-  final duration = _formatTimer(_elapsedSeconds);
-  final sessionType = _sessionData?['session_type'] ?? 'O';
+  Widget _buildFinalResultsCard() {
+    final sessionName = _sessionData?['session_name'] ?? 'Session';
+    final numberOfCourts = _sessionData?['number_of_courts'] ?? 0;
+    final numberOfPlayers = _sessionData?['number_of_players'] ?? 0;
+    final duration = _formatTimer(_elapsedSeconds);
+    final sessionType = _sessionData?['session_type'] ?? 'O';
 
-  // ✅ DETERMINAR QUÉ MOSTRAR según tipo de sesión
-  final isPlayoffSession = sessionType == 'P4' || sessionType == 'P8';
+    // ✅ DETERMINAR QUÉ MOSTRAR según tipo de sesión
+    final isPlayoffSession = sessionType == 'P4' || sessionType == 'P8';
 
-  return Container(
-    margin: const EdgeInsets.only(top: 12, bottom: 12, left: 16, right: 16),
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: FrutiaColors.success.withOpacity(0.3),
-        width: 2,
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.15),
-          blurRadius: 12,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Header
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: FrutiaColors.success.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.emoji_events,
-                color: FrutiaColors.success,
-                size: 26,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Session Complete! 🎉',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: FrutiaColors.primaryText,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Check out the final results for session:',
-                    style: GoogleFonts.lato(
-                      fontSize: 13,
-                      color: FrutiaColors.secondaryText,
-                    ),
-                  ),
-                  Text(
-                    '"$sessionName"',
-                    style: GoogleFonts.lato(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: FrutiaColors.secondaryText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-
-        // Session Summary
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: FrutiaColors.secondaryBackground.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: Colors.grey.withOpacity(0.2),
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildSummaryItem('$numberOfPlayers', 'Players'),
-              _buildSummaryItem('$numberOfCourts', 'Courts'),
-              _buildSummaryItem(duration, 'Duration'),
-              _buildSummaryItem('${_completedGames.length}', 'Games'),
-            ],
-          ),
-        ),
-
-        // ✅ CONTENIDO DINÁMICO según tipo de sesión
-        const SizedBox(height: 14),
-        if (isPlayoffSession)
-          _buildPlayoffWinners(sessionType)
-        else
-          _buildTop3Players(),
-
-        const SizedBox(height: 14),
-
-        // Action Button
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              _tabController.animateTo(3); // Go to Rankings
-            },
-            icon: Icon(Icons.leaderboard, size: 16, color: FrutiaColors.primary),
-            label: Text(
-              'View Rankings',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                color: FrutiaColors.primary,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              side: BorderSide(
-                color: FrutiaColors.primary.withOpacity(0.5),
-                width: 1.5,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
- 
-
-/// ✅ NUEVO: Mostrar ganadores de playoffs (P4/P8)
-Widget _buildPlayoffWinners(String sessionType) {
-  // Obtener juegos de playoff completados
-  final playoffResults = _getPlayoffWinners(sessionType);
-
-  if (playoffResults.isEmpty) {
     return Container(
+      margin: const EdgeInsets.only(top: 12, bottom: 12, left: 16, right: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: FrutiaColors.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        'No playoff results available',
-        textAlign: TextAlign.center,
-        style: GoogleFonts.poppins(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: FrutiaColors.primaryText,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: FrutiaColors.success.withOpacity(0.3),
+          width: 2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: FrutiaColors.success.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.emoji_events,
+                  color: FrutiaColors.success,
+                  size: 26,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Session Complete! 🎉',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: FrutiaColors.primaryText,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Check out the final results for session:',
+                      style: GoogleFonts.lato(
+                        fontSize: 13,
+                        color: FrutiaColors.secondaryText,
+                      ),
+                    ),
+                    Text(
+                      '"$sessionName"',
+                      style: GoogleFonts.lato(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: FrutiaColors.secondaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Session Summary
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: FrutiaColors.secondaryBackground.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Colors.grey.withOpacity(0.2),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildSummaryItem('$numberOfPlayers', 'Players'),
+                _buildSummaryItem('$numberOfCourts', 'Courts'),
+                _buildSummaryItem(duration, 'Duration'),
+                _buildSummaryItem('${_completedGames.length}', 'Games'),
+              ],
+            ),
+          ),
+
+          // ✅ CONTENIDO DINÁMICO según tipo de sesión
+          const SizedBox(height: 14),
+          if (isPlayoffSession)
+            _buildPlayoffWinners(sessionType)
+          else
+            _buildTop3Players(),
+
+          const SizedBox(height: 14),
+
+          // Action Button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                _tabController.animateTo(3); // Go to Rankings
+              },
+              icon: Icon(Icons.leaderboard,
+                  size: 16, color: FrutiaColors.primary),
+              label: Text(
+                'View Rankings',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: FrutiaColors.primary,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                side: BorderSide(
+                  color: FrutiaColors.primary.withOpacity(0.5),
+                  width: 1.5,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'Winners',
-        style: GoogleFonts.poppins(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          color: FrutiaColors.primaryText,
-        ),
-      ),
-      const SizedBox(height: 10),
-      
-      // 🥇 1st Place (Champions)
-      if (playoffResults['champions'] != null)
-        _buildWinnerLine(
-          '🥇',
-          '1st Place',
-          playoffResults['champions'] as List,
-        ),
+  /// ✅ NUEVO: Mostrar ganadores de playoffs (P4/P8)
+  Widget _buildPlayoffWinners(String sessionType) {
+    // Obtener juegos de playoff completados
+    final playoffResults = _getPlayoffWinners(sessionType);
 
-      // 🥈 2nd Place (Runners-up)
-      if (playoffResults['runners_up'] != null) ...[
-        const SizedBox(height: 6),
-        _buildWinnerLine(
-          '🥈',
-          '2nd Place',
-          playoffResults['runners_up'] as List,
+    if (playoffResults.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: FrutiaColors.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
         ),
+        child: Text(
+          'No playoff results available',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: FrutiaColors.primaryText,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Winners',
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: FrutiaColors.primaryText,
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // 🥇 1st Place (Champions)
+        if (playoffResults['champions'] != null)
+          _buildWinnerLine(
+            '🥇',
+            '1st Place',
+            playoffResults['champions'] as List,
+          ),
+
+        // 🥈 2nd Place (Runners-up)
+        if (playoffResults['runners_up'] != null) ...[
+          const SizedBox(height: 6),
+          _buildWinnerLine(
+            '🥈',
+            '2nd Place',
+            playoffResults['runners_up'] as List,
+          ),
+        ],
+
+        // 🥉 3rd Place (solo P8)
+        if (sessionType == 'P8' && playoffResults['third_place'] != null) ...[
+          const SizedBox(height: 6),
+          _buildWinnerLine(
+            '🥉',
+            '3rd Place',
+            playoffResults['third_place'] as List,
+          ),
+        ],
       ],
+    );
+  }
 
-      // 🥉 3rd Place (solo P8)
-      if (sessionType == 'P8' && playoffResults['third_place'] != null) ...[
-        const SizedBox(height: 6),
-        _buildWinnerLine(
-          '🥉',
-          '3rd Place',
-          playoffResults['third_place'] as List,
-        ),
-      ],
-    ],
-  );
-}
+  /// ✅ COMPLETO: Extraer ganadores según tipo de sesión
+  Map<String, List?> _getPlayoffWinners(String sessionType) {
+    Map<String, List?> results = {
+      'champions': null,
+      'runners_up': null,
+      'third_place': null,
+    };
 
-
-/// ✅ COMPLETO: Extraer ganadores según tipo de sesión
-Map<String, List?> _getPlayoffWinners(String sessionType) {
-  Map<String, List?> results = {
-    'champions': null,
-    'runners_up': null,
-    'third_place': null,
-  };
-
-  print('');
-  print('═══════════════════════════════════════');
-  print('🎯 ANALYZING PLAYOFF GAMES');
-  print('═══════════════════════════════════════');
-  print('Session Type: $sessionType');
-  print('Total Completed Games: ${_completedGames.length}');
-  print('Is Special P8: ${_isSpecialP8()}');
-  print('');
-
-  // ✅ PARA OPTIMIZED Y TOURNAMENT: No hay playoffs, retornar vacío
-  // El UI mostrará el top 3 del ranking directamente
-  if (sessionType == 'O' || sessionType == 'T') {
-    print('ℹ️  Session type $sessionType uses ranking-based results (no playoff games)');
+    print('');
     print('═══════════════════════════════════════');
+    print('🎯 ANALYZING PLAYOFF GAMES');
+    print('═══════════════════════════════════════');
+    print('Session Type: $sessionType');
+    print('Total Completed Games: ${_completedGames.length}');
+    print('Is Special P8: ${_isSpecialP8()}');
+    print('');
+
+    // ✅ PARA OPTIMIZED Y TOURNAMENT: No hay playoffs, retornar vacío
+    // El UI mostrará el top 3 del ranking directamente
+    if (sessionType == 'O' || sessionType == 'T') {
+      print(
+          'ℹ️  Session type $sessionType uses ranking-based results (no playoff games)');
+      print('═══════════════════════════════════════');
+      return results;
+    }
+
+    // ✅ MOSTRAR TODOS LOS JUEGOS COMPLETADOS (solo para debugging de playoffs)
+    for (var i = 0; i < _completedGames.length; i++) {
+      final game = _completedGames[i];
+      final isPlayoffValue = game['is_playoff_game'];
+      final playoffRound = game['playoff_round'];
+      final gameNumber = game['game_number'];
+      final winnerTeam = game['winner_team'];
+
+      print('Game #$gameNumber (index $i):');
+      print(
+          '  - is_playoff_game RAW: $isPlayoffValue (type: ${isPlayoffValue.runtimeType})');
+      print(
+          '  - playoff_round: $playoffRound (type: ${playoffRound.runtimeType})');
+      print('  - winner_team: $winnerTeam');
+
+      final isPlayoff = isPlayoffValue == 1 || isPlayoffValue == true;
+      print('  - isPlayoff EVALUATED: $isPlayoff');
+
+      if (game['team1_player1'] != null) {
+        print(
+            '  - team1: ${game['team1_player1']['first_name']} & ${game['team1_player2']?['first_name']}');
+      }
+      if (game['team2_player1'] != null) {
+        print(
+            '  - team2: ${game['team2_player1']['first_name']} & ${game['team2_player2']?['first_name']}');
+      }
+      print('');
+    }
+
+    try {
+      // ═══════════════════════════════════════
+      // P4 - BUSCAR FINAL
+      // ═══════════════════════════════════════
+      if (sessionType == 'P4') {
+        print('🔍 LOOKING FOR P4 FINAL...');
+
+        // ✅ MÉTODO 1: Buscar por playoff_round = 'final'
+        Map<String, dynamic>? finalGame;
+
+        for (var game in _completedGames) {
+          final isPlayoff =
+              game['is_playoff_game'] == 1 || game['is_playoff_game'] == true;
+          final round = game['playoff_round']?.toString().toLowerCase();
+
+          if (isPlayoff && round == 'final') {
+            finalGame = game;
+            print('  ✅ FOUND FINAL GAME #${game['game_number']}');
+            break;
+          }
+        }
+
+        // Si no encontró, intentar buscar el último playoff
+        if (finalGame == null) {
+          print('❌ Method 1 failed - trying method 2...');
+
+          final playoffGames = _completedGames
+              .where((g) =>
+                  g['is_playoff_game'] == 1 || g['is_playoff_game'] == true)
+              .toList();
+
+          if (playoffGames.isNotEmpty) {
+            playoffGames.sort((a, b) =>
+                (b['game_number'] ?? 0).compareTo(a['game_number'] ?? 0));
+            finalGame = playoffGames.first;
+          }
+        }
+
+        if (finalGame != null) {
+          print('');
+          print('✅ FINAL GAME FOUND: #${finalGame['game_number']}');
+          final winnerTeam = finalGame['winner_team'] ?? 0;
+          print('   Winner Team: $winnerTeam');
+
+          results['champions'] = _getTeamPlayers(finalGame, winnerTeam);
+          results['runners_up'] =
+              _getTeamPlayers(finalGame, winnerTeam == 1 ? 2 : 1);
+
+          print(
+              '   Champions: ${results['champions']?.map((p) => p['first_name']).join(' & ')}');
+          print(
+              '   Runners-up: ${results['runners_up']?.map((p) => p['first_name']).join(' & ')}');
+        } else {
+          print('');
+          print('❌ NO FINAL GAME FOUND!');
+        }
+      }
+
+      // ═══════════════════════════════════════
+      // P8 ESPECIAL - BUSCAR FINAL Y QUALIFIER
+      // ═══════════════════════════════════════
+      else if (sessionType == 'P8' && _isSpecialP8()) {
+        print('🔍 LOOKING FOR P8 SPECIAL (FINAL + QUALIFIER)...');
+
+        // Buscar Final
+        Map<String, dynamic>? finalGame;
+        for (var game in _completedGames) {
+          final isPlayoff =
+              game['is_playoff_game'] == 1 || game['is_playoff_game'] == true;
+          final round = game['playoff_round']?.toString().toLowerCase();
+          if (isPlayoff && round == 'final') {
+            finalGame = game;
+            break;
+          }
+        }
+
+        // Buscar Qualifier
+        Map<String, dynamic>? qualifierGame;
+        for (var game in _completedGames) {
+          final isPlayoff =
+              game['is_playoff_game'] == 1 || game['is_playoff_game'] == true;
+          final round = game['playoff_round']?.toString().toLowerCase();
+          if (isPlayoff && round == 'qualifier') {
+            qualifierGame = game;
+            break;
+          }
+        }
+
+        if (finalGame != null && qualifierGame != null) {
+          print('✅ FOUND FINAL: #${finalGame['game_number']}');
+          print('✅ FOUND QUALIFIER: #${qualifierGame['game_number']}');
+
+          final finalWinner = finalGame['winner_team'] ?? 0;
+          final qualifierWinner = qualifierGame['winner_team'] ?? 0;
+
+          // 🥇 Champions (ganadores del Final)
+          results['champions'] = _getTeamPlayers(finalGame, finalWinner);
+
+          // 🥈 Runners-up (perdedores del Final)
+          results['runners_up'] =
+              _getTeamPlayers(finalGame, finalWinner == 1 ? 2 : 1);
+
+          // 🥉 Third Place (perdedores del Qualifier)
+          results['third_place'] =
+              _getTeamPlayers(qualifierGame, qualifierWinner == 1 ? 2 : 1);
+
+          print(
+              '   Champions: ${results['champions']?.map((p) => p['first_name']).join(' & ')}');
+          print(
+              '   Runners-up: ${results['runners_up']?.map((p) => p['first_name']).join(' & ')}');
+          print(
+              '   Third: ${results['third_place']?.map((p) => p['first_name']).join(' & ')}');
+        } else {
+          print(
+              '❌ Missing games - Final: ${finalGame != null}, Qualifier: ${qualifierGame != null}');
+        }
+      }
+
+      // ═══════════════════════════════════════
+      // P8 NORMAL - BUSCAR GOLD Y BRONZE
+      // ═══════════════════════════════════════
+      else if (sessionType == 'P8') {
+        print('🔍 LOOKING FOR P8 NORMAL (GOLD + BRONZE)...');
+
+        // ✅ Buscar Gold (Final)
+        Map<String, dynamic>? goldGame;
+        for (var game in _completedGames) {
+          final isPlayoff =
+              game['is_playoff_game'] == 1 || game['is_playoff_game'] == true;
+          final round = game['playoff_round']?.toString().toLowerCase();
+
+          print(
+              '  Checking game #${game['game_number']}: isPlayoff=$isPlayoff, round=$round');
+
+          if (isPlayoff && round == 'gold') {
+            goldGame = game;
+            print('  ✅ FOUND GOLD GAME!');
+            break;
+          }
+        }
+
+        // ✅ Buscar Bronze
+        Map<String, dynamic>? bronzeGame;
+        for (var game in _completedGames) {
+          final isPlayoff =
+              game['is_playoff_game'] == 1 || game['is_playoff_game'] == true;
+          final round = game['playoff_round']?.toString().toLowerCase();
+
+          if (isPlayoff && round == 'bronze') {
+            bronzeGame = game;
+            print('  ✅ FOUND BRONZE GAME!');
+            break;
+          }
+        }
+
+        if (goldGame != null && bronzeGame != null) {
+          print('');
+          print('✅ GOLD GAME FOUND: #${goldGame['game_number']}');
+          print('✅ BRONZE GAME FOUND: #${bronzeGame['game_number']}');
+
+          final goldWinner = goldGame['winner_team'] ?? 0;
+          final bronzeWinner = bronzeGame['winner_team'] ?? 0;
+
+          print('   Gold winner team: $goldWinner');
+          print('   Bronze winner team: $bronzeWinner');
+
+          // 🥇 Champions (ganadores del Gold)
+          results['champions'] = _getTeamPlayers(goldGame, goldWinner);
+
+          // 🥈 Runners-up (perdedores del Gold)
+          results['runners_up'] =
+              _getTeamPlayers(goldGame, goldWinner == 1 ? 2 : 1);
+
+          // 🥉 Third Place (ganadores del Bronze)
+          results['third_place'] = _getTeamPlayers(bronzeGame, bronzeWinner);
+
+          print(
+              '   Champions: ${results['champions']?.map((p) => p['first_name']).join(' & ')}');
+          print(
+              '   Runners-up: ${results['runners_up']?.map((p) => p['first_name']).join(' & ')}');
+          print(
+              '   Third: ${results['third_place']?.map((p) => p['first_name']).join(' & ')}');
+        } else {
+          print('');
+          print('❌ MISSING GAMES:');
+          print('   - Gold game: ${goldGame != null ? "Found" : "NOT FOUND"}');
+          print(
+              '   - Bronze game: ${bronzeGame != null ? "Found" : "NOT FOUND"}');
+        }
+      }
+    } catch (e, stackTrace) {
+      print('❌ ERROR extracting playoff winners:');
+      print('   Error: $e');
+      print('   Stack: $stackTrace');
+    }
+
+    print('');
+    print('🎯 FINAL RESULTS:');
+    print(
+        '   - Champions: ${results['champions']?.map((p) => p['first_name']).join(' & ') ?? 'null'}');
+    print(
+        '   - Runners-up: ${results['runners_up']?.map((p) => p['first_name']).join(' & ') ?? 'null'}');
+    print(
+        '   - Third Place: ${results['third_place']?.map((p) => p['first_name']).join(' & ') ?? 'null'}');
+    print('═══════════════════════════════════════');
+    print('');
+
     return results;
   }
 
-  // ✅ MOSTRAR TODOS LOS JUEGOS COMPLETADOS (solo para debugging de playoffs)
-  for (var i = 0; i < _completedGames.length; i++) {
-    final game = _completedGames[i];
-    final isPlayoffValue = game['is_playoff_game'];
-    final playoffRound = game['playoff_round'];
-    final gameNumber = game['game_number'];
-    final winnerTeam = game['winner_team'];
-    
-    print('Game #$gameNumber (index $i):');
-    print('  - is_playoff_game RAW: $isPlayoffValue (type: ${isPlayoffValue.runtimeType})');
-    print('  - playoff_round: $playoffRound (type: ${playoffRound.runtimeType})');
-    print('  - winner_team: $winnerTeam');
-    
-    final isPlayoff = isPlayoffValue == 1 || isPlayoffValue == true;
-    print('  - isPlayoff EVALUATED: $isPlayoff');
-    
-    if (game['team1_player1'] != null) {
-      print('  - team1: ${game['team1_player1']['first_name']} & ${game['team1_player2']?['first_name']}');
+  List<Map<String, dynamic>> _getTeamPlayers(
+      Map<String, dynamic> game, int team) {
+    List<Map<String, dynamic>> players = [];
+
+    try {
+      if (team == 1) {
+        final p1 = game['team1_player1'];
+        final p2 = game['team1_player2'];
+        if (p1 != null) players.add(p1);
+        if (p2 != null) players.add(p2);
+      } else if (team == 2) {
+        final p1 = game['team2_player1'];
+        final p2 = game['team2_player2'];
+        if (p1 != null) players.add(p1);
+        if (p2 != null) players.add(p2);
+      }
+    } catch (e) {
+      print('❌ Error getting team players: $e');
     }
-    if (game['team2_player1'] != null) {
-      print('  - team2: ${game['team2_player1']['first_name']} & ${game['team2_player2']?['first_name']}');
-    }
-    print('');
+
+    return players;
   }
 
-  try {
-    // ═══════════════════════════════════════
-    // P4 - BUSCAR FINAL
-    // ═══════════════════════════════════════
-    if (sessionType == 'P4') {
-      print('🔍 LOOKING FOR P4 FINAL...');
-      
-      // ✅ MÉTODO 1: Buscar por playoff_round = 'final'
-      Map<String, dynamic>? finalGame;
-      
-      for (var game in _completedGames) {
-        final isPlayoff = game['is_playoff_game'] == 1 || game['is_playoff_game'] == true;
-        final round = game['playoff_round']?.toString().toLowerCase();
-        
-        if (isPlayoff && round == 'final') {
-          finalGame = game;
-          print('  ✅ FOUND FINAL GAME #${game['game_number']}');
-          break;
-        }
-      }
+  /// ✅ NUEVO: Línea de ganadores (parejas)
+  Widget _buildWinnerLine(String emoji, String title, List players) {
+    // Filtrar jugadores válidos
+    final validPlayers = players.where((p) => p != null).toList();
 
-      // Si no encontró, intentar buscar el último playoff
-      if (finalGame == null) {
-        print('❌ Method 1 failed - trying method 2...');
-        
-        final playoffGames = _completedGames.where((g) => 
-          g['is_playoff_game'] == 1 || g['is_playoff_game'] == true
-        ).toList();
-        
-        if (playoffGames.isNotEmpty) {
-          playoffGames.sort((a, b) => 
-            (b['game_number'] ?? 0).compareTo(a['game_number'] ?? 0)
-          );
-          finalGame = playoffGames.first;
-         }
-      }
-
-      if (finalGame != null) {
-        print('');
-        print('✅ FINAL GAME FOUND: #${finalGame['game_number']}');
-        final winnerTeam = finalGame['winner_team'] ?? 0;
-        print('   Winner Team: $winnerTeam');
-        
-        results['champions'] = _getTeamPlayers(finalGame, winnerTeam);
-        results['runners_up'] = _getTeamPlayers(finalGame, winnerTeam == 1 ? 2 : 1);
-        
-        print('   Champions: ${results['champions']?.map((p) => p['first_name']).join(' & ')}');
-        print('   Runners-up: ${results['runners_up']?.map((p) => p['first_name']).join(' & ')}');
-      } else {
-        print('');
-        print('❌ NO FINAL GAME FOUND!');
-      }
+    if (validPlayers.isEmpty) {
+      return const SizedBox.shrink();
     }
 
-    // ═══════════════════════════════════════
-    // P8 ESPECIAL - BUSCAR FINAL Y QUALIFIER
-    // ═══════════════════════════════════════
-    else if (sessionType == 'P8' && _isSpecialP8()) {
-      print('🔍 LOOKING FOR P8 SPECIAL (FINAL + QUALIFIER)...');
-      
-      // Buscar Final
-      Map<String, dynamic>? finalGame;
-      for (var game in _completedGames) {
-        final isPlayoff = game['is_playoff_game'] == 1 || game['is_playoff_game'] == true;
-        final round = game['playoff_round']?.toString().toLowerCase();
-        if (isPlayoff && round == 'final') {
-          finalGame = game;
-          break;
-        }
-      }
+    // Formatear nombres de la pareja
+    final playerNames = validPlayers.map((player) {
+      final firstName = player['first_name']?.toString() ?? '';
+      final lastInitial = player['last_initial']?.toString() ?? '';
+      return '$firstName ${lastInitial}.';
+    }).join(' & ');
 
-      // Buscar Qualifier
-      Map<String, dynamic>? qualifierGame;
-      for (var game in _completedGames) {
-        final isPlayoff = game['is_playoff_game'] == 1 || game['is_playoff_game'] == true;
-        final round = game['playoff_round']?.toString().toLowerCase();
-        if (isPlayoff && round == 'qualifier') {
-          qualifierGame = game;
-          break;
-        }
-      }
-
-      if (finalGame != null && qualifierGame != null) {
-        print('✅ FOUND FINAL: #${finalGame['game_number']}');
-        print('✅ FOUND QUALIFIER: #${qualifierGame['game_number']}');
-
-        final finalWinner = finalGame['winner_team'] ?? 0;
-        final qualifierWinner = qualifierGame['winner_team'] ?? 0;
-
-        // 🥇 Champions (ganadores del Final)
-        results['champions'] = _getTeamPlayers(finalGame, finalWinner);
-        
-        // 🥈 Runners-up (perdedores del Final)
-        results['runners_up'] = _getTeamPlayers(finalGame, finalWinner == 1 ? 2 : 1);
-        
-        // 🥉 Third Place (perdedores del Qualifier)
-        results['third_place'] = _getTeamPlayers(qualifierGame, qualifierWinner == 1 ? 2 : 1);
-
-        print('   Champions: ${results['champions']?.map((p) => p['first_name']).join(' & ')}');
-        print('   Runners-up: ${results['runners_up']?.map((p) => p['first_name']).join(' & ')}');
-        print('   Third: ${results['third_place']?.map((p) => p['first_name']).join(' & ')}');
-      } else {
-        print('❌ Missing games - Final: ${finalGame != null}, Qualifier: ${qualifierGame != null}');
-      }
-    }
-
-    // ═══════════════════════════════════════
-    // P8 NORMAL - BUSCAR GOLD Y BRONZE
-    // ═══════════════════════════════════════
-    else if (sessionType == 'P8') {
-      print('🔍 LOOKING FOR P8 NORMAL (GOLD + BRONZE)...');
-      
-      // ✅ Buscar Gold (Final)
-      Map<String, dynamic>? goldGame;
-      for (var game in _completedGames) {
-        final isPlayoff = game['is_playoff_game'] == 1 || game['is_playoff_game'] == true;
-        final round = game['playoff_round']?.toString().toLowerCase();
-        
-        print('  Checking game #${game['game_number']}: isPlayoff=$isPlayoff, round=$round');
-        
-        if (isPlayoff && round == 'gold') {
-          goldGame = game;
-          print('  ✅ FOUND GOLD GAME!');
-          break;
-        }
-      }
-
-      // ✅ Buscar Bronze
-      Map<String, dynamic>? bronzeGame;
-      for (var game in _completedGames) {
-        final isPlayoff = game['is_playoff_game'] == 1 || game['is_playoff_game'] == true;
-        final round = game['playoff_round']?.toString().toLowerCase();
-        
-        if (isPlayoff && round == 'bronze') {
-          bronzeGame = game;
-          print('  ✅ FOUND BRONZE GAME!');
-          break;
-        }
-      }
-
-      if (goldGame != null && bronzeGame != null) {
-        print('');
-        print('✅ GOLD GAME FOUND: #${goldGame['game_number']}');
-        print('✅ BRONZE GAME FOUND: #${bronzeGame['game_number']}');
-
-        final goldWinner = goldGame['winner_team'] ?? 0;
-        final bronzeWinner = bronzeGame['winner_team'] ?? 0;
-
-        print('   Gold winner team: $goldWinner');
-        print('   Bronze winner team: $bronzeWinner');
-
-        // 🥇 Champions (ganadores del Gold)
-        results['champions'] = _getTeamPlayers(goldGame, goldWinner);
-        
-        // 🥈 Runners-up (perdedores del Gold)
-        results['runners_up'] = _getTeamPlayers(goldGame, goldWinner == 1 ? 2 : 1);
-        
-        // 🥉 Third Place (ganadores del Bronze)
-        results['third_place'] = _getTeamPlayers(bronzeGame, bronzeWinner);
-
-        print('   Champions: ${results['champions']?.map((p) => p['first_name']).join(' & ')}');
-        print('   Runners-up: ${results['runners_up']?.map((p) => p['first_name']).join(' & ')}');
-        print('   Third: ${results['third_place']?.map((p) => p['first_name']).join(' & ')}');
-      } else {
-        print('');
-        print('❌ MISSING GAMES:');
-        print('   - Gold game: ${goldGame != null ? "Found" : "NOT FOUND"}');
-        print('   - Bronze game: ${bronzeGame != null ? "Found" : "NOT FOUND"}');
-      }
-    }
-
-  } catch (e, stackTrace) {
-    print('❌ ERROR extracting playoff winners:');
-    print('   Error: $e');
-    print('   Stack: $stackTrace');
-  }
-
-  print('');
-  print('🎯 FINAL RESULTS:');
-  print('   - Champions: ${results['champions']?.map((p) => p['first_name']).join(' & ') ?? 'null'}');
-  print('   - Runners-up: ${results['runners_up']?.map((p) => p['first_name']).join(' & ') ?? 'null'}');
-  print('   - Third Place: ${results['third_place']?.map((p) => p['first_name']).join(' & ') ?? 'null'}');
-  print('═══════════════════════════════════════');
-  print('');
-
-  return results;
-}
- 
- List<Map<String, dynamic>> _getTeamPlayers(Map<String, dynamic> game, int team) {
-  List<Map<String, dynamic>> players = [];
-
-  try {
-    if (team == 1) {
-      final p1 = game['team1_player1'];
-      final p2 = game['team1_player2'];
-      if (p1 != null) players.add(p1);
-      if (p2 != null) players.add(p2);
-    } else if (team == 2) {
-      final p1 = game['team2_player1'];
-      final p2 = game['team2_player2'];
-      if (p1 != null) players.add(p1);
-      if (p2 != null) players.add(p2);
-    }
-  } catch (e) {
-    print('❌ Error getting team players: $e');
-  }
-
-  return players;
-}
-
-
-/// ✅ NUEVO: Línea de ganadores (parejas)
-Widget _buildWinnerLine(String emoji, String title, List players) {
-  // Filtrar jugadores válidos
-  final validPlayers = players.where((p) => p != null).toList();
-
-  if (validPlayers.isEmpty) {
-    return const SizedBox.shrink();
-  }
-
-  // Formatear nombres de la pareja
-  final playerNames = validPlayers.map((player) {
-    final firstName = player['first_name']?.toString() ?? '';
-    final lastInitial = player['last_initial']?.toString() ?? '';
-    return '$firstName ${lastInitial}.';
-  }).join(' & ');
-
-  return Container(
-    padding: const EdgeInsets.all(10),
-    decoration: BoxDecoration(
-      color: FrutiaColors.secondaryBackground.withOpacity(0.5),
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(
-        color: Colors.grey.withOpacity(0.1),
-      ),
-    ),
-    child: Row(
-      children: [
-        Text(
-          emoji,
-          style: TextStyle(fontSize: 18),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            '$title - $playerNames',
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: FrutiaColors.primaryText,
-            ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 2,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-/// ✅ NUEVO: Mostrar top 3 individuales (para Optimized)
-Widget _buildTop3Players() {
-  final topPlayers = _players.take(3).toList();
-
-  if (topPlayers.isEmpty) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: FrutiaColors.primary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        'No ranking data available',
-        textAlign: TextAlign.center,
-        style: GoogleFonts.poppins(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: FrutiaColors.primaryText,
+        color: FrutiaColors.secondaryBackground.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.1),
         ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            emoji,
+            style: TextStyle(fontSize: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '$title - $playerNames',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: FrutiaColors.primaryText,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'Top 3 Players',
-        style: GoogleFonts.poppins(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          color: FrutiaColors.primaryText,
-        ),
-      ),
-      const SizedBox(height: 10),
-      
-      // 🥇 1st Place
-      _buildTop3PlayerLine('🥇', '1st Place', topPlayers[0]),
-      
-      // 🥈 2nd Place
-      if (topPlayers.length > 1) ...[
-        const SizedBox(height: 6),
-        _buildTop3PlayerLine('🥈', '2nd Place', topPlayers[1]),
-      ],
-      
-      // 🥉 3rd Place
-      if (topPlayers.length > 2) ...[
-        const SizedBox(height: 6),
-        _buildTop3PlayerLine('🥉', '3rd Place', topPlayers[2]),
-      ],
-    ],
-  );
-}
+  /// ✅ NUEVO: Mostrar top 3 individuales (para Optimized)
+  Widget _buildTop3Players() {
+    final topPlayers = _players.take(3).toList();
 
+    if (topPlayers.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: FrutiaColors.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          'No ranking data available',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: FrutiaColors.primaryText,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Top 3 Players',
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: FrutiaColors.primaryText,
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // 🥇 1st Place
+        _buildTop3PlayerLine('🥇', '1st Place', topPlayers[0]),
+
+        // 🥈 2nd Place
+        if (topPlayers.length > 1) ...[
+          const SizedBox(height: 6),
+          _buildTop3PlayerLine('🥈', '2nd Place', topPlayers[1]),
+        ],
+
+        // 🥉 3rd Place
+        if (topPlayers.length > 2) ...[
+          const SizedBox(height: 6),
+          _buildTop3PlayerLine('🥉', '3rd Place', topPlayers[2]),
+        ],
+      ],
+    );
+  }
 
 // ✅ CORREGIDO: Sección del Top 3 - MÁS COMPACTA
   Widget _buildTop3Section(List<dynamic> topPlayers) {
@@ -1513,7 +1526,7 @@ Widget _buildTop3Players() {
       ],
     );
   }
- 
+
   Widget _buildSummaryItem(String value, String label) {
     return Column(
       children: [
@@ -1579,7 +1592,7 @@ Widget _buildTop3Players() {
     }
 
     return Container(
-      margin: const EdgeInsets.only(top: 24, bottom: 16, left: 16, right: 16),
+      margin: const EdgeInsets.only(left: 16, right: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: FrutiaColors.accent.withOpacity(0.1),
@@ -1808,6 +1821,90 @@ Widget _buildTop3Players() {
     }
   }
 
+  /// ✅ NUEVO MÉTODO: Construir el score para juegos completados
+  Widget _buildCompletedScore(Map<String, dynamic> game) {
+    final isBestOf3 = _sessionData?['number_of_sets'] == '3';
+
+    if (!isBestOf3) {
+      // Best of 1: Mostrar score total normal
+      return Text(
+        '${game['team1_score']} - ${game['team2_score']}',
+        style: GoogleFonts.robotoMono(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: FrutiaColors.primary,
+        ),
+      );
+    }
+
+    // ✅ BEST OF 3: Mostrar cada set por separado
+    final set1Team1 = game['team1_set1_score'];
+    final set1Team2 = game['team2_set1_score'];
+    final set2Team1 = game['team1_set2_score'];
+    final set2Team2 = game['team2_set2_score'];
+    final set3Team1 = game['team1_set3_score'];
+    final set3Team2 = game['team2_set3_score'];
+
+    return Column(
+      children: [
+        // Badge "Best of 3"
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: FrutiaColors.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            'Best of 3',
+            style: GoogleFonts.poppins(
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+              color: FrutiaColors.primary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+
+        // Set 1
+        if (set1Team1 != null && set1Team2 != null)
+          Text(
+            '$set1Team1 - $set1Team2',
+            style: GoogleFonts.robotoMono(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: FrutiaColors.primary,
+            ),
+          ),
+
+        // Set 2
+        if (set2Team1 != null && set2Team2 != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            '$set2Team1 - $set2Team2',
+            style: GoogleFonts.robotoMono(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: FrutiaColors.primary,
+            ),
+          ),
+        ],
+
+        // Set 3 (solo si existe)
+        if (set3Team1 != null && set3Team2 != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            '$set3Team1 - $set3Team2',
+            style: GoogleFonts.robotoMono(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: FrutiaColors.primary,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildAdvanceStageButton() {
     // ✅ NO MOSTRAR si es espectador
     if (_isReallySpectator) {
@@ -1818,6 +1915,25 @@ Widget _buildTop3Players() {
     final currentStage = _sessionData?['current_stage'] ?? 1;
     final status = _sessionData?['status'];
 
+
+ // ✅ NUEVO: No mostrar para P4/P8 si hay semifinals completadas
+  // (porque las finals se auto-generan)
+  if (sessionType == 'P4' || sessionType == 'P8') {
+    // Verificar si ya hay semifinals completadas
+    final completedSemifinals = _completedGames.where((g) =>
+      (g['is_playoff_game'] == 1 || g['is_playoff_game'] == true) &&
+      g['playoff_round'] == 'semifinal' &&
+      g['status'] == 'completed'
+    ).length;
+    
+    // Si ya hay semifinals completadas, no mostrar el botón
+    // (las finals ya se generaron automáticamente o están en proceso)
+    if (completedSemifinals > 0) {
+      print('[DEBUG] ❌ Not showing button: Semifinals already completed (auto-generation handled)');
+      return const SizedBox.shrink();
+    }
+  }
+  
     // ✅ AGREGAR DEBUGGING
     print('========== DEBUG ADVANCE BUTTON ==========');
     print('[DEBUG] Session Type: $sessionType');
@@ -1882,8 +1998,7 @@ Widget _buildTop3Players() {
           'Generate Stage ${currentStage + 1} matches based on Stage $currentStage results';
 
       return Container(
-        margin:
-            const EdgeInsets.only(top: 24, bottom: 100, left: 16, right: 16),
+        margin: const EdgeInsets.only(left: 16, right: 16),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: FrutiaColors.nutrition.withOpacity(0.1),
@@ -1997,7 +2112,7 @@ Widget _buildTop3Players() {
     }
 
     return Container(
-      margin: const EdgeInsets.only(top: 24, bottom: 70, left: 16, right: 16),
+      margin: const EdgeInsets.only(left: 16, right: 16),
       padding: const EdgeInsets.only(right: 20, left: 20, bottom: 10, top: 10),
       decoration: BoxDecoration(
         color: FrutiaColors.nutrition.withOpacity(0.1),
@@ -2333,398 +2448,361 @@ Widget _buildTop3Players() {
     return playoffRound?.toUpperCase();
   }
 
-  void _showSessionInfoDialog() {
-    final sessionName = _sessionData?['session_name'] ?? 'Session';
-    final sessionType = _sessionData?['session_type'] ?? 'Unknown';
-    final numberOfCourts = _sessionData?['number_of_courts'] ?? 0;
-    final numberOfPlayers = _sessionData?['number_of_players'] ?? 0;
-    final progressPercentage = _sessionData?['progress_percentage'] ?? 0.0;
-    final status = _sessionData?['status'] ?? 'unknown';
-    final currentStage = _sessionData?['current_stage'] ?? 1;
-    final sessionCode = _sessionData?['session_code'] ?? 'N/A';
 
-    final totalGames = _sessionData?['total_games'] ?? 0;
-    final completedGamesCount = _completedGames.length;
-    //
+void _showSessionInfoDialog() {
+  final sessionName = _sessionData?['session_name'] ?? 'Session';
+  final sessionType = _sessionData?['session_type'] ?? 'Unknown';
+  final numberOfCourts = _sessionData?['number_of_courts'] ?? 0;
+  final numberOfPlayers = _sessionData?['number_of_players'] ?? 0;
+  final progressPercentage = _sessionData?['progress_percentage'] ?? 0.0;
+  final status = _sessionData?['status'] ?? 'unknown';
+  final currentStage = _sessionData?['current_stage'] ?? 1;
+  final sessionCode = _sessionData?['session_code'] ?? 'N/A';
 
-    // Mapear tipos de sesión a nombres legibles
-    String getSessionTypeName(String type) {
-      switch (type) {
-        case 'O':
-          return 'Optimized';
-        case 'T':
-          return 'Tournament';
-        case 'P4':
-          return 'Playoff (4)';
-        case 'P8':
-          return 'Playoff (8)';
-        default:
-          return type;
-      }
+  final totalGames = _sessionData?['total_games'] ?? 0;
+  final completedGamesCount = _completedGames.length;
+
+  // Mapear tipos de sesión a nombres legibles
+  String getSessionTypeName(String type) {
+    switch (type) {
+      case 'O':
+        return 'Optimized';
+      case 'T':
+        return 'Tournament';
+      case 'P4':
+        return 'Playoff (4)';
+      case 'P8':
+        return 'Playoff (8)';
+      default:
+        return type;
     }
+  }
 
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-        child: Container(
-          constraints: BoxConstraints(
-            maxWidth: 500,
-            maxHeight: MediaQuery.of(context).size.height * 0.90,
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ✅ HEADER mejorado
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: FrutiaColors.primary.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.info_outline,
-                          color: FrutiaColors.primary,
-                          size: 32,
-                        ),
+  showDialog(
+    context: context,
+    builder: (context) => Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: 500,
+          maxHeight: MediaQuery.of(context).size.height * 0.90,
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20), // ← Reducido de 24
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ✅ HEADER mejorado
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10), // ← Reducido de 12
+                      decoration: BoxDecoration(
+                        color: FrutiaColors.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Session Info',
-                              style: GoogleFonts.poppins(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: FrutiaColors.primaryText,
-                              ),
-                            ),
-                            Text(
-                              sessionName,
-                              style: GoogleFonts.lato(
-                                fontSize: 14,
-                                color: FrutiaColors.secondaryText,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
+                      child: Icon(
+                        Icons.info_outline,
+                        color: FrutiaColors.primary,
+                        size: 28, // ← Reducido de 32
                       ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // ✅ SECCIÓN: Session Code (DESTACADO) - CON BOTÓN COPIAR
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          FrutiaColors.warning.withOpacity(0.15),
-                          FrutiaColors.warning.withOpacity(0.05),
+                    ),
+                    const SizedBox(width: 12), // ← Reducido de 16
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Session Info',
+                            style: GoogleFonts.poppins(
+                              fontSize: 20, // ← Reducido de 22
+                              fontWeight: FontWeight.bold,
+                              color: FrutiaColors.primaryText,
+                            ),
+                          ),
+                          Text(
+                            sessionName,
+                            style: GoogleFonts.lato(
+                              fontSize: 13, // ← Reducido de 14
+                              color: FrutiaColors.secondaryText,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: FrutiaColors.warning.withOpacity(0.3),
-                        width: 2,
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.qr_code,
-                              color: FrutiaColors.warning,
-                              size: 24,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Spectator Code',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: FrutiaColors.primaryText,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: FrutiaColors.warning.withOpacity(0.3),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                sessionCode,
-                                style: GoogleFonts.robotoMono(
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 8,
-                                  color: FrutiaColors.warning,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              // ✅ BOTÓN COPIAR
-                              InkWell(
-                                onTap: () async {
-                                  await Clipboard.setData(
-                                      ClipboardData(text: sessionCode));
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Row(
-                                          children: [
-                                            Icon(Icons.check_circle,
-                                                color: Colors.white, size: 20),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              'Code copied to clipboard!',
-                                              style: GoogleFonts.poppins(
-                                                  fontSize: 15),
-                                            ),
-                                          ],
-                                        ),
-                                        backgroundColor: FrutiaColors.success,
-                                        duration: const Duration(seconds: 2),
-                                        behavior: SnackBarBehavior.floating,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                },
-                                borderRadius: BorderRadius.circular(8),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        FrutiaColors.warning.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(
-                                    Icons.copy,
-                                    color: FrutiaColors.warning,
-                                    size: 24,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Share this code with spectators',
-                          style: GoogleFonts.lato(
-                            fontSize: 12,
-                            color: FrutiaColors.secondaryText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // ✅ SECCIÓN: Session Details
-                  Text(
-                    'Details',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: FrutiaColors.primaryText,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Session Type
-                  _buildInfoRow('Type', getSessionTypeName(sessionType)),
-                  const SizedBox(height: 12),
-
-                  // Status
-                  _buildInfoRow(
-                    'Status',
-                    status.toUpperCase(),
-                    valueColor: status == 'completed'
-                        ? FrutiaColors.success
-                        : FrutiaColors.primary,
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Current Stage (solo para torneos)
-                  if (sessionType == 'T') ...[
-                    _buildInfoRow('Current Stage', 'Stage $currentStage'),
-                    const SizedBox(height: 12),
                   ],
+                ),
 
-                  // Courts & Players
-                  _buildInfoRow('Courts', numberOfCourts.toString()),
-                  const SizedBox(height: 12),
+                const SizedBox(height: 8), // ← Reducido de 10
 
-                  _buildInfoRow('Players', numberOfPlayers.toString()),
-                  const SizedBox(height: 12),
-
-                  // Duration
-                  _buildInfoRow('Duration', _formatTimer(_elapsedSeconds)),
-
-                  const SizedBox(height: 20),
-
-                  // Progress
-                  Text(
-                    'Progress',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: FrutiaColors.primaryText,
+                // ✅ SECCIÓN: Session Code (DESTACADO) - CON BOTÓN COPIAR
+                Container(
+                  padding: const EdgeInsets.all(16), // ← Reducido de 20
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        FrutiaColors.warning.withOpacity(0.15),
+                        FrutiaColors.warning.withOpacity(0.05),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: FrutiaColors.warning.withOpacity(0.3),
+                      width: 2,
                     ),
                   ),
-                  const SizedBox(height: 12),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
                     children: [
-                      Text(
-                        '${progressPercentage.toInt()}%',
-                        style: GoogleFonts.poppins(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: progressPercentage >= 100
-                              ? FrutiaColors.success
-                              : FrutiaColors.primary,
-                        ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.qr_code,
+                            color: FrutiaColors.warning,
+                            size: 22, // ← Reducido de 24
+                          ),
+                          const SizedBox(width: 6), // ← Reducido de 8
+                          Text(
+                            'Spectator Code',
+                            style: GoogleFonts.poppins(
+                              fontSize: 13, // ← Reducido de 14
+                              fontWeight: FontWeight.w600,
+                              color: FrutiaColors.primaryText,
+                            ),
+                          ),
+                        ],
                       ),
-                      Text(
-                        // ✅ CORREGIDO: Calcular total de juegos correctamente
-                        '$completedGamesCount / $totalGames games',
-
-                        style: GoogleFonts.lato(
-                          fontSize: 14,
-                          color: FrutiaColors.secondaryText,
+                      const SizedBox(height: 10), // ← Reducido de 12
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 1,
+                          vertical: 6, // ← Reducido de 8
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: FrutiaColors.warning.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              sessionCode,
+                              style: GoogleFonts.robotoMono(
+                                fontSize: 22, // ← Reducido de 25
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 6, // ← Reducido de 8
+                                color: FrutiaColors.warning,
+                              ),
+                            ),
+                            const SizedBox(width: 12), // ← Reducido de 16
+                            // ✅ BOTÓN COPIAR
+                           InkWell(
+  onTap: () async {
+    await Clipboard.setData(ClipboardData(text: sessionCode));
+    Fluttertoast.showToast(
+      msg: "Code copied to clipboard!",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: FrutiaColors.success,
+      textColor: Colors.white,
+      fontSize: 14.0,
+    );
+  },
+  borderRadius: BorderRadius.circular(8),
+  child: Container(
+    padding: const EdgeInsets.all(6),
+    decoration: BoxDecoration(
+      color: FrutiaColors.warning.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Icon(
+      Icons.copy,
+      color: FrutiaColors.warning,
+      size: 20,
+    ),
+  ),
+),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                ),
+                const SizedBox(height: 20), // ← Reducido de 24
 
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: LinearProgressIndicator(
-                      value: progressPercentage / 100,
-                      backgroundColor: FrutiaColors.tertiaryBackground,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        progressPercentage >= 100
+                // ✅ SECCIÓN: Session Details - COMPACTA
+                Text(
+                  'Details',
+                  style: GoogleFonts.poppins(
+                    fontSize: 15, // ← Reducido de 16
+                    fontWeight: FontWeight.w600,
+                    color: FrutiaColors.primaryText,
+                  ),
+                ),
+                const SizedBox(height: 12), // ← Reducido de 16
+
+                // Session Type
+                _buildInfoRow('Type', getSessionTypeName(sessionType)),
+                const SizedBox(height: 8), // ← Reducido de 12
+
+                // Status
+                _buildInfoRow(
+                  'Status',
+                  status.toUpperCase(),
+                  valueColor: status == 'completed'
+                      ? FrutiaColors.success
+                      : FrutiaColors.primary,
+                ),
+                const SizedBox(height: 8), // ← Reducido de 12
+
+                // Current Stage (solo para torneos)
+                if (sessionType == 'T') ...[
+                  _buildInfoRow('Current Stage', 'Stage $currentStage'),
+                  const SizedBox(height: 8), // ← Reducido de 12
+                ],
+
+                // Courts & Players
+                _buildInfoRow('Courts', numberOfCourts.toString()),
+                const SizedBox(height: 8), // ← Reducido de 12
+
+                _buildInfoRow('Players', numberOfPlayers.toString()),
+                const SizedBox(height: 8), // ← Reducido de 12
+
+                // Duration
+                _buildInfoRow('Duration', _formatTimer(_elapsedSeconds)),
+
+                const SizedBox(height: 30), // ← Reducido de 20
+
+                // Progress - COMPACTO
+                Text(
+                  'Progress',
+                  style: GoogleFonts.poppins(
+                    fontSize: 15, // ← Reducido de 16
+                    fontWeight: FontWeight.w600,
+                    color: FrutiaColors.primaryText,
+                  ),
+                ),
+                const SizedBox(height: 20), // ← Reducido de 12
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${progressPercentage.toInt()}%',
+                      style: GoogleFonts.poppins(
+                        fontSize: 22, // ← Reducido de 24
+                        fontWeight: FontWeight.bold,
+                        color: progressPercentage >= 100
                             ? FrutiaColors.success
                             : FrutiaColors.primary,
                       ),
-                      minHeight: 12,
                     ),
-                  ),
-
-                  // ✅ CORREGIDO: Solo mostrar botón de finalizar si NO es espectador Y NO está completada
-// En el Session Info Dialog, modifica el botón de finalizar:
-                  // ✅ CORREGIDO: Solo mostrar botón de finalizar si NO es espectador Y NO está completada
-// En el Session Info Dialog, modifica el botón de finalizar:
-                  if (status != 'completed' && !_isReallySpectator) ...[
-                    const SizedBox(height: 20), // ← Reducido de 28
-                    Container(
-                      height: 1,
-                      color: Colors.grey[300],
-                    ),
-                    const SizedBox(height: 16), // ← Reducido de 20
-
-                    // Finalize Session Button - MÁS COMPACTO
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(
-                              context); // Cerrar el info dialog primero
-                          _showFinalizeConfirmation(fromInfoDialog: true);
-                        },
-                        icon: Icon(Icons.flag,
-                            size: 16, color: Colors.red), // ← Reducido de 20
-                        label: Text(
-                          'Finalize Session',
-                          style: GoogleFonts.poppins(
-                            color: Colors.red,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14, // ← Reducido de 16
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12), // ← Reducido de 16
-                          side: BorderSide(
-                            color: FrutiaColors.error,
-                            width: 2,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(10), // ← Reducido de 12
-                          ),
-                        ),
+                    Text(
+                      '$completedGamesCount / $totalGames games',
+                      style: GoogleFonts.lato(
+                        fontSize: 13, // ← Reducido de 14
+                        color: FrutiaColors.secondaryText,
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 6), // ← Reducido de 8
+
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: progressPercentage / 100,
+                    backgroundColor: FrutiaColors.tertiaryBackground,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      progressPercentage >= 100
+                          ? FrutiaColors.success
+                          : FrutiaColors.primary,
+                    ),
+                    minHeight: 10, // ← Reducido de 12
+                  ),
+                ),
+
+                // ✅ CORREGIDO: Solo mostrar botón de finalizar si NO es espectador Y NO está completada
+                if (status != 'completed' && !_isReallySpectator) ...[
+                  const SizedBox(height: 16), // ← Reducido de 20
+                  Container(
+                    height: 1,
+                    color: Colors.grey[300],
+                  ),
                   const SizedBox(height: 12), // ← Reducido de 16
 
-                  // Close Button - MÁS COMPACTO
+                  // Finalize Session Button - MÁS COMPACTO
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: FrutiaColors.primary,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12), // ← Reducido de 16
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(10), // ← Reducido de 12
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _showFinalizeConfirmation(fromInfoDialog: true);
+                      },
+                      icon: Icon(Icons.flag,
+                          size: 16, color: Colors.red),
+                      label: Text(
+                        'Finalize Session',
+                        style: GoogleFonts.poppins(
+                          color: Colors.red,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
                         ),
                       ),
-                      child: Text(
-                        'Close',
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14, // ← Reducido de 16
-                          color: Colors.white,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10), // ← Más compacto
+                        side: BorderSide(
+                          color: FrutiaColors.error,
+                          width: 2,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
                   ),
                 ],
-              ),
+                const SizedBox(height: 8), // ← Reducido de 12
+
+                // Close Button - MÁS COMPACTO
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: FrutiaColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 10), // ← Más compacto
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Text(
+                      'Close',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
 // Widget auxiliar para mostrar filas de información (sin cambios)
   Widget _buildInfoRow(String label, String value, {Color? valueColor}) {
@@ -3241,7 +3319,7 @@ Widget _buildTop3Players() {
     }
 
     return Container(
-      margin: const EdgeInsets.only(top: 24, bottom: 16, left: 16, right: 16),
+      margin: const EdgeInsets.only(left: 16, right: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -3398,7 +3476,7 @@ Widget _buildTop3Players() {
       }
       // ✅ Para finalización desde el botón en Next tab, MOSTRAR PODIO
       else if (!fromInfoDialog && mounted) {
-       // await _showPodiumDialog(result['podium']); // ← AGREGAR ESTA LÍNEA
+        // await _showPodiumDialog(result['podium']); // ← AGREGAR ESTA LÍNEA
       }
 
       // Recargar datos completos
@@ -3439,7 +3517,6 @@ Widget _buildTop3Players() {
     }
   }
 
- 
 // ✅ NUEVO MÉTODO: Modal simple para finalización MANUAL
   Future<void> _showSimpleSessionCompletedDialog() async {
     await showDialog(
@@ -3518,7 +3595,7 @@ Widget _buildTop3Players() {
     if (finalGame == null || qualifierGame == null) {
       print('❌ No se encontraron los juegos necesarios para el podio');
       // Fallback: mostrar podio simple
-     // await _showPodiumDialog({});
+      // await _showPodiumDialog({});
       return;
     }
 
@@ -3808,7 +3885,7 @@ Widget _buildTop3Players() {
 
     // ✅ PARA P8 ESPECIAL: Mostrar podio basado en la Final
     if (_isSpecialP8() && sessionType == 'P8') {
-  //    await _showSpecialP8PodiumDialog();
+      //    await _showSpecialP8PodiumDialog();
       return;
     }
 
@@ -5160,57 +5237,26 @@ Widget _buildTop3Players() {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
 
                           // Score or VS
-                        // Busca el método _buildGameCard y reemplaza la sección de Score (aproximadamente línea 2150)
+                          // Busca el método _buildGameCard y reemplaza la sección de Score (aproximadamente línea 2150)
 
 // Dentro de _buildGameCard, reemplaza esta parte:
 // Score or VS
-if (isCompleted)
-  Column(
-    children: [
-      // Indicador de Best of 3
-      if (_sessionData?['number_of_sets'] == '3') ...[
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(
-            color: FrutiaColors.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(
-            'Best of 3',
-            style: GoogleFonts.poppins(
-              fontSize: 9,
-              fontWeight: FontWeight.w600,
-              color: FrutiaColors.primary,
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-      ],
-      // Marcador final
-      Text(
-        '${game['team1_score']} - ${game['team2_score']}',
-        style: GoogleFonts.robotoMono(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: FrutiaColors.primary,
-        ),
-      ),
-    ],
-  )
-else
-  Text(
-    'VS',
-    style: GoogleFonts.poppins(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-      color: FrutiaColors.disabledText,
-    ),
-  ),
                           const SizedBox(width: 12),
-
+                          // Score or VS
+                          if (isCompleted)
+                            _buildCompletedScore(game)
+                          else
+                            Text(
+                              'VS',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: FrutiaColors.disabledText,
+                              ),
+                            ),
+                          const SizedBox(width: 12),
                           // Team 2
                           Expanded(
                             child: Container(
