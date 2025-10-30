@@ -398,7 +398,7 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     return true;
   }
 
-Future<void> _submitScore() async {
+ Future<void> _submitScore() async {
   if (!_isScoreValid()) return;
 
   setState(() {
@@ -435,12 +435,15 @@ Future<void> _submitScore() async {
                   Expanded(
                     child: Text(
                       message,
-                      style: GoogleFonts.poppins(fontSize: 15),
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        color: Colors.white, // ← TEXTO BLANCO
+                      ),
                     ),
                   ),
                 ],
               ),
-              backgroundColor: FrutiaColors.accent,
+              backgroundColor: FrutiaColors.success, // ← COLOR DE ÉXITO CONSISTENTE
               duration: const Duration(seconds: 4),
               behavior: SnackBarBehavior.floating,
             ),
@@ -455,9 +458,14 @@ Future<void> _submitScore() async {
             SnackBar(
               content: Text(
                 widget.isEditing ? 'Score updated successfully' : 'Score registered successfully!',
-                style: TextStyle(fontSize: 18),
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Colors.white, // ← TEXTO BLANCO
+                ),
               ),
-              backgroundColor: Colors.green,
+              backgroundColor: FrutiaColors.success, // ← COLOR DE ÉXITO CONSISTENTE
+              duration: const Duration(seconds: 3),
+              behavior: SnackBarBehavior.floating,
             ),
           );
         }
@@ -471,9 +479,14 @@ Future<void> _submitScore() async {
           SnackBar(
             content: Text(
               widget.isEditing ? 'Score updated successfully' : 'Score registered successfully!',
-              style: TextStyle(fontSize: 18),
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: Colors.white, // ← TEXTO BLANCO
+              ),
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: FrutiaColors.success, // ← COLOR DE ÉXITO CONSISTENTE
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -494,6 +507,7 @@ Future<void> _submitScore() async {
     });
   }
 }
+
 
   // Submit para Best of 1 (lógica original)
   Future<void> _submitBestOf1Score() async {

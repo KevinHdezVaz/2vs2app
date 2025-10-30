@@ -633,7 +633,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             child: Column(
               children: [
                 // ✅ ESPACIADO SUPERIOR (30% de la altura)
-                Spacer(flex: 12),
+                Spacer(flex: 1),
                 // ✅ BOTONES DE ACCIÓN (sin ícono de fondo)
                 if (_shouldShowFinalizeButton())
                   _buildFinalizeButton()
@@ -694,115 +694,112 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     );
   }
 
-  Widget _buildNextGamesTab() {
-    final shouldShowFinalsButton = _shouldShowStartFinalsButton();
-    final shouldShowFinalizeButton = _shouldShowFinalizeButton();
-    final shouldShowFinalResults = _shouldShowFinalResults();
-// ✅ AGREGAR esta validación
-    final numberOfCourts = _sessionData?['number_of_courts'] ?? 0;
-    final liveGamesCount = _liveGames.length;
-    final availableStartSlots = max<int>(0, numberOfCourts - liveGamesCount);
+Widget _buildNextGamesTab() {
+  final shouldShowFinalsButton = _shouldShowStartFinalsButton();
+  final shouldShowFinalizeButton = _shouldShowFinalizeButton();
+  final shouldShowFinalResults = _shouldShowFinalResults();
+  final numberOfCourts = _sessionData?['number_of_courts'] ?? 0;
+  final liveGamesCount = _liveGames.length;
+  final availableStartSlots = max<int>(0, numberOfCourts - liveGamesCount);
 
-    if (_nextGames.isEmpty) {
-      return Column(
-        children: [
-          if (shouldShowFinalResults) _buildFinalResultsCard(),
-          if (!shouldShowFinalResults)
-            Expanded(
-              child: Column(
-                children: [
-                  // ✅ ESPACIADO SUPERIOR (30% de la altura)
-                  Spacer(flex: 12),
-                  // ✅ BOTONES DE ACCIÓN (sin ícono de fondo)
-                  if (shouldShowFinalizeButton)
-                    _buildFinalizeButton()
-                  else if (shouldShowFinalsButton)
-                    _buildStartFinalsButton()
-                  else if (_sessionData != null &&
-                      (_sessionData!['session_type'] == 'P4' ||
-                          _sessionData!['session_type'] == 'P8' ||
-                          _sessionData!['session_type'] == 'T') &&
-                      _liveGames.isEmpty &&
-                      !shouldShowFinalsButton &&
-                      !shouldShowFinalizeButton &&
-                      !shouldShowFinalResults)
-                    _buildAdvanceStageButton()
-                  // ✅ ÍCONO Y TEXTO (solo si NO hay botones de acción)
-                  else ...[
-                    Icon(Icons.queue,
-                        size: 64, color: FrutiaColors.disabledText),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No games in queue',
-                      style: GoogleFonts.lato(
-                        fontSize: 16,
-                        color: FrutiaColors.secondaryText,
-                      ),
-                    ),
-                  ],
-                  // ✅ ESPACIADO INFERIOR (70% de la altura)
-                  Spacer(flex: 7),
-                ],
-              ),
-            ),
-        ],
-      );
-    }
-    // ✅ SI HAY NEXT GAMES
+  if (_nextGames.isEmpty) {
     return Column(
       children: [
         if (shouldShowFinalResults) _buildFinalResultsCard(),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () => _loadSessionData(),
-            color: FrutiaColors.primary,
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-              itemCount: _nextGames.length +
-                  (shouldShowFinalizeButton ? 1 : 0) +
-                  (shouldShowFinalsButton ? 1 : 0) +
-                  1,
-              itemBuilder: (context, index) {
-                // ✅ COMENTADO: Los botones ahora solo aparecen en Live tab
-                if (shouldShowFinalizeButton && index == 0) {
-                  return _buildFinalizeButton();
-                }
-
-                final finalizeOffset = shouldShowFinalizeButton ? 1 : 0;
-
-                if (shouldShowFinalsButton &&
-                    index == _nextGames.length + finalizeOffset) {
-                  return _buildStartFinalsButton();
-                }
-
-                if (index ==
-                    _nextGames.length +
-                        finalizeOffset +
-                        (shouldShowFinalsButton ? 1 : 0)) {
-                  return _buildAdvanceStageButton();
-                }
-
-                final gameIndex = index;
-                final game = _nextGames[gameIndex];
-
-                // ✅ NUEVA LÓGICA: Determinar si mostrar "Start Game"
-                final shouldShowStartGame = gameIndex < availableStartSlots;
-
-                print(
-                    '🎯 Game #${game['game_number']} - Show Start: $shouldShowStartGame (Position: ${gameIndex + 1}, Slot: ${gameIndex < availableStartSlots})');
-
-                return _buildGameCard(
-                  game,
-                  queuePosition: gameIndex + 1,
-                  shouldShowStartGame: shouldShowStartGame, // ← NUEVO PARÁMETRO
-                );
-              },
+        if (!shouldShowFinalResults)
+          Expanded(
+            child: Column(
+              children: [
+                Spacer(flex: 1),
+                
+                // ✅ BOTONES DE ACCIÓN (sin ícono de fondo)
+                if (shouldShowFinalizeButton)
+                  _buildFinalizeButton()
+                else if (shouldShowFinalsButton)
+                  _buildStartFinalsButton()
+                else if (_sessionData != null &&
+                    (_sessionData!['session_type'] == 'P4' ||
+                        _sessionData!['session_type'] == 'P8' ||
+                        _sessionData!['session_type'] == 'T' ||      // ← AGREGADO
+                        _sessionData!['session_type'] == 'O') &&      // ← AGREGADO
+                    _liveGames.isEmpty &&
+                    !shouldShowFinalsButton &&
+                    !shouldShowFinalizeButton &&
+                    !shouldShowFinalResults)
+                  _buildAdvanceStageButton()
+                  
+                // ✅ ÍCONO Y TEXTO (solo si NO hay botones de acción)
+                else ...[
+                  Icon(Icons.queue, size: 64, color: FrutiaColors.disabledText),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No games in queue',
+                    style: GoogleFonts.lato(
+                      fontSize: 16,
+                      color: FrutiaColors.secondaryText,
+                    ),
+                  ),
+                ],
+                Spacer(flex: 7),
+              ],
             ),
           ),
-        ),
       ],
     );
   }
+  
+  // ✅ SI HAY NEXT GAMES
+  return Column(
+    children: [
+      if (shouldShowFinalResults) _buildFinalResultsCard(),
+      Expanded(
+        child: RefreshIndicator(
+          onRefresh: () => _loadSessionData(),
+          color: FrutiaColors.primary,
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+            itemCount: _nextGames.length +
+                (shouldShowFinalizeButton ? 1 : 0) +
+                (shouldShowFinalsButton ? 1 : 0) +
+                1,
+            itemBuilder: (context, index) {
+              if (shouldShowFinalizeButton && index == 0) {
+                return _buildFinalizeButton();
+              }
+
+              final finalizeOffset = shouldShowFinalizeButton ? 1 : 0;
+
+              if (shouldShowFinalsButton &&
+                  index == _nextGames.length + finalizeOffset) {
+                return _buildStartFinalsButton();
+              }
+
+              if (index ==
+                  _nextGames.length +
+                      finalizeOffset +
+                      (shouldShowFinalsButton ? 1 : 0)) {
+                return _buildAdvanceStageButton();
+              }
+
+              final gameIndex = index;
+              final game = _nextGames[gameIndex];
+              final shouldShowStartGame = gameIndex < availableStartSlots;
+
+              print('🎯 Game #${game['game_number']} - Show Start: $shouldShowStartGame (Position: ${gameIndex + 1}, Slot: ${gameIndex < availableStartSlots})');
+
+              return _buildGameCard(
+                game,
+                queuePosition: gameIndex + 1,
+                shouldShowStartGame: shouldShowStartGame,
+              );
+            },
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
 
   Widget _buildFinalResultsCard() {
     final sessionName = _sessionData?['session_name'] ?? 'Session';
@@ -1905,215 +1902,87 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     );
   }
 
-  Widget _buildAdvanceStageButton() {
-    // ✅ NO MOSTRAR si es espectador
-    if (_isReallySpectator) {
-      return const SizedBox.shrink();
-    }
+Widget _buildAdvanceStageButton() {
+  // ✅ NO MOSTRAR si es espectador
+  if (_isReallySpectator) {
+    return const SizedBox.shrink();
+  }
 
-    final sessionType = _sessionData?['session_type'];
-    final currentStage = _sessionData?['current_stage'] ?? 1;
-    final status = _sessionData?['status'];
+  final sessionType = _sessionData?['session_type'];
+  final currentStage = _sessionData?['current_stage'] ?? 1;
+  final status = _sessionData?['status'];
 
-
- // ✅ NUEVO: No mostrar para P4/P8 si hay semifinals completadas
-  // (porque las finals se auto-generan)
+  // ✅ NUEVO: No mostrar para P4/P8 si hay semifinals completadas
   if (sessionType == 'P4' || sessionType == 'P8') {
-    // Verificar si ya hay semifinals completadas
-    final completedSemifinals = _completedGames.where((g) =>
-      (g['is_playoff_game'] == 1 || g['is_playoff_game'] == true) &&
-      g['playoff_round'] == 'semifinal' &&
-      g['status'] == 'completed'
-    ).length;
-    
-    // Si ya hay semifinals completadas, no mostrar el botón
-    // (las finals ya se generaron automáticamente o están en proceso)
+    final completedSemifinals = _completedGames
+        .where((g) =>
+            (g['is_playoff_game'] == 1 || g['is_playoff_game'] == true) &&
+            g['playoff_round'] == 'semifinal' &&
+            g['status'] == 'completed')
+        .length;
+
     if (completedSemifinals > 0) {
       print('[DEBUG] ❌ Not showing button: Semifinals already completed (auto-generation handled)');
       return const SizedBox.shrink();
     }
   }
-  
-    // ✅ AGREGAR DEBUGGING
-    print('========== DEBUG ADVANCE BUTTON ==========');
-    print('[DEBUG] Session Type: $sessionType');
-    print('[DEBUG] Current Stage: $currentStage');
-    print('[DEBUG] Status: $status');
-    print('[DEBUG] Live games: ${_liveGames.length}');
-    print('[DEBUG] Next games: ${_nextGames.length}');
 
-    if (sessionType == 'T') {
-      final hasPendingGamesInCurrentStage =
-          _nextGames.any((game) => game['stage'] == currentStage);
-      print(
-          '[DEBUG] Has pending games in stage $currentStage: $hasPendingGamesInCurrentStage');
+  // ✅ DEBUGGING MEJORADO
+  print('========== DEBUG ADVANCE BUTTON ==========');
+  print('[DEBUG] Session Type: $sessionType');
+  print('[DEBUG] Current Stage: $currentStage');
+  print('[DEBUG] Status: $status');
+  print('[DEBUG] Live games: ${_liveGames.length}');
+  print('[DEBUG] Next games: ${_nextGames.length}');
 
-      if (hasPendingGamesInCurrentStage) {
-        print('[DEBUG] Showing next games stages:');
-        for (var game in _nextGames) {
-          print('  - Game #${game['game_number']}: stage=${game['stage']}');
-        }
-      }
-    }
-    print('==========================================');
+  // ✅ AGREGAR: No mostrar si ya hay que generar las finals de P8
+  if (sessionType == 'P8' && _shouldShowStartFinalsButton()) {
+    print('[DEBUG] ❌ Not showing Advance button: Finals button takes priority');
+    return const SizedBox.shrink();
+  }
 
-    // ✅ AGREGAR: No mostrar si ya hay que generar las finals de P8
-    if (sessionType == 'P8' && _shouldShowStartFinalsButton()) {
-      print(
-          '[DEBUG] ❌ Not showing Advance button: Finals button takes priority');
+  // ✅ No mostrar si hay juegos activos
+  if (_liveGames.isNotEmpty) {
+    print('[DEBUG] ❌ Not showing: Has live games');
+    return const SizedBox.shrink();
+  }
+
+  // ✅ No mostrar si la sesión está completada
+  if (status == 'completed') {
+    print('[DEBUG] ❌ Not showing: Session completed');
+    return const SizedBox.shrink();
+  }
+
+  // ✅ CORREGIDO: PARA TOURNAMENT (T) - LÓGICA MEJORADA
+  if (sessionType == 'T') {
+    if (currentStage >= 3) {
+      print('[DEBUG] ❌ Not showing: Already in stage 3');
       return const SizedBox.shrink();
     }
 
-    // ✅ No mostrar si hay juegos activos
-    if (_liveGames.isNotEmpty) {
-      print('[DEBUG] ❌ Not showing: Has live games');
-      return const SizedBox.shrink();
-    }
+    // ✅ LÓGICA MEJORADA PARA TOURNAMENT
+    // En Tournament, el administrador PUEDE avanzar aunque haya juegos en Next
+    // Solo verificamos que no haya juegos en Live
+    final hasPendingGames = _nextGames.isNotEmpty;
+    
+    print('[DEBUG] Tournament Stage $currentStage:');
+    print('[DEBUG] - Pending games in Next: $hasPendingGames');
+    print('[DEBUG] - Live games: ${_liveGames.length}');
 
-    // ✅ No mostrar si la sesión está completada
-    if (status == 'completed') {
-      print('[DEBUG] ❌ Not showing: Session completed');
-      return const SizedBox.shrink();
-    }
+    // ✅ SIEMPRE mostrar el botón si no hay juegos en Live (independientemente de Next)
+    print('[DEBUG] ✅ SHOWING BUTTON: Advance to Stage ${currentStage + 1}');
 
-    // ✅ PARA TORNEOS
-    if (sessionType == 'T') {
-      if (currentStage >= 3) {
-        print('[DEBUG] ❌ Not showing: Already in stage 3');
-        return const SizedBox.shrink();
-      }
-
-      final hasPendingGamesInCurrentStage =
-          _nextGames.any((game) => game['stage'] == currentStage);
-
-      if (hasPendingGamesInCurrentStage) {
-        print('[DEBUG] ❌ Not showing: Has pending games in current stage');
-        return const SizedBox.shrink();
-      }
-
-      print('[DEBUG] ✅ SHOWING BUTTON: Advance to Stage ${currentStage + 1}');
-
-      String buttonText = 'Advance to Stage ${currentStage + 1}';
-      String description =
-          'Generate Stage ${currentStage + 1} matches based on Stage $currentStage results';
-
-      return Container(
-        margin: const EdgeInsets.only(left: 16, right: 16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: FrutiaColors.nutrition.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: FrutiaColors.nutrition,
-            width: 2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.flag, color: FrutiaColors.primary, size: 24),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Ready for the Next Stage?',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        description,
-                        style: GoogleFonts.lato(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Container(
-              height: 1,
-              color: Colors.grey[300],
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => _showAdvanceStageConfirmation(),
-              icon: Icon(Icons.flag, color: Colors.white, size: 20),
-              label: Text(
-                buttonText,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: FrutiaColors.primary,
-                foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // ✅ PARA PLAYOFFS: Lógica existente
-    final hasActivePlayoffGames = _liveGames.any((game) =>
-            (game['is_playoff_game'] == 1 ||
-                game['is_playoff_game'] == true)) ||
-        _nextGames.any((game) =>
-            (game['is_playoff_game'] == 1 || game['is_playoff_game'] == true));
-
-    if ((sessionType == 'P4' || sessionType == 'P8') && hasActivePlayoffGames) {
-      return const SizedBox.shrink();
-    }
-
-    String buttonText = '';
-    String description = '';
-    IconData buttonIcon = Icons.arrow_forward;
-
-    if (sessionType == 'P4' || sessionType == 'P8') {
-      buttonText = 'Advance to Playoffs';
-      description = 'Generate playoff bracket based on current rankings';
-      buttonIcon = Icons.emoji_events;
-
-      if (_nextGames.isNotEmpty) {
-        description =
-            'This will clear all pending games (${_nextGames.length}) and generate the Playoffs bracket';
-      }
-    }
-
-    if (buttonText.isEmpty) {
-      return const SizedBox.shrink();
+    String buttonText = 'Advance to Stage ${currentStage + 1}';
+    String description = 'Generate Stage ${currentStage + 1} matches based on Stage $currentStage results';
+    
+    // ✅ AGREGAR ADVERTENCIA en la descripción si hay juegos pendientes
+    if (hasPendingGames) {
+      description = '${_nextGames.length} pending games will be skipped. Generate Stage ${currentStage + 1} matches based on current rankings.';
     }
 
     return Container(
       margin: const EdgeInsets.only(left: 16, right: 16),
-      padding: const EdgeInsets.only(right: 20, left: 20, bottom: 10, top: 10),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: FrutiaColors.nutrition.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
@@ -2134,14 +2003,14 @@ class _SessionControlPanelState extends State<SessionControlPanel>
         children: [
           Row(
             children: [
-              Icon(Icons.help_outline, color: FrutiaColors.primary, size: 24),
+              Icon(Icons.flag, color: FrutiaColors.primary, size: 24),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Ready for the Next Phase?',
+                      'Ready for the Next Stage?',
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -2162,7 +2031,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+ 
           Container(
             height: 1,
             color: Colors.grey[300],
@@ -2170,7 +2039,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
           const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: () => _showAdvanceStageConfirmation(),
-            icon: Icon(buttonIcon, color: Colors.white, size: 20),
+            icon: Icon(Icons.flag, color: Colors.white, size: 20),
             label: Text(
               buttonText,
               style: GoogleFonts.poppins(
@@ -2192,21 +2061,216 @@ class _SessionControlPanelState extends State<SessionControlPanel>
         ],
       ),
     );
-  } // Busca el método existente (aproximadamente línea 300-350) y reemplázalo con este:
+  }
 
-// AGREGAR estos 3 métodos AL FINAL del archivo
+  // ✅ PARA OPTIMIZED (O) - LÓGICA SIMILAR
+  if (sessionType == 'O') {
+    // Para Optimized, mostrar botón cuando no hay más juegos pendientes
+    if (_nextGames.isNotEmpty || _liveGames.isNotEmpty) {
+      print('[DEBUG] ❌ Not showing Optimized: Has pending/live games');
+      return const SizedBox.shrink();
+    }
+
+    print('[DEBUG] ✅ SHOWING BUTTON: Generate More Games (Optimized)');
+
+    return Container(
+      margin: const EdgeInsets.only(left: 16, right: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: FrutiaColors.nutrition.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: FrutiaColors.nutrition,
+          width: 2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.autorenew, color: FrutiaColors.primary, size: 24),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Generate More Games?',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Create additional matches based on current rankings',
+                      style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Container(
+            height: 1,
+            color: Colors.grey[300],
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: () => _showAdvanceStageConfirmation(),
+            icon: Icon(Icons.autorenew, color: Colors.white, size: 20),
+            label: Text(
+              'Generate Games',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: FrutiaColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ✅ LÓGICA EXISTENTE PARA P4 y P8 (sin cambios)
+  final hasActivePlayoffGames = _liveGames.any((game) =>
+          (game['is_playoff_game'] == 1 || game['is_playoff_game'] == true)) ||
+      _nextGames.any((game) =>
+          (game['is_playoff_game'] == 1 || game['is_playoff_game'] == true));
+
+  if ((sessionType == 'P4' || sessionType == 'P8') && hasActivePlayoffGames) {
+    return const SizedBox.shrink();
+  }
+
+  String buttonText = '';
+  String description = '';
+  IconData buttonIcon = Icons.arrow_forward;
+
+  if (sessionType == 'P4' || sessionType == 'P8') {
+    buttonText = 'Advance to Playoffs';
+    description = 'Generate playoff bracket based on current rankings';
+    buttonIcon = Icons.emoji_events;
+
+    if (_nextGames.isNotEmpty) {
+      description = 'This will clear all pending games (${_nextGames.length}) and generate the Playoffs bracket';
+    }
+  }
+
+  if (buttonText.isEmpty) {
+    return const SizedBox.shrink();
+  }
+
+  return Container(
+    margin: const EdgeInsets.only(left: 16, right: 16),
+    padding: const EdgeInsets.only(right: 20, left: 20, bottom: 10, top: 10),
+    decoration: BoxDecoration(
+      color: FrutiaColors.nutrition.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: FrutiaColors.nutrition,
+        width: 2,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          blurRadius: 4,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.help_outline, color: FrutiaColors.primary, size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Ready for the Next Phase?',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: GoogleFonts.lato(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          height: 1,
+          color: Colors.grey[300],
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton.icon(
+          onPressed: () => _showAdvanceStageConfirmation(),
+          icon: Icon(buttonIcon, color: Colors.white, size: 20),
+          label: Text(
+            buttonText,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: FrutiaColors.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 2,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
   Color _getPlayoffColor(String? playoffRound) {
     switch (playoffRound) {
       case 'qualifier':
-        return const Color(0xFF9C27B0); // Morado para qualifier
-      case 'semifinal':
-        return const Color(0xFFFF6B35);
-      case 'gold':
-        return const Color(0xFFFFD700);
+        return const Color(0xFF9C27B0); // Morado un poco más fuerte
       case 'bronze':
-        return const Color(0xFFCD7F32);
+        return const Color(0xFF8E24AA); // Morado medio
+      case 'semifinal':
+        return const Color(0xFFFF6B35); // Naranja (igual, ya está bien)
+      case 'gold':
       case 'final':
-        return const Color(0xFFFFD700); // Dorado para final (P8 especial)
+        return const Color(0xFFFFC400); // Amarillo más vibrante
       default:
         return FrutiaColors.accent;
     }
@@ -2216,8 +2280,13 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     switch (playoffRound) {
       case 'qualifier':
         return [
-          const Color(0xFF9C27B0),
-          const Color(0xFFBA68C8),
+          const Color(0xFF9C27B0), // Morado
+          const Color(0xFFBA68C8), // Morado claro
+        ];
+      case 'bronze':
+        return [
+          const Color(0xFF8E24AA), // Morado medio
+          const Color(0xFFCE93D8), // Morado claro
         ];
       case 'semifinal':
         return [
@@ -2225,19 +2294,10 @@ class _SessionControlPanelState extends State<SessionControlPanel>
           const Color(0xFFFF8C42),
         ];
       case 'gold':
-        return [
-          const Color(0xFFFFD700),
-          const Color(0xFFFFC107),
-        ];
-      case 'bronze':
-        return [
-          const Color(0xFFCD7F32),
-          const Color(0xFFD4A574),
-        ];
       case 'final':
         return [
-          const Color(0xFFFFD700),
-          const Color(0xFFFFC107),
+          const Color(0xFFFFC400), // Amarillo más vibrante
+          const Color(0xFFFFF176), // Amarillo claro
         ];
       default:
         return [FrutiaColors.accent, FrutiaColors.accent.withOpacity(0.8)];
@@ -2246,12 +2306,15 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 
   IconData _getPlayoffIcon(String? playoffRound) {
     switch (playoffRound) {
+      case 'qualifier':
+        return Icons.play_arrow; // Icono para qualifier
+      case 'bronze':
+        return Icons.workspace_premium; // Icono para bronze
       case 'semifinal':
         return Icons.stars;
       case 'gold':
+      case 'final':
         return Icons.emoji_events;
-      case 'bronze':
-        return Icons.workspace_premium;
       default:
         return Icons.emoji_events;
     }
@@ -2418,7 +2481,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 
     // ✅ NUEVO: Manejar "qualifier"
     if (playoffRound == 'qualifier') {
-      return 'Qualifier/Bronze';
+      return 'Qualifier / Bronze';
     }
 
     if (playoffRound == 'semifinal') {
@@ -2448,361 +2511,363 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     return playoffRound?.toUpperCase();
   }
 
+  void _showSessionInfoDialog() {
+    final sessionName = _sessionData?['session_name'] ?? 'Session';
+    final sessionType = _sessionData?['session_type'] ?? 'Unknown';
+    final numberOfCourts = _sessionData?['number_of_courts'] ?? 0;
+    final numberOfPlayers = _sessionData?['number_of_players'] ?? 0;
+    final progressPercentage = _sessionData?['progress_percentage'] ?? 0.0;
+    final status = _sessionData?['status'] ?? 'unknown';
+    final currentStage = _sessionData?['current_stage'] ?? 1;
+    final sessionCode = _sessionData?['session_code'] ?? 'N/A';
 
-void _showSessionInfoDialog() {
-  final sessionName = _sessionData?['session_name'] ?? 'Session';
-  final sessionType = _sessionData?['session_type'] ?? 'Unknown';
-  final numberOfCourts = _sessionData?['number_of_courts'] ?? 0;
-  final numberOfPlayers = _sessionData?['number_of_players'] ?? 0;
-  final progressPercentage = _sessionData?['progress_percentage'] ?? 0.0;
-  final status = _sessionData?['status'] ?? 'unknown';
-  final currentStage = _sessionData?['current_stage'] ?? 1;
-  final sessionCode = _sessionData?['session_code'] ?? 'N/A';
+    final totalGames = _sessionData?['total_games'] ?? 0;
+    final completedGamesCount = _completedGames.length;
 
-  final totalGames = _sessionData?['total_games'] ?? 0;
-  final completedGamesCount = _completedGames.length;
-
-  // Mapear tipos de sesión a nombres legibles
-  String getSessionTypeName(String type) {
-    switch (type) {
-      case 'O':
-        return 'Optimized';
-      case 'T':
-        return 'Tournament';
-      case 'P4':
-        return 'Playoff (4)';
-      case 'P8':
-        return 'Playoff (8)';
-      default:
-        return type;
+    // Mapear tipos de sesión a nombres legibles
+    String getSessionTypeName(String type) {
+      switch (type) {
+        case 'O':
+          return 'Optimized';
+        case 'T':
+          return 'Tournament';
+        case 'P4':
+          return 'Playoff (4)';
+        case 'P8':
+          return 'Playoff (8)';
+        default:
+          return type;
+      }
     }
-  }
 
-  showDialog(
-    context: context,
-    builder: (context) => Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-      child: Container(
-        constraints: BoxConstraints(
-          maxWidth: 500,
-          maxHeight: MediaQuery.of(context).size.height * 0.90,
-        ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20), // ← Reducido de 24
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ✅ HEADER mejorado
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10), // ← Reducido de 12
-                      decoration: BoxDecoration(
-                        color: FrutiaColors.primary.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.info_outline,
-                        color: FrutiaColors.primary,
-                        size: 28, // ← Reducido de 32
-                      ),
-                    ),
-                    const SizedBox(width: 12), // ← Reducido de 16
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Session Info',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20, // ← Reducido de 22
-                              fontWeight: FontWeight.bold,
-                              color: FrutiaColors.primaryText,
-                            ),
-                          ),
-                          Text(
-                            sessionName,
-                            style: GoogleFonts.lato(
-                              fontSize: 13, // ← Reducido de 14
-                              color: FrutiaColors.secondaryText,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 8), // ← Reducido de 10
-
-                // ✅ SECCIÓN: Session Code (DESTACADO) - CON BOTÓN COPIAR
-                Container(
-                  padding: const EdgeInsets.all(16), // ← Reducido de 20
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        FrutiaColors.warning.withOpacity(0.15),
-                        FrutiaColors.warning.withOpacity(0.05),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: FrutiaColors.warning.withOpacity(0.3),
-                      width: 2,
-                    ),
-                  ),
-                  child: Column(
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: 500,
+            maxHeight: MediaQuery.of(context).size.height * 0.90,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20), // ← Reducido de 24
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ✅ HEADER mejorado
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.qr_code,
-                            color: FrutiaColors.warning,
-                            size: 22, // ← Reducido de 24
-                          ),
-                          const SizedBox(width: 6), // ← Reducido de 8
-                          Text(
-                            'Spectator Code',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13, // ← Reducido de 14
-                              fontWeight: FontWeight.w600,
-                              color: FrutiaColors.primaryText,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10), // ← Reducido de 12
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 1,
-                          vertical: 6, // ← Reducido de 8
-                        ),
+                        padding: const EdgeInsets.all(10), // ← Reducido de 12
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: FrutiaColors.warning.withOpacity(0.3),
-                          ),
+                          color: FrutiaColors.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                        child: Icon(
+                          Icons.info_outline,
+                          color: FrutiaColors.primary,
+                          size: 28, // ← Reducido de 32
+                        ),
+                      ),
+                      const SizedBox(width: 12), // ← Reducido de 16
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              sessionCode,
-                              style: GoogleFonts.robotoMono(
-                                fontSize: 22, // ← Reducido de 25
+                              'Session Info',
+                              style: GoogleFonts.poppins(
+                                fontSize: 20, // ← Reducido de 22
                                 fontWeight: FontWeight.bold,
-                                letterSpacing: 6, // ← Reducido de 8
-                                color: FrutiaColors.warning,
+                                color: FrutiaColors.primaryText,
                               ),
                             ),
-                            const SizedBox(width: 12), // ← Reducido de 16
-                            // ✅ BOTÓN COPIAR
-                           InkWell(
-  onTap: () async {
-    await Clipboard.setData(ClipboardData(text: sessionCode));
-    Fluttertoast.showToast(
-      msg: "Code copied to clipboard!",
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: FrutiaColors.success,
-      textColor: Colors.white,
-      fontSize: 14.0,
-    );
-  },
-  borderRadius: BorderRadius.circular(8),
-  child: Container(
-    padding: const EdgeInsets.all(6),
-    decoration: BoxDecoration(
-      color: FrutiaColors.warning.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Icon(
-      Icons.copy,
-      color: FrutiaColors.warning,
-      size: 20,
-    ),
-  ),
-),
+                            Text(
+                              sessionName,
+                              style: GoogleFonts.lato(
+                                fontSize: 13, // ← Reducido de 14
+                                color: FrutiaColors.secondaryText,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 20), // ← Reducido de 24
 
-                // ✅ SECCIÓN: Session Details - COMPACTA
-                Text(
-                  'Details',
-                  style: GoogleFonts.poppins(
-                    fontSize: 15, // ← Reducido de 16
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                const SizedBox(height: 12), // ← Reducido de 16
+                  const SizedBox(height: 8), // ← Reducido de 10
 
-                // Session Type
-                _buildInfoRow('Type', getSessionTypeName(sessionType)),
-                const SizedBox(height: 8), // ← Reducido de 12
-
-                // Status
-                _buildInfoRow(
-                  'Status',
-                  status.toUpperCase(),
-                  valueColor: status == 'completed'
-                      ? FrutiaColors.success
-                      : FrutiaColors.primary,
-                ),
-                const SizedBox(height: 8), // ← Reducido de 12
-
-                // Current Stage (solo para torneos)
-                if (sessionType == 'T') ...[
-                  _buildInfoRow('Current Stage', 'Stage $currentStage'),
-                  const SizedBox(height: 8), // ← Reducido de 12
-                ],
-
-                // Courts & Players
-                _buildInfoRow('Courts', numberOfCourts.toString()),
-                const SizedBox(height: 8), // ← Reducido de 12
-
-                _buildInfoRow('Players', numberOfPlayers.toString()),
-                const SizedBox(height: 8), // ← Reducido de 12
-
-                // Duration
-                _buildInfoRow('Duration', _formatTimer(_elapsedSeconds)),
-
-                const SizedBox(height: 30), // ← Reducido de 20
-
-                // Progress - COMPACTO
-                Text(
-                  'Progress',
-                  style: GoogleFonts.poppins(
-                    fontSize: 15, // ← Reducido de 16
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                const SizedBox(height: 20), // ← Reducido de 12
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${progressPercentage.toInt()}%',
-                      style: GoogleFonts.poppins(
-                        fontSize: 22, // ← Reducido de 24
-                        fontWeight: FontWeight.bold,
-                        color: progressPercentage >= 100
-                            ? FrutiaColors.success
-                            : FrutiaColors.primary,
-                      ),
-                    ),
-                    Text(
-                      '$completedGamesCount / $totalGames games',
-                      style: GoogleFonts.lato(
-                        fontSize: 13, // ← Reducido de 14
-                        color: FrutiaColors.secondaryText,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6), // ← Reducido de 8
-
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: progressPercentage / 100,
-                    backgroundColor: FrutiaColors.tertiaryBackground,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      progressPercentage >= 100
-                          ? FrutiaColors.success
-                          : FrutiaColors.primary,
-                    ),
-                    minHeight: 10, // ← Reducido de 12
-                  ),
-                ),
-
-                // ✅ CORREGIDO: Solo mostrar botón de finalizar si NO es espectador Y NO está completada
-                if (status != 'completed' && !_isReallySpectator) ...[
-                  const SizedBox(height: 16), // ← Reducido de 20
+                  // ✅ SECCIÓN: Session Code (DESTACADO) - CON BOTÓN COPIAR
                   Container(
-                    height: 1,
-                    color: Colors.grey[300],
+                    padding: const EdgeInsets.all(16), // ← Reducido de 20
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          FrutiaColors.warning.withOpacity(0.15),
+                          FrutiaColors.warning.withOpacity(0.05),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: FrutiaColors.warning.withOpacity(0.3),
+                        width: 2,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.qr_code,
+                              color: FrutiaColors.warning,
+                              size: 22, // ← Reducido de 24
+                            ),
+                            const SizedBox(width: 6), // ← Reducido de 8
+                            Text(
+                              'Spectator Code',
+                              style: GoogleFonts.poppins(
+                                fontSize: 13, // ← Reducido de 14
+                                fontWeight: FontWeight.w600,
+                                color: FrutiaColors.primaryText,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10), // ← Reducido de 12
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 1,
+                            vertical: 6, // ← Reducido de 8
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: FrutiaColors.warning.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                sessionCode,
+                                style: GoogleFonts.robotoMono(
+                                  fontSize: 22, // ← Reducido de 25
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 6, // ← Reducido de 8
+                                  color: FrutiaColors.warning,
+                                ),
+                              ),
+                              const SizedBox(width: 12), // ← Reducido de 16
+                              // ✅ BOTÓN COPIAR
+                              InkWell(
+                                onTap: () async {
+                                  await Clipboard.setData(
+                                      ClipboardData(text: sessionCode));
+                                  Fluttertoast.showToast(
+                                    msg: "Code copied to clipboard!",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.BOTTOM,
+                                    backgroundColor: FrutiaColors.success,
+                                    textColor: Colors.white,
+                                    fontSize: 14.0,
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        FrutiaColors.warning.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.copy,
+                                    color: FrutiaColors.warning,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20), // ← Reducido de 24
+
+                  // ✅ SECCIÓN: Session Details - COMPACTA
+                  Text(
+                    'Details',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15, // ← Reducido de 16
+                      fontWeight: FontWeight.w600,
+                      color: FrutiaColors.primaryText,
+                    ),
                   ),
                   const SizedBox(height: 12), // ← Reducido de 16
 
-                  // Finalize Session Button - MÁS COMPACTO
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _showFinalizeConfirmation(fromInfoDialog: true);
-                      },
-                      icon: Icon(Icons.flag,
-                          size: 16, color: Colors.red),
-                      label: Text(
-                        'Finalize Session',
+                  // Session Type
+                  _buildInfoRow('Type', getSessionTypeName(sessionType)),
+                  const SizedBox(height: 8), // ← Reducido de 12
+
+                  // Status
+                  _buildInfoRow(
+                    'Status',
+                    status.toUpperCase(),
+                    valueColor: status == 'completed'
+                        ? FrutiaColors.success
+                        : FrutiaColors.primary,
+                  ),
+                  const SizedBox(height: 8), // ← Reducido de 12
+
+                  // Current Stage (solo para torneos)
+                  if (sessionType == 'T') ...[
+                    _buildInfoRow('Current Stage', 'Stage $currentStage'),
+                    const SizedBox(height: 8), // ← Reducido de 12
+                  ],
+
+                  // Courts & Players
+                  _buildInfoRow('Courts', numberOfCourts.toString()),
+                  const SizedBox(height: 8), // ← Reducido de 12
+
+                  _buildInfoRow('Players', numberOfPlayers.toString()),
+                  const SizedBox(height: 8), // ← Reducido de 12
+
+                  // Duration
+                  _buildInfoRow('Duration', _formatTimer(_elapsedSeconds)),
+
+                  const SizedBox(height: 30), // ← Reducido de 20
+
+                  // Progress - COMPACTO
+                  Text(
+                    'Progress',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15, // ← Reducido de 16
+                      fontWeight: FontWeight.w600,
+                      color: FrutiaColors.primaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 20), // ← Reducido de 12
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${progressPercentage.toInt()}%',
                         style: GoogleFonts.poppins(
-                          color: Colors.red,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                          fontSize: 22, // ← Reducido de 24
+                          fontWeight: FontWeight.bold,
+                          color: progressPercentage >= 100
+                              ? FrutiaColors.success
+                              : FrutiaColors.primary,
                         ),
                       ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 10), // ← Más compacto
-                        side: BorderSide(
-                          color: FrutiaColors.error,
-                          width: 2,
+                      Text(
+                        '$completedGamesCount / $totalGames games',
+                        style: GoogleFonts.lato(
+                          fontSize: 13, // ← Reducido de 14
+                          color: FrutiaColors.secondaryText,
                         ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6), // ← Reducido de 8
+
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      value: progressPercentage / 100,
+                      backgroundColor: FrutiaColors.tertiaryBackground,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        progressPercentage >= 100
+                            ? FrutiaColors.success
+                            : FrutiaColors.primary,
+                      ),
+                      minHeight: 10, // ← Reducido de 12
+                    ),
+                  ),
+
+                  // ✅ CORREGIDO: Solo mostrar botón de finalizar si NO es espectador Y NO está completada
+                  if (status != 'completed' && !_isReallySpectator) ...[
+                    const SizedBox(height: 16), // ← Reducido de 20
+                    Container(
+                      height: 1,
+                      color: Colors.grey[300],
+                    ),
+                    const SizedBox(height: 12), // ← Reducido de 16
+
+                    // Finalize Session Button - MÁS COMPACTO
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showFinalizeConfirmation(fromInfoDialog: true);
+                        },
+                        icon: Icon(Icons.flag, size: 16, color: Colors.red),
+                        label: Text(
+                          'Finalize Session',
+                          style: GoogleFonts.poppins(
+                            color: Colors.red,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 10), // ← Más compacto
+                          side: BorderSide(
+                            color: FrutiaColors.error,
+                            width: 2,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8), // ← Reducido de 12
+
+                  // Close Button - MÁS COMPACTO
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FrutiaColors.primary,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10), // ← Más compacto
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
+                      child: Text(
+                        'Close',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
                 ],
-                const SizedBox(height: 8), // ← Reducido de 12
-
-                // Close Button - MÁS COMPACTO
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: FrutiaColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 10), // ← Más compacto
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      'Close',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
 // Widget auxiliar para mostrar filas de información (sin cambios)
   Widget _buildInfoRow(String label, String value, {Color? valueColor}) {
@@ -4754,7 +4819,6 @@ void _showSessionInfoDialog() {
         game['is_playoff_game'] == 1 || game['is_playoff_game'] == true;
 
     if (!isPlayoffGame) {
-      // Partidos normales: verde como antes
       return FrutiaColors.accent.withOpacity(0.15);
     }
 
@@ -4762,16 +4826,13 @@ void _showSessionInfoDialog() {
 
     switch (playoffRound) {
       case 'gold':
-        // Final: Dorado suave
-        return const Color(0xFFFFD700).withOpacity(0.3);
+      case 'final':
+        return const Color(0xFFFFF59D).withOpacity(0.7); // Amarillo más visible
       case 'bronze':
-        // Bronze Match: Bronce suave
-        return const Color(0xFFCD7F32).withOpacity(0.3);
+      case 'qualifier':
+        return const Color(0xFFE1BEE7).withOpacity(0.7); // Morado más visible
       case 'semifinal':
-        // Semifinals: Verde como antes
-
-        return const Color(0xFFFF6B35).withOpacity(0.3);
-
+        return const Color(0xFFFFCCBC).withOpacity(0.7); // Naranja más visible
       default:
         return FrutiaColors.accent.withOpacity(0.15);
     }
@@ -5096,48 +5157,161 @@ void _showSessionInfoDialog() {
                                   ),
                                 ),
                               ],
-
-                              // Cancel button for live games
+// Cancel button for live games
                               if (isLive && !widget.isSpectator) ...[
                                 InkWell(
                                   onTap: () async {
                                     final confirm = await showDialog<bool>(
                                       context: context,
                                       builder: (context) => AlertDialog(
-                                        title: Text(
-                                          'Cancel game?',
-                                          style: GoogleFonts.poppins(
-                                              color: FrutiaColors.primaryText),
-                                        ),
-                                        content: Text(
-                                          'Are you sure you want to cancel this game? It will be moved back to the list of pending matches.',
-                                          style: GoogleFonts.lato(
-                                              color:
-                                                  FrutiaColors.secondaryText),
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, false),
-                                            child: Text(
-                                              "Don't cancel",
-                                              style: GoogleFonts.lato(
-                                                fontWeight: FontWeight.bold,
-                                                color: FrutiaColors.primary,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(20)),
+                                        contentPadding:
+                                            const EdgeInsets.all(24),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Icon
+                                            Container(
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: FrutiaColors.error
+                                                    .withOpacity(0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.cancel_outlined,
+                                                color: FrutiaColors.error,
+                                                size: 48,
                                               ),
                                             ),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, true),
-                                            child: Text(
-                                              'Cancel',
-                                              style: GoogleFonts.lato(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: FrutiaColors.error),
+                                            const SizedBox(height: 20),
+
+                                            // Title
+                                            Text(
+                                              'Cancel game?',
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 22,
+                                                fontWeight: FontWeight.bold,
+                                                color: FrutiaColors.primaryText,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(height: 12),
+
+                                            // Message
+                                            Text(
+                                              'Are you sure you want to cancel this game? It will be moved back to the list of pending matches.',
+                                              textAlign: TextAlign.center,
+                                              style: GoogleFonts.lato(
+                                                fontSize: 15,
+                                                color:
+                                                    FrutiaColors.secondaryText,
+                                                height: 1.5,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 28),
+
+                                            // Buttons
+                                            Row(
+                                              children: [
+                                                // Don't cancel button (Ghost style)
+                                                Expanded(
+                                                  child: OutlinedButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(
+                                                            context, false),
+                                                    style: OutlinedButton
+                                                        .styleFrom(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          vertical: 14),
+                                                      side: BorderSide(
+                                                        color: FrutiaColors
+                                                            .primaryText
+                                                            .withOpacity(0.3),
+                                                        width: 1.5,
+                                                      ),
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      "Don't cancel",
+                                                      style:
+                                                          GoogleFonts.poppins(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: FrutiaColors
+                                                            .primaryText,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+
+                                                // Cancel button (Red with shadow)
+                                                Expanded(
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: FrutiaColors
+                                                              .error
+                                                              .withOpacity(0.4),
+                                                          blurRadius: 12,
+                                                          offset: const Offset(
+                                                              0, 6),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    child: ElevatedButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                              context, true),
+                                                      style: ElevatedButton
+                                                          .styleFrom(
+                                                        backgroundColor:
+                                                            FrutiaColors.error,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 14),
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(12),
+                                                        ),
+                                                        elevation: 0,
+                                                      ),
+                                                      child: Text(
+                                                        'Cancel Game',
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     );
 
