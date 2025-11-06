@@ -46,7 +46,8 @@ class _SessionTypeScreenState extends State<SessionTypeScreen> {
           ),
           const SizedBox(height: 24),
 
-    // Session Type Cards
+_buildSessionTypeCard('S'), // ← PRIMERO
+
 _buildSessionTypeCard('P4'),
 _buildSessionTypeCard('P8'),
 _buildSessionTypeCard('T'),
@@ -119,7 +120,12 @@ _buildSessionTypeCard('T'),
     IconData icon;
 
     switch (type) {
-  
+   case 'S':
+      title = 'Simple';
+      description = 'Casual play with maximum variety. Everyone plays with different partners. No playoffs, just fun and rotation!';
+      icon = Icons.shuffle;
+      break;
+      
       case 'P4':
         title = 'Playoff 4';
         description = 'Players rotate through games with varied partners and opponents. At the end, the top 4 players advance to playoff rounds to decide the winners.';

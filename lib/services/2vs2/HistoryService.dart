@@ -51,6 +51,50 @@ class HistoryService {
     }
   }
 
+  // ==================== OBTENER BORRADORES (DRAFTS) ====================
+static Future<List<dynamic>> getDrafts() async {
+  print('[HistoryService] Iniciando getDrafts()');
+  final token = await _storage.getToken();
+  if (token == null) {
+    print('[HistoryService] ERROR: Token no encontrado');
+    throw Exception('Usuario no autenticado');
+  }
+
+  print('[HistoryService] Token obtenido: ${token.substring(0, 20)}...');
+  print('[HistoryService] URL: $baseUrl/drafts');
+
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/drafts'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+
+    print('[HistoryService] Status Code: ${response.statusCode}');
+    print('[HistoryService] Response Body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print('[HistoryService] Borradores encontrados: ${data['drafts']?.length ?? 0}');
+      return data['drafts'] ?? [];
+    } else if (response.statusCode == 404) {
+      print('[HistoryService] INFO: No hay borradores');
+      return [];
+    } else if (response.statusCode == 401) {
+      print('[HistoryService] ERROR 401: No autorizado');
+      throw Exception('Token inválido o expirado');
+    } else {
+      print('[HistoryService] ERROR ${response.statusCode}');
+      throw Exception('Error ${response.statusCode}: ${response.body}');
+    }
+  } catch (e) {
+    print('[HistoryService] Excepción capturada: $e');
+    rethrow;
+  }
+}
+
   static Future<List<dynamic>> getAllPlayers() async {
     print('[HistoryService] Iniciando getAllPlayers()');
     

@@ -20,6 +20,263 @@ static Future<Map<String, String>> getAuthHeaders() async {
   }
 
  
+ 
+// ✅ NUEVO: Login de Moderador con verificación de 2 códigos
+static Future<Map<String, dynamic>> moderatorLoginWithVerification(
+  String moderatorCode,
+  String verificationCode,
+) async {
+  print('[SessionService] Moderator login with Moderator: $moderatorCode, Verification: $verificationCode');
+  
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/sessions/moderator-login-verification'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: json.encode({
+        'moderator_code': moderatorCode.toUpperCase(),
+        'verification_code': verificationCode,
+      }),
+    );
+
+    print('[SessionService] Moderator login response: ${response.statusCode}');
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print('[SessionService] Moderator login successful');
+      return data;
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Invalid moderator or verification code');
+    }
+  } catch (e) {
+    print('[SessionService] Moderator login error: $e');
+    if (e is Exception && e.toString().contains('Exception:')) {
+      rethrow;
+    }
+    throw Exception('Connection error: $e');
+  }
+}
+ 
+/// Login de Moderador (público - no requiere token)
+static Future<Map<String, dynamic>> moderatorLogin(
+  String moderatorCode,
+) async {
+  print('[SessionService] Moderator login attempt with code: $moderatorCode');
+  
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/sessions/moderator-login'), // ← CAMBIO DE RUTA
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: json.encode({
+        'moderator_code': moderatorCode.toUpperCase(), // ← SOLO 1 CÓDIGO
+      }),
+    );
+
+    print('[SessionService] Moderator login response: ${response.statusCode}');
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print('[SessionService] Moderator login successful');
+      return data;
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Invalid moderator code');
+    }
+  } catch (e) {
+    print('[SessionService] Moderator login error: $e');
+    if (e is Exception && e.toString().contains('Exception:')) {
+      rethrow;
+    }
+    throw Exception('Connection error: $e');
+  }
+}
+// ========================================
+// ✅ NUEVO: DRAFTS (BORRADORES)
+// ========================================
+
+/// Crear sesión como borrador
+static Future<Map<String, dynamic>> createSessionDraft(
+  Map<String, dynamic> sessionData,
+) async {
+  print('[SessionService] Creating session draft...');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('User not authenticated.');
+  }
+
+  // Agregar flag para guardar como borrador
+  sessionData['save_as_draft'] = true;
+
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/sessions'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode(sessionData),
+    );
+
+    print('[SessionService] Draft response: ${response.statusCode}');
+
+    if (response.statusCode == 201) {
+      print('[SessionService] Draft created successfully');
+      return json.decode(response.body);
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Error creating draft');
+    }
+  } catch (e) {
+    print('[SessionService] Exception creating draft: $e');
+    if (e is Exception && e.toString().contains('Exception:')) {
+      rethrow;
+    }
+    throw Exception('Connection error: $e');
+  }
+}
+
+/// Listar borradores del usuario
+static Future<List<dynamic>> getDrafts() async {
+  print('[SessionService] Getting drafts...');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('User not authenticated.');
+  }
+
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/drafts'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print('[SessionService] Found ${data['drafts'].length} drafts');
+      return data['drafts'] ?? [];
+    } else {
+      throw Exception('Error loading drafts');
+    }
+  } catch (e) {
+    print('[SessionService] Exception: $e');
+    throw Exception('Connection error: $e');
+  }
+}
+
+/// Activar borrador (genera juegos e inicia sesión)
+static Future<Map<String, dynamic>> activateDraft(int sessionId) async {
+  print('[SessionService] Activating draft: $sessionId');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('User not authenticated.');
+  }
+
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/drafts/$sessionId/activate'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('[SessionService] Draft activated successfully');
+      return json.decode(response.body);
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Error activating draft');
+    }
+  } catch (e) {
+    print('[SessionService] Exception: $e');
+    if (e is Exception && e.toString().contains('Exception:')) {
+      rethrow;
+    }
+    throw Exception('Connection error: $e');
+  }
+}
+
+/// Actualizar borrador
+static Future<Map<String, dynamic>> updateDraft(
+  int sessionId,
+  Map<String, dynamic> updates,
+) async {
+  print('[SessionService] Updating draft: $sessionId');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('User not authenticated.');
+  }
+
+  try {
+    final response = await http.put(
+      Uri.parse('$baseUrl/drafts/$sessionId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode(updates),
+    );
+
+    if (response.statusCode == 200) {
+      print('[SessionService] Draft updated successfully');
+      return json.decode(response.body);
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Error updating draft');
+    }
+  } catch (e) {
+    print('[SessionService] Exception: $e');
+    throw Exception('Connection error: $e');
+  }
+}
+
+/// Eliminar borrador
+static Future<void> deleteDraft(int sessionId) async {
+  print('[SessionService] Deleting draft: $sessionId');
+  final token = await _storage.getToken();
+  
+  if (token == null) {
+    throw Exception('User not authenticated.');
+  }
+
+  try {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/drafts/$sessionId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('[SessionService] Draft deleted successfully');
+      return;
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Error deleting draft');
+    }
+  } catch (e) {
+    print('[SessionService] Exception: $e');
+    throw Exception('Connection error: $e');
+  }
+}
 
 // REEMPLAZAR los métodos existentes en SessionService.dart
 // REEMPLAZAR los métodos existentes en SessionService.dart

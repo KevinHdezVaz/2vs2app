@@ -194,34 +194,43 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
             const SizedBox(height: 24),
             
             // Next Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    widget.sessionData.initializeCourts();
-                    widget.sessionData.initializePlayers();
-                    widget.onNext();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: FrutiaColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  'Next: Session Type',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
+// En el botón "Next: Session Type" - LÍNEA ~95
+
+// Next Button
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton(
+    onPressed: () {
+      if (_formKey.currentState!.validate()) {
+        // ✅ SOLO inicializar si las listas están vacías
+        if (widget.sessionData.courtNames.isEmpty) {
+          widget.sessionData.initializeCourts();
+        }
+        
+        if (widget.sessionData.players.isEmpty) {
+          widget.sessionData.initializePlayers();
+        }
+        
+        widget.onNext();
+      }
+    },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: FrutiaColors.primary,
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+    child: Text(
+      'Next: Session Type',
+      style: GoogleFonts.poppins(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+      ),
+    ),
+  ),
+),            const SizedBox(height: 40),
           ],
         ),
       ),

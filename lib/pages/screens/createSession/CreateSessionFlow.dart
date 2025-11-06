@@ -8,9 +8,16 @@ import 'package:Frutia/services/2vs2/SessionService.dart';
 import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class CreateSessionFlow extends StatefulWidget {
-  const CreateSessionFlow({super.key});
+  final Map<String, dynamic>? draftData; // ← Recibir draft data
+  
+  const CreateSessionFlow({
+    super.key,
+    this.draftData,
+  });
 
   @override
   State<CreateSessionFlow> createState() => _CreateSessionFlowState();
@@ -18,9 +25,25 @@ class CreateSessionFlow extends StatefulWidget {
 
 class _CreateSessionFlowState extends State<CreateSessionFlow> {
   final PageController _pageController = PageController();
-  final SessionData _sessionData = SessionData();
+  late final SessionData _sessionData; // ← late final
   int _currentPage = 0;
   bool _isCreating = false;
+  String? _draftId; // ← Guardar ID del draft (ahora es String para UUID local)
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // ✅ Inicializar SessionData con datos del draft si existe
+    if (widget.draftData != null) {
+      _sessionData = SessionData.fromJson(widget.draftData!);
+      _draftId = widget.draftData!['draft_id']; // ← UUID local
+      print('[CreateSessionFlow] Loading draft $_draftId');
+    } else {
+      _sessionData = SessionData();
+      print('[CreateSessionFlow] Creating new session');
+    }
+  }
 
   void _nextPage() {
     if (_currentPage < 3) {
@@ -47,7 +70,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
       appBar: AppBar(
         backgroundColor: FrutiaColors.primary,
         title: Text(
-          'Create New Session',
+          _draftId != null ? 'Edit Draft' : 'Create New Session',
           style: GoogleFonts.poppins(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -94,24 +117,20 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                 });
               },
               children: [
-                // Página 1: Session Details
                 SessionDetailsScreen(
                   sessionData: _sessionData,
                   onNext: _nextPage,
                 ),
-                // Página 2: Session Type
                 SessionTypeScreen(
                   sessionData: _sessionData,
                   onNext: _nextPage, 
                   onBack: _previousPage,
                 ),
-                // Página 3: Court Details
                 CourtDetailsScreen(
                   sessionData: _sessionData,
                   onNext: _nextPage,
                   onBack: _previousPage,
                 ),
-                // Página 4: Player Details
                 PlayerDetailsScreen(
                   sessionData: _sessionData,
                   onBack: _previousPage,
@@ -151,9 +170,15 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
     );
   }
 
-  Future<void> _handleStartSession() async {
-    final confirmed = await _showConfirmationDialog();
-    if (!confirmed) return;
+  // ========================================
+  // ✅ VERSIÓN SIMPLIFICADA CON SHAREDPREFERENCES
+  // ========================================
+
+  Future<void> _handleStartSession({bool saveAsDraft = false}) async {
+    if (!saveAsDraft) {
+      final confirmed = await _showConfirmationDialog();
+      if (!confirmed) return;
+    }
 
     showDialog(
       context: context,
@@ -167,7 +192,9 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
             ),
             SizedBox(height: 16),
             Text(
-              'Creating session...',
+              saveAsDraft 
+                ? (_draftId != null ? 'Updating draft...' : 'Saving draft...')
+                : 'Creating session...',
               style: GoogleFonts.lato(
                 color: Colors.white,
                 fontSize: 16,
@@ -179,46 +206,79 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
     );
 
     try {
-      print('[CreateSessionFlow] Creating session...');
+      if (saveAsDraft) {
+        // ✅ GUARDAR COMO DRAFT LOCAL
+        await _saveDraftLocally();
+        
+        if (!mounted) return;
+        Navigator.of(context).pop(); // Close loading
+        Navigator.of(context).pop(true); // Close CreateSessionFlow
 
-      final response = await SessionService.createSession(_sessionData.toJson());
-      print('[CreateSessionFlow] Session created: ${response['session']['id']}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _draftId != null 
+                      ? 'Draft updated successfully!'
+                      : 'Draft saved successfully!',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: FrutiaColors.success,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      } else {
+        // ✅ CREAR SESIÓN EN EL SERVIDOR
+        print('[CreateSessionFlow] Creating session on server...');
 
-      final sessionId = response['session']['id'];
+        final sessionData = _sessionData.toJson();
+        final response = await SessionService.createSession(sessionData);
 
-      // ✅ ELIMINADO: Ya no llamamos a startSession
-      // La sesión se crea directamente en estado 'active' desde el backend
-      print('[CreateSessionFlow] Session created and ready!');
+        if (!mounted) return;
+        Navigator.of(context).pop(); // Close loading
 
-      if (!mounted) return;
+        // ✅ Si venía de un draft, eliminarlo
+        if (_draftId != null) {
+          await _deleteDraftLocally(_draftId!);
+        }
 
-      Navigator.of(context).pop(); // Close loading
-      Navigator.of(context).pop(); // Close CreateSessionFlow
+        final sessionId = response['session']['id'];
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Session created successfully!', style: TextStyle(fontSize: 17)),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-        ),
-      );
+        Navigator.of(context).pop(); // Close CreateSessionFlow
 
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => SessionControlPanel(sessionId: sessionId),
-        ),
-        (route) => route.isFirst,
-      );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Session started successfully!', style: TextStyle(fontSize: 17)),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => SessionControlPanel(sessionId: sessionId),
+          ),
+          (route) => route.isFirst,
+        );
+      }
     } catch (e) {
       print('[CreateSessionFlow] Error: $e');
 
       if (!mounted) return;
-
       Navigator.of(context).pop(); // Close loading
 
       String errorMessage = e.toString();
       
-      // Si es un error de configuración
       if (errorMessage.contains('configuration has not been created') ||
           errorMessage.contains('You need at least') ||
           errorMessage.contains('players for')) {
@@ -267,15 +327,75 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
           ),
         );
       } else {
-        // Para otros errores
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error creating session: $errorMessage'),
+            content: Text('Error: $errorMessage'),
             backgroundColor: FrutiaColors.error,
             duration: const Duration(seconds: 4),
           ),
         );
       }
+    }
+  }
+
+  // ✅ GUARDAR DRAFT LOCALMENTE
+  Future<void> _saveDraftLocally() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Generar ID si es nuevo draft
+      if (_draftId == null) {
+        _draftId = DateTime.now().millisecondsSinceEpoch.toString();
+      }
+
+      // Preparar datos del draft
+      final draftData = {
+        'draft_id': _draftId,
+        'created_at': DateTime.now().toIso8601String(),
+        'status': 'draft',
+        ..._sessionData.toJson(),
+      };
+
+      // Obtener lista actual de drafts
+      final draftsJson = prefs.getString('session_drafts') ?? '[]';
+      final List<dynamic> drafts = json.decode(draftsJson);
+
+      // Buscar si ya existe este draft
+      final existingIndex = drafts.indexWhere((d) => d['draft_id'] == _draftId);
+
+      if (existingIndex >= 0) {
+        // Actualizar draft existente
+        drafts[existingIndex] = draftData;
+        print('[CreateSessionFlow] Draft updated: $_draftId');
+      } else {
+        // Agregar nuevo draft
+        drafts.add(draftData);
+        print('[CreateSessionFlow] New draft saved: $_draftId');
+      }
+
+      // Guardar de vuelta
+      await prefs.setString('session_drafts', json.encode(drafts));
+      print('[CreateSessionFlow] Total drafts: ${drafts.length}');
+    } catch (e) {
+      print('[CreateSessionFlow] Error saving draft: $e');
+      rethrow;
+    }
+  }
+
+  // ✅ ELIMINAR DRAFT LOCALMENTE
+  Future<void> _deleteDraftLocally(String draftId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final draftsJson = prefs.getString('session_drafts') ?? '[]';
+      final List<dynamic> drafts = json.decode(draftsJson);
+
+      // Remover el draft
+      drafts.removeWhere((d) => d['draft_id'] == draftId);
+
+      await prefs.setString('session_drafts', json.encode(drafts));
+      print('[CreateSessionFlow] Draft deleted: $draftId');
+    } catch (e) {
+      print('[CreateSessionFlow] Error deleting draft: $e');
     }
   }
 
@@ -291,7 +411,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
             Icon(Icons.play_circle_outline, color: FrutiaColors.primary, size: 28),
             SizedBox(width: 12),
             Text(
-              'Start Session',
+              _draftId != null ? 'Start Draft Session' : 'Start Session',
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -301,7 +421,9 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
           ],
         ),
         content: Text(
-          'All set! Ready to start? Remember that once a Session begins, settings cannot be changed.',
+          _draftId != null
+            ? 'Ready to start this draft session? Settings cannot be changed once started.'
+            : 'All set! Ready to start? Settings cannot be changed once started.',
           style: GoogleFonts.lato(
             fontSize: 16,
             color: FrutiaColors.secondaryText,

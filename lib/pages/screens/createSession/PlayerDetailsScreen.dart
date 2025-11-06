@@ -1,4 +1,5 @@
-// SCREEN 3: Player Details
+// lib/pages/screens/createSession/PlayerDetailsScreen.dart
+
 import 'package:Frutia/model/2vs2p/SessionData.dart';
 import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 class PlayerDetailsScreen extends StatefulWidget {
   final SessionData sessionData;
   final VoidCallback onBack;
-  final VoidCallback onStartSession;
+  final void Function({bool saveAsDraft}) onStartSession;
 
   const PlayerDetailsScreen({
     super.key,
@@ -29,14 +30,43 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
   @override
   void initState() {
     super.initState();
+
+    // ✅ CRÍTICO: Asegurar que la lista de players tenga el tamaño correcto
+    print('[PlayerDetailsScreen] initState called');
+    print('   - numberOfPlayers: ${widget.sessionData.numberOfPlayers}');
+    print('   - players.length: ${widget.sessionData.players.length}');
+
+    // ✅ Si la lista está vacía o tiene tamaño incorrecto, inicializarla
+    if (widget.sessionData.players.length !=
+        widget.sessionData.numberOfPlayers) {
+      print('   ⚠️  Player list size mismatch, reinitializing...');
+      widget.sessionData.initializePlayers();
+    }
+
+    // ✅ AHORA SÍ: Inicializar controladores con los datos correctos
     _firstNameControllers = List.generate(
       widget.sessionData.numberOfPlayers,
-      (index) => TextEditingController(),
+      (index) {
+        final firstName = widget.sessionData.players[index].firstName;
+        print('   Loading Player ${index + 1}: "$firstName"');
+        return TextEditingController(text: firstName);
+      },
     );
+
     _lastInitialControllers = List.generate(
       widget.sessionData.numberOfPlayers,
-      (index) => TextEditingController(),
+      (index) {
+        final lastInitial = widget.sessionData.players[index].lastInitial;
+        return TextEditingController(text: lastInitial);
+      },
     );
+
+    // ✅ VERIFICAR QUÉ SE CARGÓ
+    print('[PlayerDetailsScreen] Controllers initialized:');
+    for (var i = 0; i < _firstNameControllers.length; i++) {
+      print(
+          '   Player ${i + 1}: "${_firstNameControllers[i].text}" "${_lastInitialControllers[i].text}"');
+    }
   }
 
   @override
@@ -52,12 +82,22 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
 
   bool _areAllPlayersFilled() {
     for (int i = 0; i < widget.sessionData.numberOfPlayers; i++) {
-      if (_firstNameControllers[i].text.isEmpty ||
-          _lastInitialControllers[i].text.isEmpty) {
+      if (_firstNameControllers[i].text.trim().isEmpty ||
+          _lastInitialControllers[i].text.trim().isEmpty) {
         return false;
       }
     }
     return true;
+  }
+
+  void _updatePlayerDataFromControllers() {
+    for (var i = 0; i < widget.sessionData.numberOfPlayers; i++) {
+      widget.sessionData.players[i].firstName =
+          _firstNameControllers[i].text.trim();
+      widget.sessionData.players[i].lastInitial =
+          _lastInitialControllers[i].text.trim();
+    }
+    print('[PlayerDetailsScreen] Updated player data from controllers');
   }
 
   @override
@@ -137,99 +177,141 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
           ),
 
           const SizedBox(height: 32),
-
-          // Navigation buttons - CORREGIDOS para misma altura
-          Row(
+          // Navigation buttons - DISEÑO MEJORADO EN 2 LÍNEAS
+          Column(
             children: [
-              Expanded(
-                child: SizedBox(
-                  height: 56, // Altura fija para ambos botones
-                  child: OutlinedButton(
-                    onPressed: widget.onBack,
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: FrutiaColors.primary),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+              // PRIMERA LÍNEA: Start Session button (más ancho)
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton.icon(
+                  onPressed: _areAllPlayersFilled()
+                      ? () {
+                          _updatePlayerDataFromControllers();
+                          widget.onStartSession(saveAsDraft: false);
+                        }
+                      : null,
+                  icon: const Icon(Icons.play_arrow,
+                      color: Colors.white, size: 24),
+                  label: Text(
+                    'Start Session',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
-                    child: Text(
-                      'Back: Court Details',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: FrutiaColors.primary,
-                      ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FrutiaColors.accent,
+                    disabledBackgroundColor: FrutiaColors.disabledText,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    elevation: 4,
+                    shadowColor: FrutiaColors.accent.withOpacity(0.4),
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
-                child: SizedBox(
-                  height: 56, // Misma altura fija
-                  child: ElevatedButton(
-                    onPressed:
-                        _areAllPlayersFilled() ? widget.onStartSession : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: FrutiaColors.accent,
-                      disabledBackgroundColor: FrutiaColors.disabledText,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 4, // ← Más sombra al botón
-                      shadowColor: FrutiaColors.accent.withOpacity(0.4), // ← Color de sombra
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.play_arrow, color: Colors.white, size: 28), // ← Icono más grande (28)
-                        const SizedBox(width: 8),
-                        Text(
-                          'Start Session',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
+
+              const SizedBox(height: 12),
+
+              // SEGUNDA LÍNEA: Back y Save Draft
+              Row(
+                children: [
+                  // Back button
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: OutlinedButton(
+                        onPressed: widget.onBack,
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: FrutiaColors.primary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                      ],
+                        child: Text(
+                          'Back',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: FrutiaColors.primary,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ],
-          ),
-
-          if (!_areAllPlayersFilled()) ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: FrutiaColors.warning.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border:
-                    Border.all(color: FrutiaColors.warning.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline,
-                      color: FrutiaColors.warning, size: 20),
                   const SizedBox(width: 12),
+
+                  // Save Draft button
                   Expanded(
-                    child: Text(
-                      'Complete all player names to start the session',
-                      style: GoogleFonts.lato(
-                        fontSize: 13,
-                        color: FrutiaColors.warning,
+                    child: Container(
+                      color: FrutiaColors.warning.withOpacity(0.15),
+                      child: SizedBox(
+                        height: 50,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            _updatePlayerDataFromControllers();
+                            widget.onStartSession(saveAsDraft: true);
+                          },
+                          icon: Icon(
+                            Icons.save_outlined,
+                            size: 20,
+                            color: FrutiaColors.warning,
+                          ),
+                          label: Text(
+                            'Save Draft',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: FrutiaColors.warning,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: FrutiaColors.warning),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ],
+
+              if (!_areAllPlayersFilled()) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: FrutiaColors.warning.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                        color: FrutiaColors.warning.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline,
+                          color: FrutiaColors.warning, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Complete all player names to start the session (you can save as draft anytime)',
+                          style: GoogleFonts.lato(
+                            fontSize: 13,
+                            color: FrutiaColors.warning,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+
+          
 
           const SizedBox(height: 40),
         ],
@@ -237,168 +319,174 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
     ).animate().fadeIn(duration: 300.ms);
   }
 
-Widget _buildPlayerRow(int index) {
-  final player = widget.sessionData.players[index];
+  Widget _buildPlayerRow(int index) {
+    final player = widget.sessionData.players[index];
 
-  return Container(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      children: [
-        Row(
-          children: [
-            // Player number
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: FrutiaColors.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  '${index + 1}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primary,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-
-            // First Name - CAMBIADO: Initial Caps en lugar de ALL CAPS
-            Expanded(
-              child: TextFormField(
-                controller: _firstNameControllers[index],
-                textCapitalization: TextCapitalization.words, // ← Cambiado de .characters a .words
-                decoration: InputDecoration(
-                  labelText: 'First Name',
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Color(0xFFDDE5DC)), // ← Borde más sutil
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Color(0xFFDDE5DC)), // ← Borde más sutil
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
-                  ),
-                  labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                style: GoogleFonts.lato(color: FrutiaColors.primaryText),
-                onChanged: (value) {
-                  setState(() {
-                    player.firstName = value;
-                  });
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-
-            // Last Name - CAMBIADO: Initial Caps en lugar de ALL CAPS
-            Expanded(
-              child: TextFormField(
-                controller: _lastInitialControllers[index],
-                textCapitalization: TextCapitalization.words, // ← Cambiado de .characters a .words
-                decoration: InputDecoration(
-                  labelText: 'Last Name',
-                  counterText: '',
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Color(0xFFDDE5DC)), // ← Borde más sutil
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Color(0xFFDDE5DC)), // ← Borde más sutil
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
-                  ),
-                  labelStyle: GoogleFonts.lato(color: FrutiaColors.primaryText),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                style: GoogleFonts.lato(color: FrutiaColors.primaryText),
-                onChanged: (value) {
-                  setState(() {
-                    player.lastInitial = value;
-                  });
-                },
-              ),
-            ),
-          ],
-        ),
-
-        // Advanced settings
-        if (_showAdvancedSettings) ...[
-          const SizedBox(height: 12),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
           Row(
             children: [
-              const SizedBox(width: 44),
-              // Label
-              SizedBox(
-                width: 100,
-                child: Text(
-                  'Starting Rating',
-                  style: GoogleFonts.lato(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
+              // Player number
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: FrutiaColors.primary.withOpacity(0.1),
+                  shape: BoxShape.circle,
                 ),
-              ),
-              const SizedBox(width: 12),
-              // Dropdown
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: FrutiaColors.tertiaryBackground),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: player.level,
-                      isDense: true,
-                      isExpanded: true,
-                      dropdownColor: FrutiaColors.primaryBackground,
-                      items: ['Above Average', 'Average', 'Below Average']
-                          .map((level) => DropdownMenuItem(
-                                value: level,
-                                child: Text(
-                                  level,
-                                  style: GoogleFonts.lato(
-                                    fontSize: 13,
-                                    color: FrutiaColors.primaryText,
-                                  ),
-                                ),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          player.level = value!;
-                        });
-                      },
-                      style: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                child: Center(
+                  child: Text(
+                    '${index + 1}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: FrutiaColors.primary,
                     ),
                   ),
                 ),
               ),
+              const SizedBox(width: 12),
+
+              // First Name
+              Expanded(
+                child: TextFormField(
+                  controller: _firstNameControllers[index],
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    labelText: 'First Name',
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Color(0xFFDDE5DC)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Color(0xFFDDE5DC)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide:
+                          BorderSide(color: FrutiaColors.primary, width: 2),
+                    ),
+                    labelStyle:
+                        GoogleFonts.lato(color: FrutiaColors.primaryText),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  style: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                  onChanged: (value) {
+                    setState(() {
+                      player.firstName = value;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Last Name
+              Expanded(
+                child: TextFormField(
+                  controller: _lastInitialControllers[index],
+                  textCapitalization: TextCapitalization.words,
+                  decoration: InputDecoration(
+                    labelText: 'Last Name',
+                    counterText: '',
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Color(0xFFDDE5DC)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Color(0xFFDDE5DC)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide:
+                          BorderSide(color: FrutiaColors.primary, width: 2),
+                    ),
+                    labelStyle:
+                        GoogleFonts.lato(color: FrutiaColors.primaryText),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  style: GoogleFonts.lato(color: FrutiaColors.primaryText),
+                  onChanged: (value) {
+                    setState(() {
+                      player.lastInitial = value;
+                    });
+                  },
+                ),
+              ),
             ],
           ),
+
+          // Advanced settings
+          if (_showAdvancedSettings) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const SizedBox(width: 44),
+                SizedBox(
+                  width: 100,
+                  child: Text(
+                    'Starting Rating',
+                    style: GoogleFonts.lato(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: FrutiaColors.primaryText,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      border:
+                          Border.all(color: FrutiaColors.tertiaryBackground),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: player.level,
+                        isDense: true,
+                        isExpanded: true,
+                        dropdownColor: FrutiaColors.primaryBackground,
+                        items: ['Above Average', 'Average', 'Below Average']
+                            .map((level) => DropdownMenuItem(
+                                  value: level,
+                                  child: Text(
+                                    level,
+                                    style: GoogleFonts.lato(
+                                      fontSize: 13,
+                                      color: FrutiaColors.primaryText,
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            player.level = value!;
+                          });
+                        },
+                        style:
+                            GoogleFonts.lato(color: FrutiaColors.primaryText),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
-      ],
-    ),
-  );
-}
+      ),
+    );
+  }
 }
