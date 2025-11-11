@@ -390,20 +390,24 @@ class _SpectatorCodeDialogState extends State<SpectatorCodeDialog> with SingleTi
     );
   }
 
-  String _getSessionTypeName(String? type) {
-    switch (type) {
-      case 'T':
-        return 'Tournament';
-      case 'P4':
-        return 'Playoff 4';
-      case 'P8':
-        return 'Playoff 8';
-      case 'O':
-        return 'Optimized';
-      default:
-        return 'Session';
+ String _getSessionTypeName(String type) {
+      switch (type) {
+        case 'S':
+          return 'MAX VARIETY';
+        case 'P4':
+          return 'TOP 4 FINAL';
+        case 'P8':
+          return 'TOP 8 SEMIFINAL';
+        case 'T':
+          return 'COMPETITIVE MAX';
+        case 'O':
+          return 'Optimized';
+        default:
+          return type;
+      }
     }
-  }
+
+   
 
   String _getInitials(String fullName) {
     final parts = fullName.trim().split(' ');

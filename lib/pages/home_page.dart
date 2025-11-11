@@ -206,13 +206,13 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildWelcomeHeader(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 24), 
                     _buildAccountSummary(),
                     const SizedBox(height: 28),
                     _buildMainActions(),
                     const SizedBox(height: 28),
                     _buildSessionsTabs(),
-                    const SizedBox(height: 100),
+                    const SizedBox(height: 10),
                   ],
                 ).animate().fadeIn(duration: 500.ms),
               ),
@@ -376,83 +376,106 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildPrimaryActionButton({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required List<Color> gradientColors,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-              colors: gradientColors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-                color: gradientColors[0].withOpacity(0.4),
-                blurRadius: 16,
-                offset: const Offset(0, 8)),
-            BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 4)),
-          ],
+Widget _buildPrimaryActionButton({
+  required IconData icon,
+  required String title,
+  required String subtitle,
+  required List<Color> gradientColors,
+  required VoidCallback onTap,
+}) {
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(16),
+    child: Container(
+      padding: const EdgeInsets.all(16), // ✅ Reducido de 20
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
-              child: Icon(icon, color: Colors.white, size: 30),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white)),
-                  const SizedBox(height: 4),
-                  Text(subtitle,
-                      style: GoogleFonts.lato(
-                          fontSize: 13, color: Colors.white.withOpacity(0.9))),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMainActions() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Quick Actions',
-            style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: FrutiaColors.primaryText),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors[0].withOpacity(0.4),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
-          const SizedBox(height: 16),
-          _buildPrimaryActionButton(
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10), // ✅ Reducido de 12
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 24), // ✅ Reducido de 30
+          ),
+          const SizedBox(width: 12), // ✅ Reducido de 14
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center, // ✅ Centrado vertical
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16, // ✅ Reducido de 18
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 2), // ✅ Reducido de 4
+                Text(
+                  subtitle,
+                  style: GoogleFonts.lato(
+                    fontSize: 12, // ✅ Reducido de 13
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                  maxLines: 2, // ✅ Permitir 2 líneas si es necesario
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16), // ✅ Reducido de 18
+        ],
+      ),
+    ),
+  );
+}
+
+
+
+
+Widget _buildMainActions() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Actions',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: FrutiaColors.primaryText
+          ),
+        ),
+        const SizedBox(height: 16),
+        
+        // ✅ BOTÓN 1: Create New Session
+        SizedBox(
+          height: 75, // ✅ Un poco más para evitar overflow
+          child: _buildPrimaryActionButton(
             icon: Icons.add_circle,
             title: 'Create New Session',
             subtitle: 'Start a new Open Play session',
@@ -463,17 +486,21 @@ class _HomePageState extends State<HomePage> {
             onTap: () async {
               final result = await Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => const CreateSessionFlow()),
+                MaterialPageRoute(builder: (context) => const CreateSessionFlow()),
               );
               if (result == true) _loadData();
             },
           ),
-          const SizedBox(height: 12),
-          _buildPrimaryActionButton(
+        ),
+        const SizedBox(height: 10),
+        
+        // ✅ BOTÓN 2: Join as Spectator
+        SizedBox(
+          height: 75,
+          child: _buildPrimaryActionButton(
             icon: Icons.remove_red_eye,
             title: 'Join as Spectator',
-            subtitle: 'Watch a live session with a code',
+            subtitle: 'Follow a live Open Play session',
             gradientColors: [
               FrutiaColors.warning.withOpacity(0.8),
               FrutiaColors.warning.withOpacity(0.5)
@@ -481,11 +508,16 @@ class _HomePageState extends State<HomePage> {
             onTap: () => showDialog(
                 context: context, builder: (_) => const SpectatorCodeDialog()),
           ),
-          const SizedBox(height: 12),
-          _buildPrimaryActionButton(
+        ),
+        const SizedBox(height: 10),
+        
+        // ✅ BOTÓN 3: Join as Moderator
+        SizedBox(
+          height: 75,
+          child: _buildPrimaryActionButton(
             icon: Icons.admin_panel_settings,
             title: 'Join as Moderator',
-            subtitle: 'Control a session with credentials',
+            subtitle: 'Help manage a live session',
             gradientColors: [
               FrutiaColors.primary.withOpacity(0.9),
               FrutiaColors.primary.withOpacity(0.7)
@@ -493,10 +525,12 @@ class _HomePageState extends State<HomePage> {
             onTap: () => showDialog(
                 context: context, builder: (_) => const ModeratorLoginDialog()),
           ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 400.ms);
-  }
+        ),
+      ],
+    ),
+  ).animate().fadeIn(delay: 400.ms);
+}
+
 
   // ==================== PESTAÑAS PREMIUM ====================
   Widget _buildSessionsTabs() {
@@ -567,7 +601,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 16),
 
             SizedBox(
-              height: 500,
+              height: 300,
               child: TabBarView(
                 children: [
                   _buildSessionList(_activeSessions, isActive: true),
@@ -629,18 +663,20 @@ class _HomePageState extends State<HomePage> {
 
   // ==================== CARD DE SESIÓN COMPLETADA O BORRADOR ====================
   Widget _buildCompletedSessionCard(Map<String, dynamic> session) {
+
     String getSessionTypeAbbreviation(String type) {
       switch (type) {
-        case 'T':
-          return 'Tournament';
+        case 'S':
+          return 'MAX VARIETY';
         case 'P4':
-          return 'P4';
-           case 'S':
-          return 'Simple';
+          return 'TOP 4 FINAL';
         case 'P8':
-          return 'P8';
+          return 'TOP 8 SEMIFINAL';
+        case 'T':
+          return 'COMPETITIVE MAX';
         case 'O':
           return 'Optimized';
+ 
         default:
           return 'Session';
       }
@@ -651,23 +687,23 @@ class _HomePageState extends State<HomePage> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: FrutiaColors.primaryBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: (isDraft || isLocalDraft)
-              ? FrutiaColors.warning.withOpacity(0.3)
-              : FrutiaColors.success.withOpacity(0.1),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+   decoration: BoxDecoration(
+  color: FrutiaColors.primaryBackground,
+  borderRadius: BorderRadius.circular(12),
+  border: Border.all(
+    color: (isDraft || isLocalDraft)
+        ? FrutiaColors.warning.withOpacity(0.3)
+        : FrutiaColors.progress.withOpacity(0.3), // ← Cambiado de 0.1 a 0.3
+    width: 3,
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.grey.withOpacity(0.1),
+      blurRadius: 6,
+      offset: const Offset(0, 2),
+    ),
+  ],
+),
       child: InkWell(
         onTap: () async {
           // ✅ Si es draft (local o servidor), ir a CreateSessionFlow
@@ -721,21 +757,22 @@ class _HomePageState extends State<HomePage> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: (isDraft || isLocalDraft)
-                          ? FrutiaColors.warning.withOpacity(0.1)
-                          : FrutiaColors.success.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      (isDraft || isLocalDraft) ? Icons.edit_square : Icons.check_circle,
-                      color: (isDraft || isLocalDraft)
-                          ? FrutiaColors.warning
-                          : FrutiaColors.success,
-                      size: 20,
-                    ),
-                  ),
+  padding: const EdgeInsets.all(8),
+  decoration: BoxDecoration(
+    color: (isDraft || isLocalDraft)
+        ? FrutiaColors.warning.withOpacity(0.1)
+        : FrutiaColors.progress.withOpacity(0.1),
+    shape: BoxShape.circle,
+    
+  ),
+  child: Icon(
+    (isDraft || isLocalDraft) ? Icons.edit_square : Icons.check_circle,
+    color: (isDraft || isLocalDraft)
+        ? FrutiaColors.warning
+        : FrutiaColors.progress,
+    size: 20,
+  ),
+),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -761,7 +798,7 @@ class _HomePageState extends State<HomePage> {
                                 fontWeight: FontWeight.w600,
                                 color: (isDraft || isLocalDraft)
                                     ? FrutiaColors.warning
-                                    : FrutiaColors.success,
+                                    : FrutiaColors.progress,
                               ),
                             ),
                             // ✅ Badge para drafts locales
@@ -875,7 +912,7 @@ class _HomePageState extends State<HomePage> {
               isActive
                   ? Icons.play_circle_outline
                   : isDraft
-                      ? Icons.drafts_outlined
+                      ? Icons.edit_square
                       : Icons.check_circle_outline,
               size: 48,
               color: FrutiaColors.disabledText,
@@ -937,27 +974,33 @@ class _HomePageState extends State<HomePage> {
         statusIcon = Icons.schedule;
         statusText = 'Pending';
     }
-
-    String getSessionTypeName(String type) {
+ String getSessionTypeName(String type) {
       switch (type) {
-        case 'T':
-          return 'Optimized';
+        case 'S':
+          return 'MAX VARIETY';
         case 'P4':
-          return 'Playoff 4';
-          case 'S':
-          return 'Simple';
+          return 'TOP 4 FINAL';
         case 'P8':
-          return 'Playoff 8';
+          return 'TOP 8 SEMIFINAL';
+        case 'T':
+          return 'COMPETITIVE MAX';
+        case 'O':
+          return 'Optimized';
         default:
-          return 'Session';
+          return type;
       }
     }
+ 
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: FrutiaColors.primaryBackground,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+      color: statusColor.withOpacity(0.3), // Usa el color del estado
+      width: 3,
+    ),
         boxShadow: [
           BoxShadow(
               color: Colors.grey.withOpacity(0.1),
@@ -1093,68 +1136,160 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ✅ NUEVO MÉTODO: Mostrar diálogo para eliminar draft
-  Future<void> _showDeleteDraftDialog(Map<String, dynamic> draft) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
+Future<void> _showDeleteDraftDialog(Map<String, dynamic> draft) async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (context) => Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        constraints: BoxConstraints(maxWidth: 400),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.delete_outline, color: FrutiaColors.error, size: 28),
-            const SizedBox(width: 12),
+            // ==================== HEADER ====================
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: FrutiaColors.error.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.delete_outline,
+                    color: FrutiaColors.error,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Delete Draft?',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: FrutiaColors.primaryText,
+                        ),
+                      ),
+                      Text(
+                        'This action cannot be undone',
+                        style: GoogleFonts.lato(
+                          fontSize: 13,
+                          color: FrutiaColors.secondaryText,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // ==================== CONTENT ====================
             Text(
-              'Delete Draft?',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: FrutiaColors.primaryText,
+              'Are you sure you want to delete "${draft['session_name']}"?',
+              style: GoogleFonts.lato(
+                fontSize: 15,
+                color: FrutiaColors.secondaryText,
+                height: 1.5,
               ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              'All draft data will be permanently lost.',
+              style: GoogleFonts.lato(
+                fontSize: 14,
+                color: FrutiaColors.error,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // ==================== BUTTONS ====================
+            Row(
+              children: [
+                // Cancel button
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      side: BorderSide(
+                        color: FrutiaColors.primaryText.withOpacity(0.3),
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primaryText,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // Delete button
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: FrutiaColors.error.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FrutiaColors.error,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Delete',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
-        content: Text(
-          'Are you sure you want to delete "${draft['session_name']}"? This cannot be undone.',
-          style: GoogleFonts.lato(
-            fontSize: 15,
-            color: FrutiaColors.secondaryText,
-            height: 1.5,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                color: FrutiaColors.secondaryText,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: FrutiaColors.error,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              'Delete',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
       ),
-    );
+    ),
+  );
 
-    if (confirm == true) {
-      await _deleteLocalDraft(draft['draft_id']);
-    }
+  if (confirm == true) {
+    await _deleteLocalDraft(draft['draft_id']);
   }
+}
 
   // ✅ NUEVO MÉTODO: Eliminar draft local
   Future<void> _deleteLocalDraft(String draftId) async {

@@ -136,20 +136,23 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
   }
 
   Widget _buildDraftCard(Map<String, dynamic> draft, int index) {
-    String getSessionTypeName(String type) {
+  String getSessionTypeName(String type) {
       switch (type) {
-        case 'T':
-          return 'Tournament';
+        case 'S':
+          return 'MAX VARIETY';
         case 'P4':
-          return 'Playoff 4';
+          return 'TOP 4 FINAL';
         case 'P8':
-          return 'Playoff 8';
+          return 'TOP 8 SEMIFINAL';
+        case 'T':
+          return 'COMPETITIVE MAX';
         case 'O':
           return 'Optimized';
         default:
-          return 'Session';
+          return type;
       }
     }
+
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),

@@ -19,6 +19,45 @@ static Future<Map<String, String>> getAuthHeaders() async {
     };
   }
 
+ // ✅ NUEVO: Login de Moderador con SESSION CODE + Verification Code
+static Future<Map<String, dynamic>> moderatorLoginWithSessionCode(
+  String sessionCode,
+  String verificationCode,
+) async {
+  print('[SessionService] Moderator login with Session: $sessionCode, Verification: $verificationCode');
+  //11
+  //jy3726
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/sessions/moderator-login-session-code'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: json.encode({
+        'session_code': sessionCode.toUpperCase(),
+        'verification_code': verificationCode,
+      }),
+    );
+
+    print('[SessionService] Moderator login response: ${response.statusCode}');
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print('[SessionService] Moderator login successful');
+      return data;
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Invalid session code or verification code');
+    }
+  } catch (e) {
+    print('[SessionService] Moderator login error: $e');
+    if (e is Exception && e.toString().contains('Exception:')) {
+      rethrow;
+    }
+    throw Exception('Connection error: $e');
+  }
+}
  
  
 // ✅ NUEVO: Login de Moderador con verificación de 2 códigos

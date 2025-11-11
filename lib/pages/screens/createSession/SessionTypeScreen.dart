@@ -121,25 +121,25 @@ _buildSessionTypeCard('T'),
 
     switch (type) {
    case 'S':
-      title = 'Simple';
-      description = 'Casual play with maximum variety. Everyone plays with different partners. No playoffs, just fun and rotation!';
-      icon = Icons.shuffle;
+      title = 'MAX VARIETY';
+      description = 'Maximize court time and variety in partners and opponents. Enjoy continuous play with no dedicated finals or playoff brackets';
+      icon = Icons.groups;
       break;
       
       case 'P4':
-        title = 'Playoff 4';
-        description = 'Players rotate through games with varied partners and opponents. At the end, the top 4 players advance to playoff rounds to decide the winners.';
+        title = 'TOP 4 FINAL';
+        description = 'Structured rotation followed by a winner-takes-all final. The top four players are selected to compete in a gold medal match!';
         icon = Icons.filter_4;
         break;
       case 'P8':
-        title = 'Playoff 8';
-        description = 'Extended rotations with balanced matchups across the group. The session concludes with playoffs featuring the top 8 players, giving more participants a chance at the finals.';
+        title = 'TOP 8 SEMIFINAL';
+        description = 'Extended rotation that ensures greater inclusion and variety. The top eight players compete in a 2-stage semifinal and final bracket.	';
         icon = Icons.filter_8;
         break;
              case 'T':
-        title = 'Optimized';
-        description = 'A multi-stage rotation that maximizes variety and competitiveness, dynamically pairing players based on results and performance.';
-        icon = Icons.emoji_events;
+        title = 'COMPETITIVE MAX';
+        description = 'The premier rotation for consistent high-level matchups. Players are dynamically paired based on real-time results and performance.';
+    icon = Icons.flash_on; // ⚡ Más alusivo: velocidad, energía y optimización
         break;
       default:
         title = '';

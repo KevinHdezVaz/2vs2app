@@ -223,7 +223,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                 Expanded(
                   child: Text(
                     _draftId != null 
-                      ? 'Draft updated successfully!'
+                      ? 'Draft saved successfully!'
                       : 'Draft saved successfully!',
                     style: TextStyle(
                       fontSize: 16,
