@@ -109,262 +109,261 @@ class _SpectatorCodeDialogState extends State<SpectatorCodeDialog> with SingleTi
     );
   }
 
-  void _showSessionConfirmationDialog(Map<String, dynamic> sessionData) {
-    final session = sessionData['session'];
-    
-    // Extraer datos de la sesión
-    final String sessionName = session['session_name'] ?? 'Unknown Session';
-    final int numPlayers = session['number_of_players'] ?? 0;
-    final int numCourts = session['number_of_courts'] ?? 0;
-    final String sessionType = _getSessionTypeName(session['session_type']);
-    final double progressPercentage = (session['progress_percentage'] ?? 0).toDouble();
-    
-    // Obtener iniciales del coordinador (session lead)
-    final String? userName = session['user']?['name'];
-    final String sessionLead = userName != null ? _getInitials(userName) : 'N/A';
+void _showSessionConfirmationDialog(Map<String, dynamic> sessionData) {
+  final session = sessionData['session'];
+  
+  // Extraer datos
+  final String sessionName = session['session_name'] ?? 'Unknown Session';
+  final int numPlayers = session['number_of_players'] ?? 0;
+  final int numCourts = session['number_of_courts'] ?? 0;
+  final String sessionType = _getSessionTypeName(session['session_type']);
+  final double progressPercentage = (session['progress_percentage'] ?? 0).toDouble();
+  final String? userName = session['user']?['name'];
+  final String sessionLead = userName?.isNotEmpty == true ? _getInitials(userName!) : 'N/A';
+  
+  // Formatear fecha
+  final String createdAt = session['created_at'] != null
+      ? _formatDateTime(session['created_at'])
+      : 'N/A';
 
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        elevation: 8,
-         shape: RoundedRectangleBorder(
+  showDialog(
+    context: context,
+    builder: (context) => Dialog(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Container(
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: FrutiaColors.warning.withOpacity(0.2),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        child: Container(
-          decoration: BoxDecoration(
-          
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: FrutiaColors.warning.withOpacity(0.2),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // HEADER
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
               ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header con icono
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: FrutiaColors.warning.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: FrutiaColors.warning, width: 2),
+                    ),
+                    child: Icon(Icons.remove_red_eye, color: FrutiaColors.warning, size: 48),
                   ),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: FrutiaColors.warning.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: FrutiaColors.warning, width: 2),
-                      ),
-                      child: Icon(
-                        Icons.remove_red_eye,
-                        color: FrutiaColors.warning,
-                        size: 48,
-                      ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Join as Spectator',
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Join as Spectator',
-                      style: GoogleFonts.poppins(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'You are about to join session',
+                    style: GoogleFonts.lato(
+                      fontSize: 16,
+                      color: Colors.black87,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'You are about to join session',
-                      style: GoogleFonts.lato(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '"$sessionName"',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: FrutiaColors.warning,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '"$sessionName"',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: FrutiaColors.warning,
-                      ),
-                      textAlign: TextAlign.center,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  // TEXTO MEJORADO: más grande, mismo estilo
+                  Text(
+                    'As a spectator, you will be able to see the order of games, results, and rankings.',
+                    style: GoogleFonts.lato(
+                      fontSize: 16,  // Más grande
+                      color: Colors.black87,
+                      height: 1.5,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'as spectator - this will allow you to see the order of games, results and rankings.',
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        color: Colors.black54,
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
+            ),
 
-              // Session Details
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Session Details',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
+            // SESSION DETAILS
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, ), // Reducido
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Session Details',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 12), // Reducido
+          
+                  _buildDetailRow('Players:', numPlayers.toString()),
+                  const SizedBox(height: 10),
+                  _buildDetailRow('Courts:', numCourts.toString()),
+                  const SizedBox(height: 10),
+                  _buildDetailRow('Type of Event:', sessionType),
+                  const SizedBox(height: 10),
+                  _buildDetailRow('Date Created:', createdAt),
+                  const SizedBox(height: 10),
+                  _buildDetailRow('Progress:', '${progressPercentage.toInt()}% Completed'),
+                  const SizedBox(height: 16),
+                  // MENSAJE DE CONFIRMACIÓN MEJORADO
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: FrutiaColors.warning.withOpacity(0.15), // Fondo más claro
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: FrutiaColors.warning.withOpacity(0.5),
+                        width: 1.5,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    
-                    _buildDetailRow('Session Lead:', sessionLead),
-                    const SizedBox(height: 12),
-                    _buildDetailRow('Players:', numPlayers.toString()),
-                    const SizedBox(height: 12),
-                    _buildDetailRow('Courts:', numCourts.toString()),
-                    const SizedBox(height: 12),
-                    _buildDetailRow('Type of Event:', sessionType),
-                    const SizedBox(height: 12),
-                    _buildDetailRow('Progress:', '${progressPercentage.toInt()}% Completed'),
-                    
-                    const SizedBox(height: 20),
-                    
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: FrutiaColors.warning.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: FrutiaColors.warning.withOpacity(0.3),
-                          width: 1.5,
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, color: FrutiaColors.warning, size: 22),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Please confirm this is the session you want to join.',
+                            style: GoogleFonts.lato(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87, // Más oscuro
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                                          const SizedBox(height: 15),
+
+                ],
+              ),
+            ),
+
+            // ACTIONS
+            Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(color: Colors.black.withOpacity(0.5), width: 1.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                          fontSize: 16,
                         ),
                       ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: FrutiaColors.warning,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Please confirm this is the session you want to join.',
-                              style: GoogleFonts.lato(
-                                fontSize: 14,
-                                color: Colors.grey,
-                                height: 1.3,
-                              ),
-                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          colors: [FrutiaColors.warning, FrutiaColors.warning.withOpacity(0.8)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: FrutiaColors.warning.withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Actions
-              Padding(
-                padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SessionControlPanel(
+                                sessionId: session['id'],
+                                isSpectator: true,
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: BorderSide(
-                            color: Colors.black.withOpacity(0.5),
-                            width: 1.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          backgroundColor: Colors.white.withOpacity(0.1),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 0,
                         ),
                         child: Text(
-                          'Cancel',
+                          'Confirm',
                           style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                             fontSize: 16,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          gradient: LinearGradient(
-                            colors: [FrutiaColors.warning, FrutiaColors.warning.withOpacity(0.8)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: FrutiaColors.warning.withOpacity(0.4),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context); // Cerrar confirmación
-                            Navigator.pop(context); // Cerrar diálogo principal
-                            
-                            // Navegar a la sesión en modo espectador
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SessionControlPanel(
-                                  sessionId: session['id'],
-                                  isSpectator: true,
-                                ),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: Text(
-                            'Confirm',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
+    ),
+  );
+}
+
+String _formatDateTime(String dateStr) {
+  try {
+    final date = DateTime.parse(dateStr);
+    final now = DateTime.now();
+    if (date.year == now.year && date.month == now.month && date.day == now.day) {
+      return 'Today, ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    }
+    return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  } catch (e) {
+    return 'N/A';
   }
+}
 
   Widget _buildDetailRow(String label, String value) {
     return Row(
@@ -395,9 +394,9 @@ class _SpectatorCodeDialogState extends State<SpectatorCodeDialog> with SingleTi
         case 'S':
           return 'MAX VARIETY';
         case 'P4':
-          return 'TOP 4 FINAL';
+          return 'TOP 4 PLAYOFFS';
         case 'P8':
-          return 'TOP 8 SEMIFINAL';
+          return 'TOP 8 PLAYOFFS';
         case 'T':
           return 'COMPETITIVE MAX';
         case 'O':
@@ -471,8 +470,9 @@ class _SpectatorCodeDialogState extends State<SpectatorCodeDialog> with SingleTi
                   'Enter the 6-character session code',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.lato(
+                    fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: Colors.grey,
+                    color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 24),

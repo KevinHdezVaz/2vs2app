@@ -127,12 +127,12 @@ _buildSessionTypeCard('T'),
       break;
       
       case 'P4':
-        title = 'TOP 4 FINAL';
+        title = 'TOP 4 PLAYOFFS';
         description = 'Structured rotation followed by a winner-takes-all final. The top four players are selected to compete in a gold medal match!';
         icon = Icons.filter_4;
         break;
       case 'P8':
-        title = 'TOP 8 SEMIFINAL';
+        title = 'TOP 8 PLAYOFFS';
         description = 'Extended rotation that ensures greater inclusion and variety. The top eight players compete in a 2-stage semifinal and final bracket.	';
         icon = Icons.filter_8;
         break;

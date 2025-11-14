@@ -68,9 +68,10 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
   Future<void> signIn() async {
     print('====================================');
-    print('🔵 START LOGIN');
+    print('START LOGIN');
     print('====================================');
 
+    // 1. Mostrar loading
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -82,42 +83,42 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
     );
 
     try {
-      print('🔵 Calling _authService.login()...');
+      print('Calling _authService.login()...');
       final response = await _authService.login(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-      print('🟢 Login successful: $response');
+      print('Login successful: $response');
 
       if (!mounted) return;
 
-      // Close the loading dialog
+      // 2. Cerrar el loading
       Navigator.of(context).pop();
 
-      // 👇 CHANGE THIS: Navigate directly to HomePage
+      // 3. Esperar un microsegundo para que el Navigator se desbloquee
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      if (!mounted) return;
+
+      // 4. Navegar a HomePage y eliminar todo lo anterior
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const HomePage()),
-        (route) => false, // Remove all previous routes
+        (route) => false,
       );
     } on AuthException catch (e) {
-      print('🔴 AuthException: ${e.message}');
+      print('AuthException: ${e.message}');
       if (!mounted) return;
-      Navigator.of(context).pop(); // Close the dialog
+      Navigator.of(context).pop(); // cerrar loading
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message),
-          backgroundColor: FrutiaColors.error,
-        ),
+        SnackBar(content: Text(e.message), backgroundColor: FrutiaColors.error),
       );
     } catch (e) {
-      print('🔴 Generic error: $e');
+      print('Generic error: $e');
       if (!mounted) return;
-      Navigator.of(context).pop(); // Close the dialog
+      Navigator.of(context).pop(); // cerrar loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: $e'),
-          backgroundColor: FrutiaColors.error,
-        ),
+            content: Text('Error: $e'), backgroundColor: FrutiaColors.error),
       );
     }
   }
@@ -462,41 +463,19 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 ),
                               ),
                               SizedBox(height: 20),
-                              // Remember Me and Forget Password Row
                               SlideTransition(
                                 position: _slideAnimation,
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Row(
-                                      children: [
-                                        Checkbox(
-                                          value: isRemember,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              isRemember = value ?? false;
-                                            });
-                                          },
-                                          activeColor: FrutiaColors.primary,
-                                          checkColor: Colors.white,
-                                        ),
-                                        Text(
-                                          'Remember me',
-                                          style: GoogleFonts.lato(
-                                            fontSize: 14,
-                                            color: FrutiaColors.primaryText,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
                                     GestureDetector(
                                       onTap: () {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                const ForgetPassPage(),
+                                                const ForgotPasswordPage(),
                                           ),
                                         );
                                       },
@@ -549,45 +528,98 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                 position: _slideAnimation,
                                 child: Container(
                                   width: size.width * 0.8,
+                                  child:OutlinedButton(
+  onPressed: () async {
+    // 1. Mostrar loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
+        ),
+      ),
+    );
+
+    try {
+      final success = await _authService.signInWithGoogle();
+
+      if (!mounted) return;
+
+      // 2. Cerrar loading
+      Navigator.of(context).pop();
+
+      // 3. Pequeña espera para evitar _debugLocked
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      if (!mounted) return;
+
+      if (success) {
+        // 4. Navegar a HomePage (elimina login)
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // cerrar loading
+      showErrorSnackBar('Error signing in with Google');
+    }
+  },
+  style: OutlinedButton.styleFrom(
+    padding: const EdgeInsets.symmetric(vertical: 16),
+    side: const BorderSide(color: FrutiaColors.primary, width: 1.5),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+  ),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Image.asset(
+        'assets/icons/google.png',
+        height: 24,
+        width: 24,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.account_circle, color: FrutiaColors.primary, size: 24);
+        },
+      ),
+      const SizedBox(width: 10),
+      Text(
+        "Sign in with Google",
+        style: GoogleFonts.lato(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: FrutiaColors.primary,
+        ),
+      ),
+    ],
+  ),
+),
+                                ),
+                              ),
+
+                              // After the "Sign in with Google" button (line ~448)
+                              SizedBox(height: 10),
+
+                              SlideTransition(
+                                position: _slideAnimation,
+                                child: Container(
+                                  width: size.width * 0.8,
                                   child: OutlinedButton(
-                                    onPressed: () async {
-                                      try {
-                                        showDialog(
-                                          context: context,
-                                          builder: (_) => Center(
-                                            child: CircularProgressIndicator(
-                                              color: FrutiaColors.primary,
-                                            ),
-                                          ),
-                                        );
-
-                                        final success = await _authService
-                                            .signInWithGoogle();
-
-                                        if (!mounted) return;
-                                        Navigator.pop(
-                                            context); // Close the loading dialog
-
-                                        if (success) {
-                                          Navigator.of(context).pushReplacement(
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    AuthCheckMain()),
-                                          );
-                                        }
-                                      } catch (e) {
-                                        if (!mounted) return;
-                                        Navigator.pop(
-                                            context); // Close the loading dialog
-                                        showErrorSnackBar(
-                                            "Error signing in with Google");
-                                      }
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) =>
+                                            const SpectatorCodeDialog(),
+                                      );
                                     },
                                     style: OutlinedButton.styleFrom(
+                                      backgroundColor:
+                                          FrutiaColors.warning.withOpacity(0.1),
                                       padding:
                                           EdgeInsets.symmetric(vertical: 16),
                                       side: BorderSide(
-                                          color: FrutiaColors.primary,
+                                          color: FrutiaColors.warning,
                                           width: 1.5),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(15),
@@ -597,26 +629,18 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        Image.asset(
-                                          'assets/icons/google.png',
-                                          height: 24,
-                                          width: 24,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                            return Icon(
-                                              Icons.account_circle,
-                                              color: FrutiaColors.primary,
-                                              size: 24,
-                                            );
-                                          },
+                                        Icon(
+                                          Icons.remove_red_eye_outlined,
+                                          color: Colors.black,
+                                          size: 24,
                                         ),
                                         SizedBox(width: 10),
                                         Text(
-                                          "Sign in with Google",
+                                          "Join as Spectator",
                                           style: GoogleFonts.lato(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
-                                            color: FrutiaColors.primary,
+                                            color: Colors.black,
                                           ),
                                         ),
                                       ],
@@ -624,57 +648,12 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   ),
                                 ),
                               ),
-
-                              // After the "Sign in with Google" button (line ~448)
-                              SizedBox(height: 10),
- 
-SlideTransition(
-  position: _slideAnimation,
-  child: Container(
-    width: size.width * 0.8,
-    child: OutlinedButton(
-      onPressed: () {
-        showDialog(
-          context: context,
-          builder: (context) => const SpectatorCodeDialog(),
-        );
-      },
-      style: OutlinedButton.styleFrom(
-        backgroundColor: FrutiaColors.warning.withOpacity(0.1),
-        padding: EdgeInsets.symmetric(vertical: 16),
-        side: BorderSide(color: FrutiaColors.warning, width: 1.5),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.remove_red_eye_outlined,
-            color: Colors.black,
-            size: 24,
-          ),
-          SizedBox(width: 10),
-          Text(
-            "Join as Spectator",
-            style: GoogleFonts.lato(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-        ],
-      ),
-    ),
-  ),
-),
                               SizedBox(height: 40),
 
                               TextButton(
                                 onPressed: widget.showLoginPage,
                                 child: Text(
-                                  "Create your account",
+                                  "Create a new account",
                                   style: GoogleFonts.lato(
                                     fontSize: 18,
                                     fontWeight:

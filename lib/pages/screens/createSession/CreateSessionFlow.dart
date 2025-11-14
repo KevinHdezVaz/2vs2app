@@ -144,32 +144,99 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
     );
   }
 
-  void _showCancelDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cancel Session Creation?'),
-        content: const Text('All entered data will be lost.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Continue Editing'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.red),
+ void _showCancelDialog() async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Row(
+        children: [
+          Icon(Icons.warning, color: FrutiaColors.error, size: 28),
+          const SizedBox(width: 12),
+          Text(
+            'Cancel Session \nCreation?',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              color: FrutiaColors.error,
             ),
           ),
         ],
       ),
-    );
-  }
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'This action will:',
+            style: GoogleFonts.lato(
+              fontWeight: FontWeight.w600,
+              color: FrutiaColors.primaryText,
+            ),
+          ),
+          const SizedBox(height: 8),
+     
+          const SizedBox(height: 12),
+          Text(
+            'All settings entered will be lost',
+            style: GoogleFonts.lato(
+              color: FrutiaColors.error,
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text(
+            'Continue Setup',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              color: FrutiaColors.primaryText,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: FrutiaColors.error.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: FrutiaColors.error,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Cancel Session',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 
+  // Si el usuario confirma
+  if (confirm == true) {
+    Navigator.pop(context); // Cierra el diálogo de creación
+    Navigator.pop(context); // Regresa al pantalla anterior
+  }
+}
   // ========================================
   // ✅ VERSIÓN SIMPLIFICADA CON SHAREDPREFERENCES
   // ========================================

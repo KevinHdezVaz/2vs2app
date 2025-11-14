@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
-// import 'package:Frutia/utils/colors.dart'; // Comentado si no se usa
 
 /// Servicio para generar y compartir imágenes de resultados de sesión
 /// 
@@ -123,7 +122,6 @@ Learn more: www.picklebracket.pro
       final RenderRepaintBoundary boundary = repaintKey.currentContext!
           .findRenderObject() as RenderRepaintBoundary;
 
-      // Aumentar pixelRatio para una imagen de mayor calidad si es necesario, aunque 2.0 ya es alto.
       final ui.Image image = await boundary.toImage(pixelRatio: 2.5); 
       final ByteData? byteData =
           await image.toByteData(format: ui.ImageByteFormat.png);
@@ -143,9 +141,9 @@ Learn more: www.picklebracket.pro
       case 'S':
         return 'MAX VARIETY';
       case 'P4':
-        return 'TOP 4 FINAL';
+        return 'TOP 4 PLAYOFFS';
       case 'P8':
-        return 'TOP 8 SEMIFINAL';
+        return 'TOP 8 PLAYOFFS';
       case 'T':
         return 'COMPETITIVE MAX';
       case 'O':
@@ -195,14 +193,12 @@ class _ResultsImageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Top 6 fijo para mejorar el uso del espacio cuando se muestran playoffs (P4/P8)
-    // Para otros modos, mantenemos 8 o la cantidad de jugadores si es menor.
-    final int topRankCount = sessionType == 'P4' || sessionType == 'P8' ? 6 : 
-                            (players.length < 8 ? players.length : 8);
+    // ✅ CAMBIO 2: Mostrar hasta 12 jugadores siempre
+    final int topRankCount = players.length < 12 ? players.length : 12;
 
     return Container(
       width: 1080,
-      color: Colors.white, // Fondo completamente blanco
+      color: Colors.white,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -212,24 +208,24 @@ class _ResultsImageWidget extends StatelessWidget {
           // SESSION INFO
           _buildSessionInfo(),
 
-          // MEDAL WINNERS
+          // MEDAL WINNERS (solo para playoffs)
           if (sessionType == 'P4' || sessionType == 'P8') _buildMedalWinners(),
 
           // TOP RANKINGS
-          const SizedBox(height: 40), // Aumentamos el espacio
+          const SizedBox(height: 30), 
           _buildTopRankings(showTop: topRankCount),
 
           // FOOTER
-          const SizedBox(height: 40), // Aumentamos el espacio
+          const SizedBox(height: 40),
           _buildFooterSimple(),
 
-          const SizedBox(height: 30), // Aumentamos el espacio final
+          const SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  /// Header con el título de la sesión, tipo y fecha (Aumentado)
+  /// ✅ CAMBIO 1: Header sin "SESSION COMPLETE" y subtitulo más grande
   Widget _buildHeader() {
     final sessionName = sessionData['session_name']?.toString().toUpperCase() ?? 'SESSION RESULTS';
     final sessionTypeFormatted = SessionResultsImageService._getSessionTypeName(sessionType);
@@ -240,9 +236,9 @@ class _ResultsImageWidget extends StatelessWidget {
     return Container(
       width: 1080,
       decoration: const BoxDecoration(
-        color: _backgroundColor, // Fondo sólido oscuro
+        color: _backgroundColor,
       ),
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 50), // Más padding
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 50),
       child: Column(
         children: [
           // Título de la sesión
@@ -250,63 +246,31 @@ class _ResultsImageWidget extends StatelessWidget {
             sessionName,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 38, // Más grande
+              fontSize: 38,
               fontWeight: FontWeight.w700,
               color: Colors.white,
               letterSpacing: 1.2,
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 15),
 
-          // Session type y fecha
+          // ✅ Session type y fecha MÁS GRANDE
           Text(
             '$sessionTypeFormatted | $dateFormatted',
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 20, // Más grande
-              fontWeight: FontWeight.w500,
-              color: Colors.white.withOpacity(0.9),
+              fontSize: 24, // ← Aumentado de 20 a 24
+              fontWeight: FontWeight.w600, // ← Más bold
+              color: Colors.white.withOpacity(0.95),
             ),
-          ),
-          
-          const SizedBox(height: 25), // Más espacio
-
-          // "SESSION COMPLETE" con ícono de trofeo
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'SESSION',
-                style: GoogleFonts.poppins(
-                  fontSize: 20, // Más grande
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withOpacity(0.9),
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Icon(
-                Icons.emoji_events,
-                color: Colors.white,
-                size: 28, // Más grande
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'COMPLETE',
-                style: GoogleFonts.poppins(
-                  fontSize: 20, // Más grande
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withOpacity(0.9),
-                ),
-              ),
-            ],
           ),
         ],
       ),
     );
   }
 
-  /// Session info summary (Aumentado)
+  /// Session info summary
   Widget _buildSessionInfo() {
     int duration = 0;
     if (sessionData['elapsed_seconds'] != null) {
@@ -315,7 +279,6 @@ class _ResultsImageWidget extends StatelessWidget {
       duration = sessionData['duration_seconds'] as int;
     }
     
-    // Usamos valores dummy para el conteo de la imagen si los reales son 0
     final numberOfPlayers = sessionData['number_of_players'] ?? 0;
     final numberOfCourts = sessionData['number_of_courts'] ?? 0;
     int completedGames = 0;
@@ -327,13 +290,12 @@ class _ResultsImageWidget extends StatelessWidget {
       completedGames = (totalGamesPlayed / 4).floor();
     }
 
-
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 30), // Más margen
-      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20), // Más padding
+      margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20), // Borde más grande
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
@@ -346,7 +308,6 @@ class _ResultsImageWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          // Usamos valores dummy si la data real es 0 o nula para que se parezca a la imagen
           _buildInfoBox('${numberOfPlayers == 0 ? 12 : numberOfPlayers}', 'PLAYERS', Icons.people),
           _buildInfoBox('${numberOfCourts == 0 ? 3 : numberOfCourts}', 'COURTS', Icons.sports_tennis),
           _buildInfoBox(
@@ -364,18 +325,18 @@ class _ResultsImageWidget extends StatelessWidget {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(16), // Más padding
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: _primaryColorDark.withOpacity(0.1),
           ),
-          child: Icon(icon, size: 32, color: _primaryColorDark), // Icono más grande
+          child: Icon(icon, size: 32, color: _primaryColorDark),
         ),
         const SizedBox(height: 12),
         Text(
           value,
           style: GoogleFonts.poppins(
-            fontSize: 28, // Más grande
+            fontSize: 28,
             fontWeight: FontWeight.bold,
             color: const Color(0xFF1A1A1A),
           ),
@@ -384,7 +345,7 @@ class _ResultsImageWidget extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.lato(
-            fontSize: 16, // Más grande
+            fontSize: 16,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF5A5A5A),
           ),
@@ -393,38 +354,36 @@ class _ResultsImageWidget extends StatelessWidget {
     );
   }
 
-  /// Medal Winners (Simplificado y Aumentado)
+  /// ✅ CAMBIO 4: Oro en el centro, plata a la izquierda, bronce a la derecha
   Widget _buildMedalWinners() {
-    // Usamos el ejemplo de la imagen para estructurar (3 tarjetas, 3 equipos)
     final champions = playoffWinners!.length > 0 ? playoffWinners![0] : null;
     final runnersUp = playoffWinners!.length > 1 ? playoffWinners![1] : null;
     final thirdPlace = playoffWinners!.length > 2 ? playoffWinners![2] : null;
 
-    // Data de ejemplo (para garantizar la visualización si no hay data real)
-    final dummyGold = {'first_name': 'Juan Pablo', 'second_player_name': 'Rafaela'};
-    final dummySilver = {'first_name': 'Alesandro', 'second_player_name': 'Nazli'};
-    final dummyBronze = {'first_name': 'Dicardo', 'second_player_name': 'Carmen'};
-
+    final dummyGold = {'first_name': 'Juan Pablo', 'last_initial': 'R', 'second_player_name': 'Rafaela', 'second_player_last_initial': 'M'};
+    final dummySilver = {'first_name': 'Alesandro', 'last_initial': 'G', 'second_player_name': 'Nazli', 'second_player_last_initial': 'K'};
+    final dummyBronze = {'first_name': 'Ricardo', 'last_initial': 'S', 'second_player_name': 'Carmen', 'second_player_last_initial': 'L'};
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 50), // Más margen
+      margin: const EdgeInsets.symmetric(horizontal: 50),
       child: Column(
         children: [
           Text(
-            '-- FINALISTS --', // Título ajustado para mejor impacto
+            '-- FINALISTS --',
             style: GoogleFonts.poppins(
-              fontSize: 22, // Más grande
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF5A5A5A),
             ),
           ),
-          const SizedBox(height: 25), // Más espacio
+          const SizedBox(height: 25),
 
+          // ✅ NUEVO ORDEN: Plata - Oro - Bronce
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildMedalCard('GOLD', champions ?? dummyGold),
               _buildMedalCard('SILVER', runnersUp ?? dummySilver),
+              _buildMedalCard('GOLD', champions ?? dummyGold),
               _buildMedalCard('BRONZE', thirdPlace ?? dummyBronze),
             ],
           ),
@@ -433,17 +392,25 @@ class _ResultsImageWidget extends StatelessWidget {
     );
   }
 
-  // Modificado para eliminar el texto de la medalla (GOLD/SILVER/BRONZE) y aumentar todo
+  /// ✅ CAMBIO 3: Agregar inicial del apellido
   Widget _buildMedalCard(String medal, dynamic team) {
     String teamNames;
     if (team is List) {
-      final player1 = _getPlayerName(team[0]);
-      final player2 = team.length > 1 ? '& ${_getPlayerName(team[1])}' : '';
+      final player1 = _getPlayerNameWithInitial(team[0]);
+      final player2 = team.length > 1 ? '& ${_getPlayerNameWithInitial(team[1])}' : '';
       teamNames = '$player1 $player2';
     } else if (team is Map) {
-      final p1 = team['first_name']?.toString() ?? 'Player 1';
-      final p2 = team['second_player_name']?.toString() ?? '';
-      teamNames = p2.isNotEmpty ? '$p1 & $p2' : p1;
+      final p1FirstName = team['first_name']?.toString() ?? 'Player';
+      final p1LastInitial = team['last_initial']?.toString() ?? '';
+      final p2FirstName = team['second_player_name']?.toString() ?? '';
+      final p2LastInitial = team['second_player_last_initial']?.toString() ?? '';
+      
+      final player1 = p1LastInitial.isNotEmpty ? '$p1FirstName ${p1LastInitial}.' : p1FirstName;
+      final player2 = p2FirstName.isNotEmpty && p2LastInitial.isNotEmpty 
+          ? '& $p2FirstName ${p2LastInitial}.' 
+          : (p2FirstName.isNotEmpty ? '& $p2FirstName' : '');
+      
+      teamNames = player2.isNotEmpty ? '$player1 $player2' : player1;
     } else {
       teamNames = 'Team Name';
     }
@@ -491,13 +458,13 @@ class _ResultsImageWidget extends StatelessWidget {
 
     return Container(
       width: 300,
-      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 15), // Más padding vertical
+      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 15),
       decoration: BoxDecoration(
         gradient: cardGradient,
-        borderRadius: BorderRadius.circular(20), // Borde más grande
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: textColor.withOpacity(0.4), // Sombra más intensa
+            color: textColor.withOpacity(0.4),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -505,17 +472,16 @@ class _ResultsImageWidget extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Emoji de medalla más grande (sin texto de medalla)
           Text(
             medalEmoji,
-            style: const TextStyle(fontSize: 60), // MUCHO más grande
+            style: const TextStyle(fontSize: 60),
           ),
-          const SizedBox(height: 15), // Más espacio
+          const SizedBox(height: 15),
           Text(
             teamNames,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 22, // Nombres más grandes
+              fontSize: 22,
               fontWeight: FontWeight.w800,
               color: textColor,
               height: 1.2,
@@ -526,45 +492,47 @@ class _ResultsImageWidget extends StatelessWidget {
     );
   }
  
-  /// Top Rankings (Ahora Top 6 si es playoff, con "Rating" completo)
-  Widget _buildTopRankings({int showTop = 8}) {
+  /// ✅ CAMBIO 2: Grid de 2 columnas para mostrar todos los jugadores (hasta 12)
+  Widget _buildTopRankings({int showTop = 12}) {
     final topPlayers = players.take(showTop).toList();
     
-    // Data dummy para mostrar 6 jugadores en caso de datos vacíos o playoffs
     final List<Map<String, dynamic>> dummyPlayers = [
-        {'first_name': 'Juan Pablo', 'current_rating': 1045, 'games_won': 7, 'games_lost': 1},
-        {'first_name': 'Ricardo', 'current_rating': 1045, 'games_won': 7, 'games_lost': 1},
-        {'first_name': 'Alesandro', 'current_rating': 1040, 'games_won': 7, 'games_lost': 1},
-        {'first_name': 'Nazli', 'current_rating': 1035, 'games_won': 6, 'games_lost': 2},
-        {'first_name': 'Risma', 'current_rating': 1030, 'games_won': 6, 'games_lost': 2},
-        {'first_name': 'Alex', 'current_rating': 1025, 'games_won': 5, 'games_lost': 3},
-        {'first_name': 'Laura', 'current_rating': 1020, 'games_won': 5, 'games_lost': 3},
-        {'first_name': 'David', 'current_rating': 1015, 'games_won': 4, 'games_lost': 4},
+      {'first_name': 'Juan Pablo', 'last_initial': 'R', 'current_rating': 1045, 'games_won': 7, 'games_lost': 1},
+      {'first_name': 'Ricardo', 'last_initial': 'S', 'current_rating': 1045, 'games_won': 7, 'games_lost': 1},
+      {'first_name': 'Alesandro', 'last_initial': 'G', 'current_rating': 1040, 'games_won': 7, 'games_lost': 1},
+      {'first_name': 'Nazli', 'last_initial': 'K', 'current_rating': 1035, 'games_won': 6, 'games_lost': 2},
+      {'first_name': 'Risma', 'last_initial': 'T', 'current_rating': 1030, 'games_won': 6, 'games_lost': 2},
+      {'first_name': 'Alex', 'last_initial': 'M', 'current_rating': 1025, 'games_won': 5, 'games_lost': 3},
+      {'first_name': 'Laura', 'last_initial': 'P', 'current_rating': 1020, 'games_won': 5, 'games_lost': 3},
+      {'first_name': 'David', 'last_initial': 'H', 'current_rating': 1015, 'games_won': 4, 'games_lost': 4},
+      {'first_name': 'Maria', 'last_initial': 'C', 'current_rating': 1010, 'games_won': 4, 'games_lost': 4},
+      {'first_name': 'Carlos', 'last_initial': 'L', 'current_rating': 1005, 'games_won': 3, 'games_lost': 5},
+      {'first_name': 'Sofia', 'last_initial': 'V', 'current_rating': 1000, 'games_won': 3, 'games_lost': 5},
+      {'first_name': 'Miguel', 'last_initial': 'N', 'current_rating': 995, 'games_won': 2, 'games_lost': 6},
     ];
     
     final List<dynamic> playersToDisplay = topPlayers.isEmpty 
         ? dummyPlayers.take(showTop).toList() 
         : topPlayers;
 
-
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 50), // Más margen
+      margin: const EdgeInsets.symmetric(horizontal: 50),
       child: Column(
         children: [
           Text(
             '-- TOP ${showTop} RANKINGS --',
             style: GoogleFonts.poppins(
-              fontSize: 22, // Más grande
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF5A5A5A),
             ),
           ),
-          const SizedBox(height: 25), // Más espacio
+          const SizedBox(height: 20),
 
-          // Crear grid de 2 columnas para los jugadores
+          // ✅ Grid de 2 columnas
           Wrap(
-            spacing: 20, // Más separación
-            runSpacing: 20, // Más separación
+            spacing: 15,
+            runSpacing: 12,
             children: List.generate(
               playersToDisplay.length,
               (index) {
@@ -577,97 +545,97 @@ class _ResultsImageWidget extends StatelessWidget {
     );
   }
 
-  // Modificado para usar "Rating" completo y aumentar el tamaño
-  Widget _buildPlayerRankCardCompact(int rank, dynamic player) {
-    final gamesWon = player['games_won'] ?? 0;
-    final gamesLost = player['games_lost'] ?? 0;
-    final currentRating = player['current_rating']?.round() ?? 0; 
+  /// ✅ CAMBIO 2 y 3: Card más compacta con inicial del apellido
+/// ✅ CAMBIO 2 y 3: Card más compacta con inicial del apellido - ANCHO DE RANK CORREGIDO
+Widget _buildPlayerRankCardCompact(int rank, dynamic player) {
+  final gamesWon = player['games_won'] ?? 0;
+  final gamesLost = player['games_lost'] ?? 0;
+  final currentRating = player['current_rating']?.round() ?? 0; 
 
-    final Color rankColor = (rank == 1 || rank == 2) 
-        ? _primaryColorDark 
-        : const Color(0xFF5A5A5A);
+  final Color rankColor = (rank == 1 || rank == 2) 
+      ? _primaryColorDark 
+      : const Color(0xFF5A5A5A);
 
-    return Container(
-      width: 490, // Ajustado para un diseño de 2 columnas con más spacing
-      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20), // Más padding
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15), // Borde más grande
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+  return Container(
+    width: 485,
+    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(15),
+      border: Border.all(color: Colors.grey.shade200),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.08),
+          blurRadius: 10,
+          offset: const Offset(0, 5),
+        ),
+      ],
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // ✅ RANK NUMBER - MÁS ANCHO PARA 2 DÍGITOS
+        SizedBox(
+          width: 55, // ← AUMENTADO de 45 a 55
+          child: Text(
+            '#$rank',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 24, // ← REDUCIDO de 26 a 24 (opcional)
+              fontWeight: FontWeight.bold,
+              color: rankColor,
+            ),
           ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Rank number
-          SizedBox(
-            width: 50, // Más ancho
-            child: Text(
-              '#$rank',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 30, // Más grande
-                fontWeight: FontWeight.bold,
-                color: rankColor,
+        ),
+
+        const SizedBox(width: 10), // ← REDUCIDO de 12 a 10
+
+        // Player name con inicial del apellido + Rating
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _getPlayerNameWithInitial(player),
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A1A),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ),
-
-          const SizedBox(width: 15),
-
-          // Player name and Rating completo
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _getPlayerName(player),
-                  style: GoogleFonts.poppins(
-                    fontSize: 22, // Más grande
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1A1A),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              const SizedBox(height: 2),
+              Text(
+                '(Rating: $currentRating)',
+                style: GoogleFonts.lato(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF5A5A5A),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '(Rating: $currentRating)', // Usando Rating completo
-                  style: GoogleFonts.lato(
-                    fontSize: 16, // Más grande
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF5A5A5A),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          
-          // Win/Loss record como un badge (También Aumentado)
-          _buildStatBadge('W: $gamesWon / L: $gamesLost', Colors.grey.shade100, const Color(0xFF5A5A5A)),
-        ],
-      ),
-    );
-  }
-  
-  // Badge de estadísticas (Aumentado)
+        ),
+        
+        // Win/Loss record
+        _buildStatBadge('W: $gamesWon / L: $gamesLost', Colors.grey.shade100, const Color(0xFF5A5A5A)),
+      ],
+    ),
+  );
+}
+
   Widget _buildStatBadge(String text, Color bgColor, Color textColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10), // Más padding
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(10), // Borde más grande
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         '($text)',
         style: GoogleFonts.lato(
-          fontSize: 15, // Más grande
+          fontSize: 13,
           fontWeight: FontWeight.w600,
           color: textColor,
         ),
@@ -675,18 +643,16 @@ class _ResultsImageWidget extends StatelessWidget {
     );
   }
 
-
-  /// Footer simple de la imagen (Aumentado)
   Widget _buildFooterSimple() {
     return Container(
       width: 1080,
-      padding: const EdgeInsets.symmetric(horizontal: 50), // Más padding
+      padding: const EdgeInsets.symmetric(horizontal: 50),
       child: Column(
         children: [
           Text(
             '-- CREATED BY PICKLEBRACKET --',
             style: GoogleFonts.poppins(
-              fontSize: 24, // Más grande
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: const Color(0xFF5A5A5A),
               letterSpacing: 1.0,
@@ -697,23 +663,21 @@ class _ResultsImageWidget extends StatelessWidget {
             'Create and run competitive and fun Open Play sessions quickly and smoothly.\nPick from different game modes and see who shines today!',
             textAlign: TextAlign.center,
             style: GoogleFonts.lato(
-              fontSize: 18, // Más grande
+              fontSize: 18,
               color: const Color(0xFF5A5A5A),
               height: 1.4,
             ),
           ),
           const SizedBox(height: 25),
-          // Link con ícono (como un logo simple)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Icono que simula el logo "PB"
               Container(
-                width: 35, // Más grande
-                height: 35, // Más grande
+                width: 35,
+                height: 35,
                 decoration: BoxDecoration(
                   color: _primaryColorDark,
-                  borderRadius: BorderRadius.circular(8), // Borde más grande
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(
                   child: Text('PB', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -723,7 +687,7 @@ class _ResultsImageWidget extends StatelessWidget {
               Text(
                 'Learn more: www.picklebracket.pro',
                 style: GoogleFonts.poppins(
-                  fontSize: 20, // Más grande
+                  fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: _primaryColorDark,
                 ),
@@ -737,25 +701,32 @@ class _ResultsImageWidget extends StatelessWidget {
 
   Widget _buildFooter() => _buildFooterSimple();
 
-
-  String _getPlayerName(dynamic player) {
+  /// ✅ CAMBIO 3: Método mejorado para obtener nombre con inicial del apellido
+  String _getPlayerNameWithInitial(dynamic player) {
     if (player == null) return 'Unknown Player';
 
     if (player is String) return player;
     
     final firstName = player['first_name']?.toString() ?? '';
-    final lastName = player['last_name']?.toString() ?? '';
+    
+    // ✅ CORREGIDO: Priorizar 'last_initial' que viene del backend
+    final lastInitial = player['last_initial']?.toString() ?? 
+                        (player['last_name']?.toString().isNotEmpty == true 
+                            ? player['last_name'].toString().substring(0, 1) 
+                            : '');
 
-    // Intentamos crear un nombre con inicial, si no, solo el nombre.
-    if (firstName.isNotEmpty && lastName.isNotEmpty) {
-      final lastInitial = lastName.substring(0, 1);
-      return '$firstName $lastInitial.';
+    if (firstName.isNotEmpty && lastInitial.isNotEmpty) {
+      // ✅ Si last_initial ya incluye el punto, no agregarlo de nuevo
+      if (lastInitial.endsWith('.')) {
+        return '$firstName $lastInitial';
+      }
+      return '$firstName ${lastInitial}.';
     } else if (firstName.isNotEmpty) {
       return firstName;
-    } else if (lastName.isNotEmpty) {
-      return lastName;
     }
 
     return 'Unknown Player';
   }
+
+  String _getPlayerName(dynamic player) => _getPlayerNameWithInitial(player);
 }

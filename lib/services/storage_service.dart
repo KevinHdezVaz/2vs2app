@@ -46,18 +46,11 @@ Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(userKey);
   }
-
-  Future<void> saveUser(User user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-      userKey,
-      jsonEncode({
-        'id': user.id,
-        'name': user.name,  // CAMBIADO: 'nombre' a 'name' para consistencia
-        'email': user.email,
-      })
-    );
-  }
+Future<void> saveUser(User user) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString(userKey, json.encode(user.toJson()));
+  print('Usuario guardado: ${user.name}'); // ← DEBUG
+}
 
   Future<void> saveString(String key, String value) async {
     final prefs = await SharedPreferences.getInstance();

@@ -1,39 +1,38 @@
 import 'dart:convert';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:Frutia/utils/constantes.dart';
 
-class ForgetPassPage extends StatefulWidget {
-  const ForgetPassPage({super.key});
+class ForgotPasswordPage extends StatefulWidget {
+  const ForgotPasswordPage({super.key});
 
   @override
-  State<ForgetPassPage> createState() => _ForgetPassPageState();
+  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
-class _ForgetPassPageState extends State<ForgetPassPage> {
-  final _emailControllerResetLink = TextEditingController();
+class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+  final _emailController = TextEditingController();
   bool _isLoading = false;
-  Future sentResetLink() async {
+
+  Future<void> _sendResetLink() async {
     setState(() => _isLoading = true);
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/forgot-password'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'email': _emailControllerResetLink.text}),
+        body: json.encode({'email': _emailController.text.trim()}),
       );
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("Password Reset Link Sent Successfully!"),
+            content: const Text("Password reset link sent successfully!"),
             duration: const Duration(seconds: 3),
             backgroundColor: Colors.green[400],
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       } else {
@@ -46,8 +45,7 @@ class _ForgetPassPageState extends State<ForgetPassPage> {
           duration: const Duration(seconds: 3),
           backgroundColor: Colors.red[400],
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     } finally {
@@ -57,7 +55,7 @@ class _ForgetPassPageState extends State<ForgetPassPage> {
 
   @override
   void dispose() {
-    _emailControllerResetLink.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -80,9 +78,9 @@ class _ForgetPassPageState extends State<ForgetPassPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Título
+                // Title
                 Text(
-                  "Reinicia tu Contraseña",
+                  "Reset Your Password",
                   style: GoogleFonts.lato(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -90,9 +88,10 @@ class _ForgetPassPageState extends State<ForgetPassPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Subtítulo
+
+                // Subtitle
                 Text(
-                  "Ingresa tu correo para recibir un enlace para reiniciar tu contraseña.",
+                  "Enter your email to receive a password reset link.",
                   style: GoogleFonts.lato(
                     fontSize: 16,
                     color: Colors.grey[600],
@@ -100,12 +99,13 @@ class _ForgetPassPageState extends State<ForgetPassPage> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
-                // Campo de email
+
+                // Email Field
                 TextField(
-                  controller: _emailControllerResetLink,
+                  controller: _emailController,
                   cursorColor: Colors.black,
                   keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(color: Colors.black), // Añade esta línea
+                  style: const TextStyle(color: Colors.black),
                   decoration: InputDecoration(
                     hintText: "Email",
                     hintStyle: TextStyle(color: Colors.grey[400]),
@@ -122,14 +122,14 @@ class _ForgetPassPageState extends State<ForgetPassPage> {
                         width: 1.5,
                       ),
                     ),
-                    prefixIcon:
-                        const Icon(Icons.email_outlined, color: Colors.grey),
+                    prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey),
                   ),
                 ),
                 const SizedBox(height: 32),
-                // Botón de enviar
+
+                // Send Button
                 ElevatedButton(
-                  onPressed: _isLoading ? null : sentResetLink,
+                  onPressed: _isLoading ? null : _sendResetLink,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
@@ -149,7 +149,7 @@ class _ForgetPassPageState extends State<ForgetPassPage> {
                           ),
                         )
                       : Text(
-                          "Enviar enlace",
+                          "Send Link",
                           style: GoogleFonts.inter(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

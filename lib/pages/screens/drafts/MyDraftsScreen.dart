@@ -141,9 +141,9 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
         case 'S':
           return 'MAX VARIETY';
         case 'P4':
-          return 'TOP 4 FINAL';
+          return 'TOP 4 PLAYOFFS';
         case 'P8':
-          return 'TOP 8 SEMIFINAL';
+          return 'TOP 8 PLAYOFFS';
         case 'T':
           return 'COMPETITIVE MAX';
         case 'O':

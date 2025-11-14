@@ -650,83 +650,86 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     );
   }
 
-  Widget _buildLiveGamesTab() {
-    final shouldShowFinalResults = _shouldShowFinalResults();
+ Widget _buildLiveGamesTab() {
+  final shouldShowFinalResults = _shouldShowFinalResults();
 
-    return Column(
-      children: [
-        // ✅ RESULTADOS FINALES ARRIBA
-        if (shouldShowFinalResults) ...[
-          _buildFinalResultsCard(),
-        ],
-        // ✅ CONTENIDO NORMAL DEL LIVE TAB
-        if (_liveGames.isEmpty && !shouldShowFinalResults)
-          Expanded(
-            child: Column(
-              children: [
-                // ✅ ESPACIADO SUPERIOR (30% de la altura)
-                Spacer(flex: 1),
-                // ✅ BOTONES DE ACCIÓN (sin ícono de fondo)
-                if (_shouldShowFinalizeButton())
-                  _buildFinalizeButton()
-                else if (_shouldShowStartFinalsButton())
-                  _buildStartFinalsButton()
-                else if (_sessionData != null &&
-                    (_sessionData!['session_type'] == 'P4' ||
-                        _sessionData!['session_type'] == 'P8' ||
-                        _sessionData!['session_type'] == 'T' ||
-                        _sessionData!['session_type'] ==
-                            'S') && // ← ✅ AGREGADO 'S'
-                    !_shouldShowFinalizeButton() &&
-                    !_shouldShowStartFinalsButton() &&
-                    _nextGames.isEmpty)
-                  _buildAdvanceStageButton()
-                // ✅ ÍCONO Y TEXTO (solo si NO hay botones de acción)
-                else ...[
-                  Opacity(
-                    opacity: 0.6,
-                    child: ColorFiltered(
-                      colorFilter: ColorFilter.mode(
-                        Colors.grey.shade400,
-                        BlendMode.modulate,
-                      ),
-                      child: Image(
-                        image: AssetImage('assets/icons/raaqueta.png'),
-                        width: 120,
-                      ),
+  return Column(
+    children: [
+      // ✅ RESULTADOS FINALES ARRIBA (con scroll interno si es necesario)
+      if (shouldShowFinalResults) ...[
+        Flexible( // ← CAMBIO CLAVE: Flexible en lugar de solo agregar el widget
+          fit: FlexFit.loose,
+          child: _buildFinalResultsCard(),
+        ),
+      ],
+      // ✅ CONTENIDO NORMAL DEL LIVE TAB
+      if (_liveGames.isEmpty && !shouldShowFinalResults)
+        Expanded(
+          child: Column(
+            children: [
+              // ✅ ESPACIADO SUPERIOR (30% de la altura)
+              Spacer(flex: 1),
+              // ✅ BOTONES DE ACCIÓN (sin ícono de fondo)
+              if (_shouldShowFinalizeButton())
+                _buildFinalizeButton()
+              else if (_shouldShowStartFinalsButton())
+                _buildStartFinalsButton()
+              else if (_sessionData != null &&
+                  (_sessionData!['session_type'] == 'P4' ||
+                      _sessionData!['session_type'] == 'P8' ||
+                      _sessionData!['session_type'] == 'T' ||
+                      _sessionData!['session_type'] == 'S') &&
+                  !_shouldShowFinalizeButton() &&
+                  !_shouldShowStartFinalsButton() &&
+                  _nextGames.isEmpty)
+                _buildAdvanceStageButton()
+              // ✅ ÍCONO Y TEXTO (solo si NO hay botones de acción)
+              else ...[
+                Opacity(
+                  opacity: 0.6,
+                  child: ColorFiltered(
+                    colorFilter: ColorFilter.mode(
+                      Colors.grey.shade400,
+                      BlendMode.modulate,
+                    ),
+                    child: Image(
+                      image: AssetImage('assets/icons/raaqueta.png'),
+                      width: 120,
                     ),
                   ),
-                  SizedBox(height: 16),
-                  Text(
-                    'No active games',
-                    style: GoogleFonts.lato(
-                      fontSize: 16,
-                      color: FrutiaColors.secondaryText,
-                    ),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'No active games',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    color: FrutiaColors.secondaryText,
                   ),
-                ],
-                // ✅ ESPACIADO INFERIOR (70% de la altura)
-                Spacer(flex: 7),
+                ),
               ],
-            ),
-          )
-        else if (_liveGames.isNotEmpty)
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () => _loadSessionData(),
-              color: FrutiaColors.primary,
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-                itemCount: _liveGames.length,
-                itemBuilder: (context, index) {
-                  return _buildGameCard(_liveGames[index], isLive: true);
-                },
-              ),
+              // ✅ ESPACIADO INFERIOR (70% de la altura)
+              Spacer(flex: 7),
+            ],
+          ),
+        )
+      else if (_liveGames.isNotEmpty)
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () => _loadSessionData(),
+            color: FrutiaColors.primary,
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+              itemCount: _liveGames.length,
+              itemBuilder: (context, index) {
+                return _buildGameCard(_liveGames[index], isLive: true);
+              },
             ),
           ),
-      ],
-    );
-  }
+        ),
+    ],
+  );
+}
+
 
   Widget _buildNextGamesTab() {
     final shouldShowFinalsButton = _shouldShowStartFinalsButton();
@@ -838,196 +841,205 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     );
   }
 
-  Widget _buildFinalResultsCard() {
-    final sessionName = _sessionData?['session_name'] ?? 'Session';
-    final numberOfCourts = _sessionData?['number_of_courts'] ?? 0;
-    final numberOfPlayers = _sessionData?['number_of_players'] ?? 0;
-    final duration = _formatTimer(_elapsedSeconds);
-    final sessionType = _sessionData?['session_type'] ?? 'O';
+Widget _buildFinalResultsCard() {
+  final sessionName = _sessionData?['session_name'] ?? 'Session';
+  final numberOfCourts = _sessionData?['number_of_courts'] ?? 0;
+  final numberOfPlayers = _sessionData?['number_of_players'] ?? 0;
+  final duration = _formatTimer(_elapsedSeconds);
+  final sessionType = _sessionData?['session_type'] ?? 'O';
 
-    // ✅ DETERMINAR QUÉ MOSTRAR según tipo de sesión
-    final isPlayoffSession = sessionType == 'P4' || sessionType == 'P8';
+  // ✅ DETERMINAR QUÉ MOSTRAR según tipo de sesión
+  final isPlayoffSession = sessionType == 'P4' || sessionType == 'P8';
 
-    return Container(
-      margin: const EdgeInsets.only(top: 12, bottom: 12, left: 16, right: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: FrutiaColors.success.withOpacity(0.3),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.15),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+  return Container(
+    margin: const EdgeInsets.only(top: 12, bottom: 12, left: 16, right: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: FrutiaColors.success.withOpacity(0.3),
+        width: 2,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header existente
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: FrutiaColors.success.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.emoji_events,
-                  color: FrutiaColors.success,
-                  size: 26,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Session Complete! 🎉',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: FrutiaColors.primaryText,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Check out the final results for session:',
-                      style: GoogleFonts.lato(
-                        fontSize: 13,
-                        color: FrutiaColors.secondaryText,
-                      ),
-                    ),
-                    Text(
-                      '"$sessionName"',
-                      style: GoogleFonts.lato(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: FrutiaColors.secondaryText,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // Session Summary existente
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: FrutiaColors.secondaryBackground.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: Colors.grey.withOpacity(0.2),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.15),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    // ✅ SOLUCIÓN: Usar ConstrainedBox con maxHeight
+    child: ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7, // ← 70% de la altura de pantalla
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16), // ← Mover padding aquí
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min, // ← Importante: min size
+          children: [
+            // Header existente
+            Row(
               children: [
-                _buildSummaryItem('$numberOfPlayers', 'Players'),
-                _buildSummaryItem('$numberOfCourts', 'Courts'),
-                _buildSummaryItem(duration, 'Duration'),
-                _buildSummaryItem('${_completedGames.length}', 'Games'),
-              ],
-            ),
-          ),
-
-          // ✅ CONTENIDO DINÁMICO según tipo de sesión
-          const SizedBox(height: 14),
-          if (isPlayoffSession)
-            _buildPlayoffWinners(sessionType)
-          else
-            _buildTop3Players(),
-
-          const SizedBox(height: 14),
-
-          // ✅ NUEVO: BOTONES DE ACCIÓN (Compartir + Rankings)
-          Row(
-            children: [
-              // Botón de compartir
-              if (!isReallySpectator) ...[
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _shareSessionResults,
-                    icon: Icon(Icons.share,
-                        size: 16, color: FrutiaColors.primary),
-                    label: Text(
-                      'Share Results',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: FrutiaColors.primary,
-                      ),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      side: BorderSide(
-                        color: FrutiaColors.primary.withOpacity(0.5),
-                        width: 1.5,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: FrutiaColors.success.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.emoji_events,
+                    color: FrutiaColors.success,
+                    size: 26,
                   ),
                 ),
                 const SizedBox(width: 12),
-              ],
-
-              // Botón de rankings
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: FrutiaColors.primary.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Session Complete! 🎉',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: FrutiaColors.primaryText,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Check out the final results for session:',
+                        style: GoogleFonts.lato(
+                          fontSize: 13,
+                          color: FrutiaColors.secondaryText,
+                        ),
+                      ),
+                      Text(
+                        '"$sessionName"',
+                        style: GoogleFonts.lato(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: FrutiaColors.secondaryText,
+                        ),
                       ),
                     ],
                   ),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _tabController.animateTo(3); // Go to Rankings
-                    },
-                    icon:
-                        Icon(Icons.leaderboard, size: 16, color: Colors.white),
-                    label: Text(
-                      'View Rankings',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: Colors.white,
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Session Summary existente
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: FrutiaColors.secondaryBackground.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.2),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildSummaryItem('$numberOfPlayers', 'Players'),
+                  _buildSummaryItem('$numberOfCourts', 'Courts'),
+                  _buildSummaryItem(duration, 'Duration'),
+                  _buildSummaryItem('${_completedGames.length}', 'Games'),
+                ],
+              ),
+            ),
+
+            // ✅ CONTENIDO DINÁMICO según tipo de sesión
+            const SizedBox(height: 14),
+            if (isPlayoffSession)
+              _buildPlayoffWinners(sessionType)
+            else
+              _buildTop3Players(),
+
+            const SizedBox(height: 14),
+
+            // ✅ BOTONES DE ACCIÓN (Compartir + Rankings)
+            Row(
+              children: [
+                // Botón de compartir
+                if (!isReallySpectator) ...[
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _shareSessionResults,
+                      icon: Icon(Icons.share,
+                          size: 16, color: FrutiaColors.primary),
+                      label: Text(
+                        'Share Results',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: FrutiaColors.primary,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        side: BorderSide(
+                          color: FrutiaColors.primary.withOpacity(0.5),
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: FrutiaColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+
+                // Botón de rankings
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: FrutiaColors.primary.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _tabController.animateTo(3);
+                      },
+                      icon:
+                          Icon(Icons.leaderboard, size: 16, color: Colors.white),
+                      label: Text(
+                        'View Rankings',
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
                       ),
-                      elevation: 0,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FrutiaColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 0,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   /// ✅ NUEVO: Mostrar ganadores de playoffs (P4/P8)
   Widget _buildPlayoffWinners(String sessionType) {
@@ -1791,6 +1803,9 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             Row(
               children: [
                 Expanded(
+
+
+                  
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context, false),
                     style: OutlinedButton.styleFrom(
@@ -2946,197 +2961,117 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 
     return playoffRound?.toUpperCase();
   }
-
-
-
 Future<void> _shareSessionResults() async {
-  // Mostrar opciones: Imagen y Texto
   final choice = await showDialog<String>(
     context: context,
+    barrierDismissible: true,
     builder: (context) => Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      elevation: 16,
       child: Container(
         padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              FrutiaColors.primary.withOpacity(0.03),
+              FrutiaColors.primary.withOpacity(0.01),
+            ],
+          ),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // TÍTULO
+            // TÍTULO CON GRADIENTE E ICONO
             Row(
               children: [
-                Icon(Icons.share, color: FrutiaColors.primary, size: 28),
-                const SizedBox(width: 12),
-                Expanded( // ✅ AGREGAR EXPANDED AQUÍ
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [FrutiaColors.primary, FrutiaColors.primary.withOpacity(0.7)],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: FrutiaColors.primary.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.share, color: Colors.white, size: 28),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
                   child: Text(
                     'Share Session Results',
                     style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 21,
+                      fontWeight: FontWeight.bold,
                       color: FrutiaColors.primaryText,
                     ),
                   ),
                 ),
               ],
             ),
-            
             const SizedBox(height: 8),
-            
-            // SUBTÍTULO
             Text(
-              'Select your preferred sharing method:',
+              'Choose how you want to share the final rankings:',
               style: GoogleFonts.lato(
                 fontSize: 15,
                 color: FrutiaColors.secondaryText,
+                height: 1.4,
               ),
             ),
-            
             const SizedBox(height: 24),
 
-            // OPCIÓN 1: GENERAR IMAGEN
-            InkWell(
+            // OPCIÓN 1: IMAGEN (COLOR VIVO)
+            _buildShareOption(
+              icon: Icons.photo_camera,
+              iconColor: FrutiaColors.success,
+              iconBgGradient: [FrutiaColors.success.withOpacity(0.2), FrutiaColors.success.withOpacity(0.1)],
+              title: 'Share as Image',
+              subtitle: 'Perfect for Instagram, Stories & WhatsApp',
               onTap: () => Navigator.pop(context, 'image'),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: FrutiaColors.primary.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: FrutiaColors.primary.withOpacity(0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: FrutiaColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        Icons.photo_camera,
-                        color: FrutiaColors.primary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded( // ✅ AGREGAR EXPANDED AQUÍ
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Generate Image for Sharing',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: FrutiaColors.primaryText,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Ideal for social media posts & stories',
-                            style: GoogleFonts.lato(
-                              fontSize: 13,
-                              color: FrutiaColors.secondaryText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.chevron_right,
-                      color: FrutiaColors.primary.withOpacity(0.5),
-                    ),
-                  ],
-                ),
-              ),
+              borderColor: FrutiaColors.success.withOpacity(0.4),
+              backgroundColor: FrutiaColors.success.withOpacity(0.08),
             ),
+            const SizedBox(height: 14),
 
-            const SizedBox(height: 12),
-
-            // OPCIÓN 2: COMPARTIR COMO TEXTO
-            InkWell(
+            // OPCIÓN 2: TEXTO (COLOR NEUTRO PERO ELEGANTE)
+            _buildShareOption(
+              icon: Icons.text_fields,
+              iconColor: FrutiaColors.primary,
+              iconBgGradient: [FrutiaColors.primary.withOpacity(0.15), FrutiaColors.primary.withOpacity(0.05)],
+              title: 'Share as Text',
+              subtitle: 'Copy clean results to clipboard',
               onTap: () => Navigator.pop(context, 'text'),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: FrutiaColors.secondaryBackground,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: FrutiaColors.disabledText.withOpacity(0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: FrutiaColors.secondaryText.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        Icons.text_fields,
-                        color: FrutiaColors.secondaryText,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded( // ✅ AGREGAR EXPANDED AQUÍ
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Share as Text',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: FrutiaColors.primaryText,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Copy results as plain text to clipboard',
-                            style: GoogleFonts.lato(
-                              fontSize: 13,
-                              color: FrutiaColors.secondaryText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.chevron_right,
-                      color: FrutiaColors.secondaryText.withOpacity(0.5),
-                    ),
-                  ],
-                ),
-              ),
+              borderColor: FrutiaColors.primary.withOpacity(0.3),
+              backgroundColor: FrutiaColors.primary.withOpacity(0.05),
             ),
+            const SizedBox(height: 28),
 
-            const SizedBox(height: 24),
-
-            // BOTÓN CANCELAR
+            // BOTÓN CANCELAR (ESTILO PREMIUM)
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  side: BorderSide(
-                    color: FrutiaColors.disabledText.withOpacity(0.3),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: BorderSide(color: FrutiaColors.disabledText.withOpacity(0.4), width: 1.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  backgroundColor: FrutiaColors.tertiaryBackground.withOpacity(0.5),
                 ),
                 child: Text(
                   'Cancel',
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
-                    color: FrutiaColors.secondaryText,
+                    color: Colors.black, 
+                    fontSize: 15,
                   ),
                 ),
               ),
@@ -3146,32 +3081,34 @@ Future<void> _shareSessionResults() async {
       ),
     ),
   );
- 
+
   if (choice == null) return;
 
+  // === Loading + Lógica existente ===
   try {
-    // Mostrar loading
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => Center(
         child: Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(FrutiaColors.primary),
+                strokeWidth: 5,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               Text(
-                choice == 'image' 
-                  ? 'Generating Image...' 
-                  : 'Preparing Text...',
+                choice == 'image' ? 'Generating Image...' : 'Preparing Text...',
                 style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -3184,15 +3121,12 @@ Future<void> _shareSessionResults() async {
       ),
     );
 
-    // ✅ Generar imagen o texto según la elección
     if (choice == 'image') {
       final sessionType = _sessionData!['session_type'] ?? 'O';
-
       final sessionDataWithDuration = {
         ..._sessionData!,
         'elapsed_seconds': _elapsedSeconds,
       };
-
       List<dynamic>? playoffWinners;
       if (sessionType == 'P4' || sessionType == 'P8') {
         final playoffResults = _getPlayoffWinners(sessionType);
@@ -3211,44 +3145,119 @@ Future<void> _shareSessionResults() async {
         playoffWinners: playoffWinners,
       );
     } else if (choice == 'text') {
-      // ✅ AGREGAR AQUÍ LA LÓGICA PARA COMPARTIR COMO TEXTO
-      // Por ahora solo mostramos un mensaje
-      if (mounted) Navigator.pop(context); // Cerrar loading
-      
+      if (mounted) Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Text sharing feature coming soon!',
-            style: GoogleFonts.poppins(fontSize: 16),
+          content: Row(
+            children: [
+              Icon(Icons.info, color: Colors.white),
+              const SizedBox(width: 8),
+              Text(
+                'Text sharing coming soon!',
+                style: GoogleFonts.poppins(fontSize: 15),
+              ),
+            ],
           ),
           backgroundColor: FrutiaColors.warning,
           duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
       return;
     }
 
-    if (mounted) Navigator.pop(context);
+    if (mounted) Navigator.pop(context); // Cerrar loading
   } catch (e) {
     if (mounted) Navigator.pop(context);
-
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Error generating ${choice == 'image' ? 'image' : 'text'}: ${e.toString()}',
-            style: GoogleFonts.poppins(fontSize: 16),
+            'Error: ${e.toString()}',
+            style: GoogleFonts.poppins(fontSize: 14),
           ),
           backgroundColor: FrutiaColors.error,
           duration: const Duration(seconds: 4),
         ),
       );
     }
-
-    print('❌ Error generating results: $e');
   }
 }
 
+Widget _buildShareOption({
+  required IconData icon,
+  required Color iconColor,
+  required List<Color> iconBgGradient,
+  required String title,
+  required String subtitle,
+  required VoidCallback onTap,
+  required Color borderColor,
+  required Color backgroundColor,
+}) {
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(16),
+    child: Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderColor, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: borderColor.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Icono con fondo degradado
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: iconBgGradient),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: iconColor, size: 28),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: FrutiaColors.primaryText,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.lato(
+                    fontSize: 13.5,
+                    color: FrutiaColors.secondaryText,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right,
+            color: iconColor.withOpacity(0.6),
+            size: 28,
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   void _showSessionInfoDialog() {
     final sessionName = _sessionData?['session_name'] ?? 'Session';
@@ -3287,9 +3296,9 @@ Future<void> _shareSessionResults() async {
         case 'S':
           return 'MAX VARIETY';
         case 'P4':
-          return 'TOP 4 FINAL';
+          return 'TOP 4 PLAYOFFS';
         case 'P8':
-          return 'TOP 8 SEMIFINAL';
+          return 'TOP 8 PLAYOFFS';
         case 'T':
           return 'COMPETITIVE MAX';
         case 'O':
@@ -3344,7 +3353,7 @@ Future<void> _shareSessionResults() async {
                                 color: FrutiaColors.primaryText,
                               ),
                             ),
-                            Text( 
+                            Text(
                               sessionName,
                               style: GoogleFonts.lato(
                                 fontSize: 13,
@@ -3361,6 +3370,7 @@ Future<void> _shareSessionResults() async {
 
                   const SizedBox(height: 20),
                   // ==================== CODES SECTION (Alturas igualadas) ====================
+// ==================== CODES SECTION (Alturas igualadas) ====================
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -3391,14 +3401,11 @@ Future<void> _shareSessionResults() async {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    Icons.qr_code,
-                                    color: FrutiaColors.warning,
-                                    size: 16,
-                                  ),
+                                  Icon(Icons.qr_code,
+                                      color: FrutiaColors.warning, size: 16),
                                   const SizedBox(width: 4),
                                   Text(
-                                    'Code', // ✅ CAMBIADO: Session → Code
+                                    'Session Code', // ← Ahora dice "Session Code"
                                     style: GoogleFonts.poppins(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
@@ -3407,43 +3414,41 @@ Future<void> _shareSessionResults() async {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
-                              // Código compacto y centrado
+                              const SizedBox(height: 10),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 8),
-                                constraints: BoxConstraints(
-                                  minHeight: 70, // ✅ ALTURA FIJA
+                                    horizontal: 8, vertical: 10),
+                                constraints: const BoxConstraints(
+                                  minHeight: 80, // ← MISMA ALTURA
                                 ),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color:
-                                        FrutiaColors.warning.withOpacity(0.3),
-                                  ),
+                                      color: FrutiaColors.warning
+                                          .withOpacity(0.3)),
                                 ),
                                 child: Column(
-                                  mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
                                       sessionCode,
                                       style: GoogleFonts.robotoMono(
-                                        fontSize: 20,
+                                        fontSize:
+                                            22, // ← Aumentado para mejor legibilidad
                                         fontWeight: FontWeight.bold,
                                         letterSpacing: 3,
                                         color: FrutiaColors.warning,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
-                                    const SizedBox(height: 6),
+                                    const SizedBox(height: 8),
                                     InkWell(
                                       onTap: () async {
                                         await Clipboard.setData(
                                             ClipboardData(text: sessionCode));
                                         Fluttertoast.showToast(
-                                          msg: "Code copied!",
+                                          msg: "Session Code copied!",
                                           toastLength: Toast.LENGTH_SHORT,
                                           gravity: ToastGravity.BOTTOM,
                                           backgroundColor: FrutiaColors.success,
@@ -3464,11 +3469,9 @@ Future<void> _shareSessionResults() async {
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Icon(
-                                              Icons.copy,
-                                              color: FrutiaColors.warning,
-                                              size: 14,
-                                            ),
+                                            Icon(Icons.copy,
+                                                color: FrutiaColors.warning,
+                                                size: 14),
                                             const SizedBox(width: 4),
                                             Text(
                                               'Copy',
@@ -3489,7 +3492,6 @@ Future<void> _shareSessionResults() async {
                           ),
                         ),
                       ),
-
                       const SizedBox(width: 8),
 
                       // ==================== MODERATOR KEY (Derecha - Solo para owner) ====================
@@ -3520,14 +3522,11 @@ Future<void> _shareSessionResults() async {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      Icons.vpn_key,
-                                      color: FrutiaColors.primary,
-                                      size: 16,
-                                    ),
+                                    Icon(Icons.vpn_key,
+                                        color: FrutiaColors.primary, size: 16),
                                     const SizedBox(width: 4),
                                     Text(
-                                      'Moderator Key', // ✅ CAMBIADO: Mod Key → Moderator Key
+                                      'Moderator Key',
                                       style: GoogleFonts.poppins(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
@@ -3537,24 +3536,20 @@ Future<void> _shareSessionResults() async {
                                   ],
                                 ),
                                 const SizedBox(height: 8),
-                                // Código compacto y centrado
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 8),
-                                  constraints: BoxConstraints(
-                                    minHeight:
-                                        70, // ✅ ALTURA FIJA (misma que Session Code)
+                                      horizontal: 8, vertical: 10),
+                                  constraints: const BoxConstraints(
+                                    minHeight: 80, // ← MISMA ALTURA
                                   ),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                      color:
-                                          FrutiaColors.primary.withOpacity(0.3),
-                                    ),
+                                        color: FrutiaColors.primary
+                                            .withOpacity(0.3)),
                                   ),
                                   child: Column(
-                                    mainAxisSize: MainAxisSize.min,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
@@ -3567,13 +3562,13 @@ Future<void> _shareSessionResults() async {
                                         ),
                                         textAlign: TextAlign.center,
                                       ),
-                                      const SizedBox(height: 6),
+                                      const SizedBox(height: 8),
                                       InkWell(
                                         onTap: () async {
                                           await Clipboard.setData(ClipboardData(
                                               text: verificationCode));
                                           Fluttertoast.showToast(
-                                            msg: "Code copied!",
+                                            msg: "Moderator Key copied!",
                                             toastLength: Toast.LENGTH_SHORT,
                                             gravity: ToastGravity.BOTTOM,
                                             backgroundColor:
@@ -3595,11 +3590,9 @@ Future<void> _shareSessionResults() async {
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Icon(
-                                                Icons.copy,
-                                                color: FrutiaColors.primary,
-                                                size: 14,
-                                              ),
+                                              Icon(Icons.copy,
+                                                  color: FrutiaColors.primary,
+                                                  size: 14),
                                               const SizedBox(width: 4),
                                               Text(
                                                 'Copy',
@@ -3621,11 +3614,9 @@ Future<void> _shareSessionResults() async {
                           ),
                         )
                       else
-                        // ✅ Spacer para mantener el ancho cuando NO es owner
-                        Expanded(child: SizedBox.shrink()),
+                        const Expanded(child: SizedBox.shrink()),
                     ],
                   ),
-
                   const SizedBox(height: 20),
                   // ==================== DETAILS ====================
                   Text(
@@ -3953,16 +3944,26 @@ Future<void> _shareSessionResults() async {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Go Back',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                color: FrutiaColors.primaryText,
+          Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: FrutiaColors.secondaryText.withOpacity(0.5)),
+              ),
+              child: TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  'Go back',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
               ),
             ),
-          ),
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
@@ -6142,78 +6143,138 @@ Future<void> _shareSessionResults() async {
                               ],
 
                               // Edit button for completed games
-                              if (isCompleted && !widget.isSpectator) ...[
-                                InkWell(
-                                  onTap: () async {
-                                    final shouldEdit = await showDialog<bool>(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: Text(
-                                          'Edit Score?',
-                                          style: GoogleFonts.poppins(
-                                              color: FrutiaColors.primaryText),
-                                        ),
-                                        content: Text(
-                                          'Any changes to scores will recalculate ratings and rankings as if this game was replayed NOW - these changes cannot be reverted.',
-                                          style: GoogleFonts.lato(
-                                              color:
-                                                  FrutiaColors.secondaryText),
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, false),
-                                            child: Text(
-                                              'Cancel',
-                                              style: GoogleFonts.lato(
-                                                  color: FrutiaColors
-                                                      .secondaryText),
-                                            ),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(context, true),
-                                            child: Text(
-                                              'Continue',
-                                              style: GoogleFonts.lato(
-                                                  color: FrutiaColors.primary,
-                                                  fontWeight: FontWeight.w600),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
+                            if (isCompleted && !widget.isSpectator) ...[
+  InkWell(
+    onTap: () async {
+      final shouldEdit = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Icon(Icons.warning, color: FrutiaColors.error, size: 28),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Edit Completed Game?',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    color: FrutiaColors.error,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'This action will:',
+                style: GoogleFonts.lato(
+                  fontWeight: FontWeight.w600,
+                  color: FrutiaColors.primaryText,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildWarningItem('Recalculate ALL player ratings'),
+              _buildWarningItem('Update current rankings'),
+              _buildWarningItem('Treat this game as played NOW'),
+              _buildWarningItem('Affect ongoing session progress'),
+              const SizedBox(height: 12),
+              Text(
+                'This cannot be undone. Rankings may change significantly.',
+                style: GoogleFonts.lato(
+                  color: FrutiaColors.error,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            // Botón: Cancelar (con borde)
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: FrutiaColors.secondaryText.withOpacity(0.5)),
+              ),
+              child: TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Botón: Continuar (elevado con sombra roja)
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: FrutiaColors.error.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: FrutiaColors.error,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  'Edit Score',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
 
-                                    if (shouldEdit == true && mounted) {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => ScoreEntryDialog(
-                                          game: game,
-                                          session: _sessionData!,
-                                          onScoreSubmitted: () {
-                                            _loadSessionData();
-                                          },
-                                          isEditing: true,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          FrutiaColors.warning.withOpacity(0.1),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.edit,
-                                      size: 18,
-                                      color: FrutiaColors.warning,
-                                    ),
-                                  ),
-                                ),
-                              ],
+      if (shouldEdit == true && mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => ScoreEntryDialog(
+            game: game,
+            session: _sessionData!,
+            onScoreSubmitted: _loadSessionData,
+            isEditing: true,
+          ),
+        );
+      }
+    },
+    borderRadius: BorderRadius.circular(20),
+    child: Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: FrutiaColors.warning.withOpacity(0.1),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        Icons.edit,
+        size: 18,
+        color: FrutiaColors.warning,
+      ),
+    ),
+  ),
+],
 // Cancel button for live games
                               if (isLive && !widget.isSpectator) ...[
                                 InkWell(
@@ -6607,34 +6668,105 @@ Future<void> _shareSessionResults() async {
     );
   }
 
-// Método para confirmar Skip the Line
   Future<void> _showSkipLineConfirmation(Map<String, dynamic> game) async {
     final confirm = await showDialog<bool>(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: Text(
-          'Skip the Line?',
-          style: GoogleFonts.poppins(color: FrutiaColors.primaryText),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.fast_forward, color: FrutiaColors.primary, size: 28),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Skip the Line?',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: FrutiaColors.primaryText,
+                ),
+              ),
+            ),
+          ],
         ),
-        content: Text(
-          'Are you sure you want this game to skip the line and be played next?',
-          style: GoogleFonts.lato(color: FrutiaColors.secondaryText),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'This will:',
+              style: GoogleFonts.lato(
+                fontWeight: FontWeight.w600,
+                color: FrutiaColors.primaryText,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+            Text(
+              'Other games will be postponed accordingly.',
+              style: GoogleFonts.lato(
+                color: FrutiaColors.secondaryText,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.lato(color: FrutiaColors.secondaryText),
+          // Botón: Cancelar
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                  color: FrutiaColors.secondaryText.withOpacity(0.3)),
+            ),
+            child: TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              style: TextButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: FrutiaColors.secondaryText,
+                ),
+              ),
             ),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Skip the Line',
-              style: GoogleFonts.lato(
-                color: FrutiaColors.primary,
-                fontWeight: FontWeight.w600,
+          const SizedBox(width: 8),
+          // Botón: Confirmar (elevado con sombra)
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: FrutiaColors.primary.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: FrutiaColors.primary,
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Skip the Line',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),

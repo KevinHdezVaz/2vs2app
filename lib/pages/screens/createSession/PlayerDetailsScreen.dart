@@ -231,7 +231,7 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                           ),
                         ),
                         child: Text(
-                          'Back',
+                          'Back: Court Details',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,

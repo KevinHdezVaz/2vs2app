@@ -67,9 +67,17 @@ final GoogleSignIn _googleSignIn = GoogleSignIn(
     final data = json.decode(response.body);
 
     if (response.statusCode == 201) {
-      await _storage.saveToken(data['token']);
-       return data;
-    } else {
+  await _storage.saveToken(data['token']);
+  
+  // GUARDAR USUARIO DESDE REGISTRO
+  if (data['user'] != null) {
+    final user = frutia.User.fromJson(data['user']);
+    await _storage.saveUser(user);
+    debugPrint('Usuario guardado desde register: ${user.name}');
+  }
+  
+  return data;
+} else {
       String errorMessage = data['message'] ?? 'Ocurrió un error desconocido.';
       if (data['errors'] != null) {
         errorMessage = data['errors'].values.first[0];
