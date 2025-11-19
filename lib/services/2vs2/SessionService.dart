@@ -369,11 +369,11 @@ static Future<void> generatePlayoffBracket(int sessionId) async {
         return json.decode(response.body);
       } else {
         final errorBody = json.decode(response.body);
-        throw Exception(errorBody['message'] ?? 'Session not found or not active');
+        throw Exception(errorBody['message'] ?? 'No active session was found using the code entered. Please verify the session code and try again.');
       }
     } catch (e) {
       print('[SessionService] Error buscando sesión: $e');
-      throw Exception('Session not found or not active');
+      throw Exception('No active session was found using the code entered. Please verify the session code and try again.');
     }
   }
 

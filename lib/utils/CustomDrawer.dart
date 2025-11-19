@@ -1,10 +1,11 @@
+import 'package:Frutia/pages/screens/EditProfileScreen.dart';
 import 'package:Frutia/pages/screens/drawer/HistoryScreen.dart';
 import 'package:Frutia/pages/screens/drawer/PlayersScreen.dart';
 import 'package:Frutia/services/2vs2/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:Frutia/services/storage_service.dart';
- import 'package:Frutia/auth/auth_page_check.dart';
+import 'package:Frutia/auth/auth_page_check.dart';
 import 'package:Frutia/utils/colors.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -19,100 +20,100 @@ class CustomDrawer extends StatelessWidget {
 
 // En custom_drawer.dart - REEMPLAZAR el método _logout
 
-Future<void> _logout(BuildContext context) async {
-  final bool? confirm = await showDialog<bool>(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Row(
-          children: [
-            Icon(Icons.logout, color: FrutiaColors.primary),
-            const SizedBox(width: 12),
-            Text(
-              'Log Out',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: FrutiaColors.primaryText,
+  Future<void> _logout(BuildContext context) async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.logout, color: FrutiaColors.primary),
+              const SizedBox(width: 12),
+              Text(
+                'Log Out',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: FrutiaColors.primaryText,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to log out?',
+            style: GoogleFonts.lato(
+              fontSize: 16,
+              color: FrutiaColors.secondaryText,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.lato(
+                  color: FrutiaColors.disabledText,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: FrutiaColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Log Out',
+                style: GoogleFonts.lato(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
-        ),
-        content: Text(
-          'Are you sure you want to log out?',
-          style: GoogleFonts.lato(
-            fontSize: 16,
-            color: FrutiaColors.secondaryText,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.lato(
-                color: FrutiaColors.disabledText,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: FrutiaColors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: Text(
-              'Log Out',
-              style: GoogleFonts.lato(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      );
-    },
-  );
-
-  if (confirm == true && context.mounted) {
-    try {
-      // ✅ CORREGIDO: Limpiar TODOS los datos
-      final storage = StorageService();
-      
-      // Opción 1: Borrar específicamente token y user
-      await storage.removeToken();
-      await storage.removeUser();
-      
-      // Opción 2 (Recomendada): Limpiar todo
-      // await storage.clearAll();
-      
-      print('🧹 Logout: Token y datos de usuario eliminados');
-
-      if (context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const AuthPageCheck()),
-          (route) => false,
         );
-      }
-    } catch (e) {
-      print('❌ Error logging out: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error logging out: $e'),
-            backgroundColor: FrutiaColors.error,
-          ),
-        );
+      },
+    );
+
+    if (confirm == true && context.mounted) {
+      try {
+        // ✅ CORREGIDO: Limpiar TODOS los datos
+        final storage = StorageService();
+
+        // Opción 1: Borrar específicamente token y user
+        await storage.removeToken();
+        await storage.removeUser();
+
+        // Opción 2 (Recomendada): Limpiar todo
+        // await storage.clearAll();
+
+        print('🧹 Logout: Token y datos de usuario eliminados');
+
+        if (context.mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const AuthPageCheck()),
+            (route) => false,
+          );
+        }
+      } catch (e) {
+        print('❌ Error logging out: $e');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error logging out: $e'),
+              backgroundColor: FrutiaColors.error,
+            ),
+          );
+        }
       }
     }
   }
-}
 
   void _showAboutDialog(BuildContext context) {
     showDialog(
@@ -209,7 +210,8 @@ Future<void> _logout(BuildContext context) async {
           insetPadding: const EdgeInsets.symmetric(horizontal: 20),
           title: Row(
             children: [
-              Icon(Icons.privacy_tip_outlined, color: FrutiaColors.primary, size: 28),
+              Icon(Icons.privacy_tip_outlined,
+                  color: FrutiaColors.primary, size: 28),
               const SizedBox(width: 12),
               Text(
                 'Privacy Policy',
@@ -454,13 +456,15 @@ Future<void> _logout(BuildContext context) async {
       },
     );
   }
+ 
 
-  // ✅ MÉTODO ACTUALIZADO CON DATOS REALES
+  // ✅ MÉTODO ACTUALIZADO CON EDIT Y TELÉFONO
   Future<void> _showYourAccountDialog(BuildContext context) async {
     // Variables para guardar los datos
     late String accountCreatedDate;
     late int sessionsCompleted;
     late int activeSessions;
+    late String phoneNumber;
     
     // Mostrar loading
     showDialog(
@@ -477,6 +481,7 @@ Future<void> _logout(BuildContext context) async {
       accountCreatedDate = userProfile['created_at'] ?? 'N/A';
       sessionsCompleted = userProfile['sessions_completed'] ?? 0;
       activeSessions = userProfile['active_sessions'] ?? 0;
+      phoneNumber = userProfile['phone'] ?? 'N/A'; // ✅ NUEVO
       
       if (!context.mounted) return;
       
@@ -487,7 +492,7 @@ Future<void> _logout(BuildContext context) async {
       await Future.delayed(const Duration(milliseconds: 100));      
       if (!context.mounted) return;
 
-      final bool? confirmDelete = await showDialog<bool>(
+      final String? action = await showDialog<String>(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
@@ -525,11 +530,34 @@ Future<void> _logout(BuildContext context) async {
                   ),
                   const SizedBox(height: 12),
                   
-                  // Info rows
+                  // ✅ Name
                   _buildInfoRow('Name:', userName),
                   const SizedBox(height: 8),
-                  _buildInfoRow('Email:', userEmail),
+                  
+                  // ✅ Email - NUEVO FORMATO (label arriba, valor abajo en línea completa)
+                  Text(
+                    'Email:',
+                    style: GoogleFonts.lato(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: FrutiaColors.secondaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    userEmail,
+                    style: GoogleFonts.lato(
+                      fontSize: 14,
+                      color: FrutiaColors.primaryText,
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  // ✅ Phone Number - NUEVO
+                  _buildInfoRow('Phone Number:', phoneNumber),
                   const SizedBox(height: 8),
+                  
                   _buildInfoRow('Account Created:', accountCreatedDate),
                   const SizedBox(height: 8),
                   _buildInfoRow('Sessions Completed:', sessionsCompleted.toString()),
@@ -537,6 +565,55 @@ Future<void> _logout(BuildContext context) async {
                   _buildInfoRow('Active Sessions:', activeSessions.toString()),
                   
                   const SizedBox(height: 24),
+                  
+                  // ✅ BOTONES EDIT Y OK (arriba del Delete Account)
+                  Row(
+                    children: [
+                      // Edit button
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => Navigator.of(context).pop('edit'),
+                          icon: Icon(Icons.edit, size: 18),
+                          label: Text('Edit'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: FrutiaColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            side: BorderSide(
+                              color: FrutiaColors.primary,
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // OK button
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.of(context).pop('ok'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: FrutiaColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            'OK',
+                            style: GoogleFonts.lato(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 16),
                   
                   // Delete Account Section - Separated with red box
                   Container(
@@ -584,7 +661,7 @@ Future<void> _logout(BuildContext context) async {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () => Navigator.of(context).pop(true),
+                            onPressed: () => Navigator.of(context).pop('delete'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: FrutiaColors.error,
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -608,80 +685,72 @@ Future<void> _logout(BuildContext context) async {
                 ],
               ),
             ),
-            actions: [
-              // Single OK button with border
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: FrutiaColors.primary,
-                    width: 1.5,
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    'OK',
-                    style: GoogleFonts.lato(
-                      color: FrutiaColors.primary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ],
           );
         },
       );
 
-      print('🔴 [CustomDrawer] Diálogo cerrado, confirmDelete: $confirmDelete');
+      print('🔴 [CustomDrawer] Acción seleccionada: $action');
 
-      // En custom_drawer.dart - Dentro de _showYourAccountDialog
+      // ✅ MANEJAR LAS ACCIONES
+      if (!context.mounted) return;
 
-if (confirmDelete == true && context.mounted) {
-  try {
-    // Llamar al servicio real para eliminar la cuenta
-    await UserService.deleteAccount();
-    
-    // ✅ AGREGAR: Limpiar SharedPreferences
-    await StorageService().clearAll();
-    print('🧹 Account deleted: All data cleared');
-
-    if (context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const AuthPageCheck()),
-        (route) => false,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Account deleted successfully'),
-          backgroundColor: FrutiaColors.primary,
-        ),
-      );
-    }
-  } catch (e) {
-    print('❌ Error deleting account: $e');
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error deleting account: $e'),
-          backgroundColor: FrutiaColors.error,
-        ),
-      );
-    }
+    if (action == 'edit') {
+  // ✅ Navegar a la pantalla de edición
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => EditProfileScreen(
+        currentName: userName,
+        currentEmail: userEmail,
+        currentPhone: phoneNumber != 'N/A' ? phoneNumber : null,
+      ),
+    ),
+  );
+  
+  // Si se guardaron cambios, recargar el diálogo
+  if (result == true && context.mounted) {
+    await _showYourAccountDialog(context);
   }
-} 
+}else if (action == 'delete') {
+        // Confirmar eliminación
+        try {
+          await UserService.deleteAccount();
+          await StorageService().clearAll();
+          print('🧹 Account deleted: All data cleared');
+
+          if (context.mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const AuthPageCheck()),
+              (route) => false,
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Account deleted successfully'),
+                backgroundColor: FrutiaColors.primary,
+              ),
+            );
+          }
+        } catch (e) {
+          print('❌ Error deleting account: $e');
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error deleting account: $e'),
+                backgroundColor: FrutiaColors.error,
+              ),
+            );
+          }
+        }
+      }
+      // Si action == 'ok' o null, simplemente cerrar
+      
     } catch (e) {
       print('❌ [CustomDrawer] Error: $e');
       
       if (!context.mounted) return;
+      
+      // Cerrar loading si todavía está abierto
+      Navigator.pop(context);
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -691,6 +760,7 @@ if (confirmDelete == true && context.mounted) {
       );
     }
   }
+ 
 
   // ✅ NUEVO HELPER METHOD
   Widget _buildInfoRow(String label, String value) {

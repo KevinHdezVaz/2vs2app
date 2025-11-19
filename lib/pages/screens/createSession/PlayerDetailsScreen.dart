@@ -230,14 +230,21 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: Text(
-                          'Back: Court Details',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: FrutiaColors.primary,
-                          ),
-                        ),
+                        child: 
+                        
+                        Text(
+                'Back:\nCourt Details',  // ← 3 líneas
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.visible,
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: FrutiaColors.primary,
+                  height: 1.1,
+                ),
+              ),
+
                       ),
                     ),
                   ),

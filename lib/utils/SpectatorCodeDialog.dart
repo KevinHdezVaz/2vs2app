@@ -60,7 +60,7 @@ class _SpectatorCodeDialogState extends State<SpectatorCodeDialog> with SingleTi
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _showErrorDialog('Session not found or not active');
+      _showErrorDialog('No active session was found using the code entered. Please verify the session code and try again.');
     }
   }
 
@@ -121,6 +121,13 @@ void _showSessionConfirmationDialog(Map<String, dynamic> sessionData) {
   final String? userName = session['user']?['name'];
   final String sessionLead = userName?.isNotEmpty == true ? _getInitials(userName!) : 'N/A';
   
+
+   // ✅ CAMBIO: Separar fecha y hora usando el nuevo método
+ final Map<String, String> dateTimeParts = session['created_at'] != null
+      ? _formatDateTimeToMap(session['created_at'])
+      : {'date': 'N/A', 'time': 'N/A'};
+
+
   // Formatear fecha
   final String createdAt = session['created_at'] != null
       ? _formatDateTime(session['created_at'])
@@ -164,7 +171,7 @@ void _showSessionConfirmationDialog(Map<String, dynamic> sessionData) {
                       shape: BoxShape.circle,
                       border: Border.all(color: FrutiaColors.warning, width: 2),
                     ),
-                    child: Icon(Icons.remove_red_eye, color: FrutiaColors.warning, size: 48),
+                    child: Icon(Icons.remove_red_eye, color: FrutiaColors.warning, size: 30),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -185,7 +192,7 @@ void _showSessionConfirmationDialog(Map<String, dynamic> sessionData) {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '"$sessionName"',
+                    '$sessionName',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -198,7 +205,7 @@ void _showSessionConfirmationDialog(Map<String, dynamic> sessionData) {
                   Text(
                     'As a spectator, you will be able to see the order of games, results, and rankings.',
                     style: GoogleFonts.lato(
-                      fontSize: 16,  // Más grande
+                      fontSize: 13,  // Más grande
                       color: Colors.black87,
                       height: 1.5,
                     ),
@@ -228,9 +235,11 @@ void _showSessionConfirmationDialog(Map<String, dynamic> sessionData) {
                   const SizedBox(height: 10),
                   _buildDetailRow('Courts:', numCourts.toString()),
                   const SizedBox(height: 10),
-                  _buildDetailRow('Type of Event:', sessionType),
+                  _buildDetailRow('Session Type:', sessionType),
                   const SizedBox(height: 10),
-                  _buildDetailRow('Date Created:', createdAt),
+                  _buildDetailRow('Session Date:', dateTimeParts['date'] ?? 'N/A'),
+                  const SizedBox(height: 10),
+           _buildDetailRow('Session Time:', dateTimeParts['time'] ?? 'N/A'),
                   const SizedBox(height: 10),
                   _buildDetailRow('Progress:', '${progressPercentage.toInt()}% Completed'),
                   const SizedBox(height: 16),
@@ -253,7 +262,7 @@ void _showSessionConfirmationDialog(Map<String, dynamic> sessionData) {
                           child: Text(
                             'Please confirm this is the session you want to join.',
                             style: GoogleFonts.lato(
-                              fontSize: 15,
+                              fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: Colors.black87, // Más oscuro
                               height: 1.4,
@@ -352,6 +361,29 @@ void _showSessionConfirmationDialog(Map<String, dynamic> sessionData) {
   );
 }
 
+
+Map<String, String> _formatDateTimeToMap(String dateStr) {
+  try {
+    final dateNY = DateTime.parse(dateStr); 
+    
+    final hour = dateNY.hour % 12 == 0 ? 12 : dateNY.hour % 12;
+    final minute = dateNY.minute.toString().padLeft(2, '0');
+    final ampm = dateNY.hour >= 12 ? 'PM' : 'AM';
+    
+    // ✅ SIN "ET" - Solo hora y AM/PM
+    final timeString = '$hour:$minute $ampm';
+    
+    final dateString = '${dateNY.day.toString().padLeft(2, '0')}/${dateNY.month.toString().padLeft(2, '0')}/${dateNY.year}';
+    
+    return {
+      'date': dateString,
+      'time': timeString,
+    };
+  } catch (e) {
+    return {'date': 'N/A', 'time': 'N/A'};
+  }
+}
+
 String _formatDateTime(String dateStr) {
   try {
     final date = DateTime.parse(dateStr);
@@ -421,6 +453,8 @@ String _formatDateTime(String dateStr) {
     final initials = firstName.substring(0, firstName.length > 3 ? 3 : firstName.length) + lastInitial;
     return initials.toUpperCase();
   }
+ 
+
 
   @override
   Widget build(BuildContext context) {

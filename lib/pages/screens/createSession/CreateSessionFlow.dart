@@ -13,7 +13,7 @@ import 'dart:convert';
 
 class CreateSessionFlow extends StatefulWidget {
   final Map<String, dynamic>? draftData; // ← Recibir draft data
-  
+
   const CreateSessionFlow({
     super.key,
     this.draftData,
@@ -33,7 +33,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
   @override
   void initState() {
     super.initState();
-    
+
     // ✅ Inicializar SessionData con datos del draft si existe
     if (widget.draftData != null) {
       _sessionData = SessionData.fromJson(widget.draftData!);
@@ -123,7 +123,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                 ),
                 SessionTypeScreen(
                   sessionData: _sessionData,
-                  onNext: _nextPage, 
+                  onNext: _nextPage,
                   onBack: _previousPage,
                 ),
                 CourtDetailsScreen(
@@ -144,99 +144,112 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
     );
   }
 
- void _showCancelDialog() async {
-  final confirm = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: Row(
-        children: [
-          Icon(Icons.warning, color: FrutiaColors.error, size: 28),
-          const SizedBox(width: 12),
-          Text(
-            'Cancel Session \nCreation?',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
-              color: FrutiaColors.error,
-            ),
-          ),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'This action will:',
-            style: GoogleFonts.lato(
-              fontWeight: FontWeight.w600,
-              color: FrutiaColors.primaryText,
-            ),
-          ),
-          const SizedBox(height: 8),
-     
-          const SizedBox(height: 12),
-          Text(
-            'All settings entered will be lost',
-            style: GoogleFonts.lato(
-              color: FrutiaColors.error,
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: Text(
-            'Continue Setup',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
-              color: FrutiaColors.primaryText,
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: FrutiaColors.error.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: FrutiaColors.error,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              'Cancel Session',
+  void _showCancelDialog() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.warning, color: FrutiaColors.error, size: 28),
+            const SizedBox(width: 12),
+            Text(
+              'Exit Session \nCreation',
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
+                color: FrutiaColors.error,
               ),
             ),
-          ),
+          ],
         ),
-      ],
-    ),
-  );
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 12),
+            Text(
+              'All settings entered will be lost',
+              style: GoogleFonts.lato(
+                color: FrutiaColors.error,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Continue',
+                    style: GoogleFonts.poppins(
+                      color: Colors.black,
+                      textStyle: TextStyle(fontSize: 13),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 10,
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: FrutiaColors.error.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FrutiaColors.error,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Exit',
+                    style: GoogleFonts.poppins(
+                      textStyle: TextStyle(fontSize: 13),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
 
-  // Si el usuario confirma
-  if (confirm == true) {
-    Navigator.pop(context); // Cierra el diálogo de creación
-    Navigator.pop(context); // Regresa al pantalla anterior
+    if (confirm == true && mounted) {
+    Navigator.of(context).pop(); // Cierra solo la pantalla CreateSessionFlow
   }
-}
+  }
   // ========================================
   // ✅ VERSIÓN SIMPLIFICADA CON SHAREDPREFERENCES
   // ========================================
@@ -259,9 +272,9 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
             ),
             SizedBox(height: 16),
             Text(
-              saveAsDraft 
-                ? (_draftId != null ? 'Updating draft...' : 'Saving draft...')
-                : 'Creating session...',
+              saveAsDraft
+                  ? (_draftId != null ? 'Updating draft...' : 'Saving draft...')
+                  : 'Creating session...',
               style: GoogleFonts.lato(
                 color: Colors.white,
                 fontSize: 16,
@@ -276,7 +289,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
       if (saveAsDraft) {
         // ✅ GUARDAR COMO DRAFT LOCAL
         await _saveDraftLocally();
-        
+
         if (!mounted) return;
         Navigator.of(context).pop(); // Close loading
         Navigator.of(context).pop(true); // Close CreateSessionFlow
@@ -289,9 +302,9 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    _draftId != null 
-                      ? 'Draft saved successfully!'
-                      : 'Draft saved successfully!',
+                    _draftId != null
+                        ? 'Draft saved successfully!'
+                        : 'Draft saved successfully!',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -325,7 +338,8 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Session started successfully!', style: TextStyle(fontSize: 17)),
+            content: Text('Session started successfully!',
+                style: TextStyle(fontSize: 17)),
             backgroundColor: Colors.green,
             duration: Duration(seconds: 2),
           ),
@@ -345,11 +359,10 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
       Navigator.of(context).pop(); // Close loading
 
       String errorMessage = e.toString();
-      
+
       if (errorMessage.contains('configuration has not been created') ||
           errorMessage.contains('You need at least') ||
           errorMessage.contains('players for')) {
-        
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -409,7 +422,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
   Future<void> _saveDraftLocally() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      
+
       // Generar ID si es nuevo draft
       if (_draftId == null) {
         _draftId = DateTime.now().millisecondsSinceEpoch.toString();
@@ -468,83 +481,85 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
 
   Future<bool> _showConfirmationDialog() async {
     return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Row(
-          children: [
-            Icon(Icons.play_circle_outline, color: FrutiaColors.primary, size: 28),
-            SizedBox(width: 12),
-            Text(
-              _draftId != null ? 'Start Draft Session' : 'Start Session',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: FrutiaColors.primaryText,
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.play_circle_outline,
+                    color: FrutiaColors.primary, size: 28),
+                SizedBox(width: 12),
+                Text(
+                  _draftId != null ? 'Start Draft Session' : 'Start Session',
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: FrutiaColors.primaryText,
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              _draftId != null
+                  ? 'Ready to start this draft session? Settings cannot be changed once started.'
+                  : 'All set! Ready to start? Settings cannot be changed once started.',
+              style: GoogleFonts.lato(
+                fontSize: 16,
+                color: FrutiaColors.secondaryText,
+                height: 1.5,
               ),
             ),
-          ],
-        ),
-        content: Text(
-          _draftId != null
-            ? 'Ready to start this draft session? Settings cannot be changed once started.'
-            : 'All set! Ready to start? Settings cannot be changed once started.',
-          style: GoogleFonts.lato(
-            fontSize: 16,
-            color: FrutiaColors.secondaryText,
-            height: 1.5,
-          ),
-        ),
-        actions: [
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: BorderSide(color: FrutiaColors.primary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+            actions: [
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        side: BorderSide(color: FrutiaColors.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Go Back',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: FrutiaColors.primary,
+                        ),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    'Go Back',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: FrutiaColors.primary,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FrutiaColors.primary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        'Start Session',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: FrutiaColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    'Start Session',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 }

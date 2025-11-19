@@ -75,9 +75,9 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
     final double progressPercentage = (session['progress_percentage'] ?? 0).toDouble();
     final String? userName = session['user']?['name'];
     final String sessionLead = userName?.isNotEmpty == true ? _getInitials(userName!) : 'N/A';
-    final String createdAt = session['created_at'] != null
-        ? _formatDateTime(session['created_at'])
-        : 'N/A';
+  final Map<String, String> dateTimeParts = session['created_at'] != null
+      ? _formatDateTime(session['created_at'])
+      : {'date': 'N/A', 'time': 'N/A'};
 
     showDialog(
       context: context,
@@ -104,24 +104,24 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                 child: Column(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: FrutiaColors.primary.withOpacity(0.2),
                         shape: BoxShape.circle,
                         border: Border.all(color: FrutiaColors.primary, width: 2),
                       ),
-                      child: const Icon(Icons.admin_panel_settings, color: FrutiaColors.primary, size: 48),
+                      child: const Icon(Icons.admin_panel_settings, color: FrutiaColors.primary, size: 30),
                     ),
                     const SizedBox(height: 16),
                     Text('Join as Moderator', style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black)),
                     const SizedBox(height: 8),
                     Text('You are about to join session', style: GoogleFonts.lato(fontSize: 16, color: Colors.black87)),
                     const SizedBox(height: 4),
-                    Text('"$sessionName"', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: FrutiaColors.primary), textAlign: TextAlign.center),
+                    Text('$sessionName', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: FrutiaColors.primary), textAlign: TextAlign.center),
                     const SizedBox(height: 12),
                     Text(
-                      'As a moderator, you will have full control over the session.',
-                      style: GoogleFonts.lato(fontSize: 16, color: Colors.black87, height: 1.5),
+                      'As a Moderator, you will be able to manage games and enter scores.',
+                      style: GoogleFonts.lato(fontSize: 13, color: Colors.black87, height: 1.5),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -134,17 +134,22 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Session Details', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black)),
+                    Text('Session Details', style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black)),
                     const SizedBox(height: 12),
             
+       
                     _buildDetailRow('Players:', numPlayers.toString()),
                     const SizedBox(height: 10),
                     _buildDetailRow('Courts:', numCourts.toString()),
                     const SizedBox(height: 10),
-                    _buildDetailRow('Type of Event:', sessionType),
+                    _buildDetailRow('Session Type:', sessionType),
                     const SizedBox(height: 10),
-                    _buildDetailRow('Date Created:', createdAt),
+                    _buildDetailRow('Session Date:', dateTimeParts['date'] ?? 'N/A'),
+
                     const SizedBox(height: 10),
+                          _buildDetailRow('Session Time:', dateTimeParts['time'] ?? 'N/A'),
+                    const SizedBox(height: 10),
+
                     _buildDetailRow('Progress:', '${progressPercentage.toInt()}% Completed'),
                     const SizedBox(height: 16),
                     Container(
@@ -161,7 +166,7 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                           Expanded(
                             child: Text(
                               'Please confirm this is the session you want to moderate.',
-                              style: GoogleFonts.lato(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black87),
+                              style: GoogleFonts.lato(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.black87),
                             ),
                           ),
                         ],
@@ -260,18 +265,27 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
     return (firstName.substring(0, firstName.length > 3 ? 3 : firstName.length) + lastInitial).toUpperCase();
   }
 
-  String _formatDateTime(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      final now = DateTime.now();
-      if (date.year == now.year && date.month == now.month && date.day == now.day) {
-        return 'Today, ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-      }
-      return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } catch (e) {
-      return 'N/A';
-    }
+Map<String, String> _formatDateTime(String dateStr) {
+  try {
+    final dateNY = DateTime.parse(dateStr); 
+    
+    final hour = dateNY.hour % 12 == 0 ? 12 : dateNY.hour % 12;
+    final minute = dateNY.minute.toString().padLeft(2, '0');
+    final ampm = dateNY.hour >= 12 ? 'PM' : 'AM';
+    
+    // QUITAR "ET" - SOLO HORA Y AM/PM
+    final timeString = '$hour:$minute $ampm'; // <- Eliminado "ET"
+    
+    final dateString = '${dateNY.day.toString().padLeft(2, '0')}/${dateNY.month.toString().padLeft(2, '0')}/${dateNY.year}';
+    
+    return {
+      'date': dateString,
+      'time': timeString,
+    };
+  } catch (e) {
+    return {'date': 'N/A', 'time': 'N/A'};
   }
+}
 
  
 @override

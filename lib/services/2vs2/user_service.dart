@@ -16,6 +16,81 @@ class UserService {
     };
   }
 
+
+
+static Future<Map<String, dynamic>> updateProfile({
+  String? name,
+  String? email,
+  String? phone,
+  String? currentPassword,
+  String? newPassword,
+  String? newPasswordConfirmation,
+}) async {
+  print('[UserService] Actualizando perfil del usuario...');
+  
+  try {
+    // Construir el body solo con los campos que se están actualizando
+    final Map<String, dynamic> body = {};
+    
+    if (name != null && name.isNotEmpty) body['name'] = name;
+    if (email != null && email.isNotEmpty) body['email'] = email;
+    if (phone != null && phone.isNotEmpty) body['phone'] = phone;
+    
+    // Si se está cambiando la contraseña
+    if (newPassword != null && newPassword.isNotEmpty) {
+      if (currentPassword == null || currentPassword.isEmpty) {
+        throw Exception('Current password is required to change password');
+      }
+      body['current_password'] = currentPassword;
+      body['new_password'] = newPassword;
+      body['new_password_confirmation'] = newPasswordConfirmation ?? newPassword;
+    }
+    
+    print('[UserService] Campos a actualizar: ${body.keys}');
+    
+    final response = await http.put(
+      Uri.parse('$baseUrl/user/profile'),
+      headers: await getAuthHeaders(),
+      body: json.encode(body),
+    );
+
+    if (response.statusCode == 200) {
+      print('[UserService] Perfil actualizado exitosamente');
+      return json.decode(response.body);
+    } else if (response.statusCode == 422) {
+      // Error de validación
+      final errorBody = json.decode(response.body);
+      final errors = errorBody['errors'];
+      
+      if (errors != null && errors is Map) {
+        // Tomar el primer error
+        final firstError = errors.values.first;
+        final errorMessage = firstError is List ? firstError.first : firstError;
+        throw Exception(errorMessage);
+      }
+      
+      throw Exception(errorBody['message'] ?? 'Validation error');
+    } else if (response.statusCode == 400) {
+      // Error de contraseña incorrecta
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Invalid current password');
+    } else {
+      final errorBody = json.decode(response.body);
+      throw Exception(errorBody['message'] ?? 'Error updating profile');
+    }
+  } catch (e) {
+    print('[UserService] Excepción: $e');
+    
+    // Si ya es un Exception con mensaje personalizado, lanzarlo tal cual
+    if (e is Exception) {
+      rethrow;
+    }
+    
+    throw Exception('Error de conexión: $e');
+  }
+}
+
+
   /**
    * Obtener perfil del usuario con estadísticas
    */

@@ -168,75 +168,68 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     final scoreDiff = winnerScore - loserScore;
 
     // ✅ VALIDACIÓN PARA "WIN BY 2"
-    if (winBy == 2) {
-      if (winnerScore == pointsPerGame) {
-        if (loserScore > pointsPerGame - 2) {
-          setState(() {
-            _errorMessage = 'With winner at $pointsPerGame, loser cannot have more than ${pointsPerGame - 2} points';
-          });
-          return false;
-        }
-      }
-      else if (winnerScore > pointsPerGame) {
-        if (loserScore < pointsPerGame - 1) {
-          setState(() {
-            _errorMessage = 'With winner above $pointsPerGame, loser must have at least ${pointsPerGame - 1} points';
-          });
-          return false;
-        }
-        
-        if (scoreDiff != 2) {
-          setState(() {
-            _errorMessage = 'With scores above $pointsPerGame, must win by exactly 2 points';
-          });
-          return false;
-        }
-        
-        if (winnerScore > pointsPerGame + 10) {
-          setState(() {
-            _errorMessage = 'Score too high. Maximum allowed is ${pointsPerGame + 10} points';
-          });
-          return false;
-        }
-      }
-      else {
-        setState(() {
-          _errorMessage = 'Winner must have at least $pointsPerGame points';
-        });
-        return false;
-      }
+// ✅ VALIDACIÓN PARA "WIN BY 2"
+if (winBy == 2) {
+  if (winnerScore == pointsPerGame) {
+    if (loserScore > pointsPerGame - 2) {
+      setState(() {
+        _errorMessage = 'With winner at $pointsPerGame, loser cannot have more than ${pointsPerGame - 2} points';
+      });
+      return false;
     }
-
+  }
+  else if (winnerScore > pointsPerGame) {
+    if (loserScore < pointsPerGame - 1) {
+      setState(() {
+        _errorMessage = 'With winner above $pointsPerGame, loser must have at least ${pointsPerGame - 1} points';
+      });
+      return false;
+    }
+    
+    if (scoreDiff != 2) {
+      setState(() {
+        _errorMessage = 'With scores above $pointsPerGame, must win by exactly 2 points';
+      });
+      return false;
+    }
+    
+    // ❌ ELIMINADO: Límite máximo de pointsPerGame + 10
+    // Ya no restringimos el puntaje máximo
+  }
+  else {
+    setState(() {
+      _errorMessage = 'Winner must have at least $pointsPerGame points';
+    });
+    return false;
+  }
+}
     // ✅ VALIDACIÓN PARA "WIN BY 1"
-    if (winBy == 1) {
-      if (winnerScore < pointsPerGame) {
-        setState(() {
-          _errorMessage = 'Winner must have at least $pointsPerGame points';
-        });
-        return false;
-      }
-      
-      if (scoreDiff < 1) {
-        setState(() {
-          _errorMessage = 'Must win by at least 1 point';
-        });
-        return false;
-      }
-      
-      if (winnerScore == pointsPerGame && loserScore >= pointsPerGame) {
-        setState(() {
-          _errorMessage = 'With winner at $pointsPerGame, loser cannot have $pointsPerGame or more points';
-        });
-        return false;
-      }
-      
-      if (winnerScore > pointsPerGame + 10) {
-        setState(() {
-          _errorMessage = 'Score too high. Maximum allowed is ${pointsPerGame + 10} points';
-        });
-        return false;
-      }
-    }
+  // ✅ VALIDACIÓN PARA "WIN BY 1"
+if (winBy == 1) {
+  if (winnerScore < pointsPerGame) {
+    setState(() {
+      _errorMessage = 'Winner must have at least $pointsPerGame points';
+    });
+    return false;
+  }
+  
+  if (scoreDiff < 1) {
+    setState(() {
+      _errorMessage = 'Must win by at least 1 point';
+    });
+    return false;
+  }
+  
+  if (winnerScore == pointsPerGame && loserScore >= pointsPerGame) {
+    setState(() {
+      _errorMessage = 'With winner at $pointsPerGame, loser cannot have $pointsPerGame or more points';
+    });
+    return false;
+  }
+  
+  // ❌ ELIMINADO: Límite máximo de pointsPerGame + 10
+  // Ya no restringimos el puntaje máximo
+}
 
     setState(() {
       _errorMessage = null;
@@ -348,55 +341,53 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
   }
 
   // ✅ NUEVO: Validar un set individual (misma lógica que Best of 1)
-  bool _isSetValid(int score1, int score2) {
-    final pointsPerGame = widget.session['points_per_game'] as int;
-    final winBy = widget.session['win_by'] as int;
 
-    if (score1 == score2) {
+// ✅ NUEVO: Validar un set individual (misma lógica que Best of 1)
+bool _isSetValid(int score1, int score2) {
+  final pointsPerGame = widget.session['points_per_game'] as int;
+  final winBy = widget.session['win_by'] as int;
+
+  if (score1 == score2) {
+    return false;
+  }
+
+  final winnerScore = score1 > score2 ? score1 : score2;
+  final loserScore = score1 > score2 ? score2 : score1;
+  final scoreDiff = winnerScore - loserScore;
+
+  if (winBy == 2) {
+    if (winnerScore == pointsPerGame) {
+      if (loserScore > pointsPerGame - 2) {
+        return false;
+      }
+    } else if (winnerScore > pointsPerGame) {
+      if (loserScore < pointsPerGame - 1) {
+        return false;
+      }
+      if (scoreDiff != 2) {
+        return false;
+      }
+      // ❌ ELIMINADO: Límite máximo
+    } else {
       return false;
     }
-
-    final winnerScore = score1 > score2 ? score1 : score2;
-    final loserScore = score1 > score2 ? score2 : score1;
-    final scoreDiff = winnerScore - loserScore;
-
-    if (winBy == 2) {
-      if (winnerScore == pointsPerGame) {
-        if (loserScore > pointsPerGame - 2) {
-          return false;
-        }
-      } else if (winnerScore > pointsPerGame) {
-        if (loserScore < pointsPerGame - 1) {
-          return false;
-        }
-        if (scoreDiff != 2) {
-          return false;
-        }
-        if (winnerScore > pointsPerGame + 10) {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    }
-
-    if (winBy == 1) {
-      if (winnerScore < pointsPerGame) {
-        return false;
-      }
-      if (scoreDiff < 1) {
-        return false;
-      }
-      if (winnerScore == pointsPerGame && loserScore >= pointsPerGame) {
-        return false;
-      }
-      if (winnerScore > pointsPerGame + 10) {
-        return false;
-      }
-    }
-
-    return true;
   }
+
+  if (winBy == 1) {
+    if (winnerScore < pointsPerGame) {
+      return false;
+    }
+    if (scoreDiff < 1) {
+      return false;
+    }
+    if (winnerScore == pointsPerGame && loserScore >= pointsPerGame) {
+      return false;
+    }
+    // ❌ ELIMINADO: Límite máximo
+  }
+
+  return true;
+}
 
  Future<void> _submitScore() async {
   if (!_isScoreValid()) return;
