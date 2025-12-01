@@ -120,9 +120,8 @@ class CustomDrawer extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           insetPadding: const EdgeInsets.symmetric(horizontal: 20),
           title: Row(
             children: [
@@ -139,51 +138,86 @@ class CustomDrawer extends StatelessWidget {
             ],
           ),
           content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'PickleBracket is designed to make your Open Play sessions more organized, varied, and fun by taking the stress out of managing matches.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
+            child: RichText(
+              text: TextSpan(
+                style: GoogleFonts.lato(
+                  fontSize: 14,
+                  color: FrutiaColors.primaryText,
+                  height: 1.55,
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Smart Scheduling: We use intelligent, dynamic pairing logic to ensure balanced, meaningful matchups every time.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
+                children: const [
+                  TextSpan(
+                      text:
+                          'PickleBracket is designed to make your Open Play sessions more '),
+                  TextSpan(
+                      text: 'organized, varied, and fun ',
+                      style: TextStyle(fontWeight: FontWeight.w800)),
+                  TextSpan(
+                      text:
+                          'by taking the stress out of managing matches.\n\n'),
+                  TextSpan(
+                      text: 'Smart Scheduling: ',
+                      style: TextStyle(fontWeight: FontWeight.w800)),
+                  TextSpan(
+                      text:
+                          'We use intelligent, dynamic pairing logic to ensure '),
+                  TextSpan(
+                      text: 'balanced, meaningful matchups ',
+                      style: TextStyle(fontWeight: FontWeight.w800)),
+                  TextSpan(text: 'every time.\n\n'),
+                  TextSpan(
+                      text: 'Balance & Variety: ',
+                      style: TextStyle(fontWeight: FontWeight.w800)),
+                  TextSpan(
+                      text:
+                          'Never worry about who you play with or against—our system maximizes '),
+                  TextSpan(
+                      text: 'player variety ',
+                      style: TextStyle(fontWeight: FontWeight.w800)),
+                  TextSpan(text: 'so everyone gets great games.\n\n'),
+                  TextSpan(
+                      text: 'Insights, Not Rankings: ',
+                      style: TextStyle(fontWeight: FontWeight.w800)),
+                  TextSpan(
+                      text:
+                          'We show how everyone performed using intelligent, '),
+                  TextSpan(
+                      text: 'session-only insights',
+                      style: TextStyle(fontWeight: FontWeight.w800)),
+                  TextSpan(text: '—these are '),
+                  TextSpan(
+                      text: 'not ',
+                      style: TextStyle(fontWeight: FontWeight.w800)),
+                  TextSpan(
+                      text:
+                          'permanent ratings or public rankings. Play without the stress of official DUPR stakes!\n\n'),
+                  TextSpan(
+                      text: 'Learn more at ',
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  TextSpan(
+                    text: 'picklebracket.pro',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: FrutiaColors.primary,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Balance & Variety: Never worry about who you play with or against—our system maximizes variety so everyone gets great games.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Insights, Not Rankings: We show how everyone performed using simple, session-only insights—these are not permanent ratings or public rankings. Play without the stress of official DUPR stakes!',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  side:
+                      const BorderSide(color: FrutiaColors.primary, width: 2.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               child: Text(
                 'Close',
                 style: GoogleFonts.lato(
@@ -194,6 +228,8 @@ class CustomDrawer extends StatelessWidget {
               ),
             ),
           ],
+          actionsAlignment: MainAxisAlignment.end,
+          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
         );
       },
     );
@@ -204,9 +240,8 @@ class CustomDrawer extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           insetPadding: const EdgeInsets.symmetric(horizontal: 20),
           title: Row(
             children: [
@@ -231,91 +266,74 @@ class CustomDrawer extends StatelessWidget {
                 Text(
                   'Your privacy is a priority for PickleBracket. We are committed to protecting the information you share with us.',
                   style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
+                      fontSize: 14,
+                      color: FrutiaColors.primaryText,
+                      height: 1.5),
                 ),
                 const SizedBox(height: 12),
+                // ... todo tu contenido actual de Privacy Policy (lo dejo igual que tenías)
+                Text('1. Information We Collect',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primaryText)),
                 Text(
-                  '1. Information We Collect',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                Text(
-                  'We only collect information necessary to provide and improve the PickleBracket service:\n'
-                  '• Account Data: When you create an account, we collect your name (or preferred nickname) and email address. This is used solely for logging in and managing your sessions.\n'
-                  '• Session Data: We collect the scores, match results, and session management details you input. This data is used only to run your live sessions, generate session-only performance insights, and track historical results within your private account.\n'
-                  '• Usage Data: We may collect non-identifying data related to how the app is used (e.g., number of sessions created, features accessed) to improve performance and features.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
-                ),
+                    'We only collect information necessary to provide and improve the PickleBracket service:\n• Account Data: When you create an account, we collect your name (or preferred nickname) and email address. This is used solely for logging in and managing your sessions.\n• Session Data: We collect the scores, match results, and session management details you input. This data is used only to run your live sessions, generate session-only performance insights, and track historical results within your private account.\n• Usage Data: We may collect non-identifying data related to how the app is used (e.g., number of sessions created, features accessed) to improve performance and features.',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: FrutiaColors.primaryText,
+                        height: 1.5)),
                 const SizedBox(height: 12),
+                Text('2. How We Use Your Data',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primaryText)),
                 Text(
-                  '2. How We Use Your Data',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                Text(
-                  'Your data is used exclusively to:\n'
-                  '• Operate and personalize your PickleBracket experience.\n'
-                  '• Manage your active and completed sessions.\n'
-                  '• Communicate with you regarding service updates or account issues.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
-                ),
+                    'Your data is used exclusively to:\n• Operate and personalize your PickleBracket experience.\n• Manage your active and completed sessions.\n• Communicate with you regarding service updates or account issues.',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: FrutiaColors.primaryText,
+                        height: 1.5)),
                 const SizedBox(height: 12),
+                Text('3. Data Sharing',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primaryText)),
                 Text(
-                  '3. Data Sharing',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                Text(
-                  'We do not sell your personal data or session performance metrics to third parties. We may share non-personally identifiable, aggregated data with business partners for analytics purposes.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
-                ),
+                    'We do not sell your personal data or session performance metrics to third parties. We may share non-personally identifiable, aggregated data with business partners for analytics purposes.',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: FrutiaColors.primaryText,
+                        height: 1.5)),
                 const SizedBox(height: 12),
+                Text('4. Your Control',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primaryText)),
                 Text(
-                  '4. Your Control',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                Text(
-                  'You maintain full control over your session data and can delete your account at any time through the app settings.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
-                ),
+                    'You maintain full control over your session data and can delete your account at any time through the app settings.',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: FrutiaColors.primaryText,
+                        height: 1.5)),
               ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  side:
+                      const BorderSide(color: FrutiaColors.primary, width: 2.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               child: Text(
                 'Close',
                 style: GoogleFonts.lato(
@@ -326,6 +344,8 @@ class CustomDrawer extends StatelessWidget {
               ),
             ),
           ],
+          actionsAlignment: MainAxisAlignment.end,
+          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
         );
       },
     );
@@ -336,9 +356,8 @@ class CustomDrawer extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           insetPadding: const EdgeInsets.symmetric(horizontal: 20),
           title: Row(
             children: [
@@ -362,86 +381,73 @@ class CustomDrawer extends StatelessWidget {
                 Text(
                   'By using the PickleBracket mobile application (the "Service"), you agree to the following terms and conditions.',
                   style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
+                      fontSize: 14,
+                      color: FrutiaColors.primaryText,
+                      height: 1.5),
                 ),
                 const SizedBox(height: 12),
+                Text('1. Acceptance of Terms',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primaryText)),
                 Text(
-                  '1. Acceptance of Terms',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                Text(
-                  'You must be at least 13 years old to use this Service. By accessing or using the Service, you confirm that you have read, understood, and agreed to be bound by these Terms.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
-                ),
+                    'You must be at least 13 years old to use this Service. By accessing or using the Service, you confirm that you have read, understood, and agreed to be bound by these Terms.',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: FrutiaColors.primaryText,
+                        height: 1.5)),
                 const SizedBox(height: 12),
+                Text('2. Use of the Service',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primaryText)),
                 Text(
-                  '2. Use of the Service',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                Text(
-                  'Account Responsibility: You are responsible for all activity that occurs under your account. You agree to use the Service only for lawful purposes related to organizing and tracking recreational pickleball sessions.\n'
-                  'Non-Official Use: The session insights and performance metrics generated by PickleBracket are for entertainment and organizational purposes only and are not official or permanent rankings.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
-                ),
+                    'Account Responsibility: You are responsible for all activity that occurs under your account. You agree to use the Service only for lawful purposes related to organizing and tracking recreational pickleball sessions.\nNon-Official Use: The session insights and performance metrics generated by PickleBracket are for entertainment and organizational purposes only and are not official or permanent rankings.',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: FrutiaColors.primaryText,
+                        height: 1.5)),
                 const SizedBox(height: 12),
+                Text('3. Intellectual Property',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primaryText)),
                 Text(
-                  '3. Intellectual Property',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                Text(
-                  'The PickleBracket name, logo, software, and all content provided through the Service are the property of PickleBracket.Pro and are protected by copyright. You are granted a non-exclusive, non-transferable right to use the Service for personal, non-commercial use only.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
-                ),
+                    'The PickleBracket name, logo, software, and all content provided through the Service are the property of PickleBracket.Pro and are protected by copyright. You are granted a non-exclusive, non-transferable right to use the Service for personal, non-commercial use only.',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: FrutiaColors.primaryText,
+                        height: 1.5)),
                 const SizedBox(height: 12),
+                Text('4. Disclaimer of Warranty',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primaryText)),
                 Text(
-                  '4. Disclaimer of Warranty',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                Text(
-                  'The Service is provided on an "as-is" and "as-available" basis. We do not guarantee that the app will be error-free or uninterrupted. We are not responsible for any issues that arise from technical errors, scheduling disputes, or user-inputted data errors.',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: FrutiaColors.primaryText,
-                    height: 1.5,
-                  ),
-                ),
+                    'The Service is provided on an "as-is" and "as-available" basis. We do not guarantee that the app will be error-free or uninterrupted. We are not responsible for any issues that arise from technical errors, scheduling disputes, or user-inputted data errors.',
+                    style: GoogleFonts.lato(
+                        fontSize: 14,
+                        color: FrutiaColors.primaryText,
+                        height: 1.5)),
               ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
+              style: TextButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  side:
+                      const BorderSide(color: FrutiaColors.primary, width: 2.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
               child: Text(
                 'Close',
                 style: GoogleFonts.lato(
@@ -452,11 +458,12 @@ class CustomDrawer extends StatelessWidget {
               ),
             ),
           ],
+          actionsAlignment: MainAxisAlignment.end,
+          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
         );
       },
     );
   }
- 
 
   // ✅ MÉTODO ACTUALIZADO CON EDIT Y TELÉFONO
   Future<void> _showYourAccountDialog(BuildContext context) async {
@@ -465,7 +472,7 @@ class CustomDrawer extends StatelessWidget {
     late int sessionsCompleted;
     late int activeSessions;
     late String phoneNumber;
-    
+
     // Mostrar loading
     showDialog(
       context: context,
@@ -476,20 +483,21 @@ class CustomDrawer extends StatelessWidget {
     try {
       // Obtener datos reales del usuario
       final userProfile = await UserService.getUserProfile();
-      
+      final String freshName = userProfile['name'] ?? userName;
+      final String freshEmail = userProfile['email'] ?? userEmail;
       // Guardar los datos
       accountCreatedDate = userProfile['created_at'] ?? 'N/A';
       sessionsCompleted = userProfile['sessions_completed'] ?? 0;
       activeSessions = userProfile['active_sessions'] ?? 0;
       phoneNumber = userProfile['phone'] ?? 'N/A'; // ✅ NUEVO
-      
+
       if (!context.mounted) return;
-      
+
       // Cerrar loading
       Navigator.pop(context);
-      
+
       // Esperar un frame antes de mostrar el siguiente diálogo
-      await Future.delayed(const Duration(milliseconds: 100));      
+      await Future.delayed(const Duration(milliseconds: 100));
       if (!context.mounted) return;
 
       final String? action = await showDialog<String>(
@@ -502,7 +510,8 @@ class CustomDrawer extends StatelessWidget {
             insetPadding: const EdgeInsets.symmetric(horizontal: 20),
             title: Row(
               children: [
-                Icon(Icons.account_circle_outlined, color: FrutiaColors.primary, size: 28),
+                Icon(Icons.account_circle_outlined,
+                    color: FrutiaColors.primary, size: 28),
                 const SizedBox(width: 12),
                 Text(
                   'Your Account',
@@ -529,12 +538,11 @@ class CustomDrawer extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   // ✅ Name
-                  _buildInfoRow('Name:', userName),
+                  _buildInfoRow('Name:', freshName),
                   const SizedBox(height: 8),
-                  
-                  // ✅ Email - NUEVO FORMATO (label arriba, valor abajo en línea completa)
+
                   Text(
                     'Email:',
                     style: GoogleFonts.lato(
@@ -545,7 +553,7 @@ class CustomDrawer extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    userEmail,
+                    freshEmail,
                     style: GoogleFonts.lato(
                       fontSize: 14,
                       color: FrutiaColors.primaryText,
@@ -553,19 +561,20 @@ class CustomDrawer extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   // ✅ Phone Number - NUEVO
                   _buildInfoRow('Phone Number:', phoneNumber),
                   const SizedBox(height: 8),
-                  
+
                   _buildInfoRow('Account Created:', accountCreatedDate),
                   const SizedBox(height: 8),
-                  _buildInfoRow('Sessions Completed:', sessionsCompleted.toString()),
+                  _buildInfoRow(
+                      'Sessions Completed:', sessionsCompleted.toString()),
                   const SizedBox(height: 8),
                   _buildInfoRow('Active Sessions:', activeSessions.toString()),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // ✅ BOTONES EDIT Y OK (arriba del Delete Account)
                   Row(
                     children: [
@@ -612,9 +621,9 @@ class CustomDrawer extends StatelessWidget {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Delete Account Section - Separated with red box
                   Container(
                     decoration: BoxDecoration(
@@ -661,7 +670,8 @@ class CustomDrawer extends StatelessWidget {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () => Navigator.of(context).pop('delete'),
+                            onPressed: () =>
+                                Navigator.of(context).pop('delete'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: FrutiaColors.error,
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -694,24 +704,24 @@ class CustomDrawer extends StatelessWidget {
       // ✅ MANEJAR LAS ACCIONES
       if (!context.mounted) return;
 
-    if (action == 'edit') {
-  // ✅ Navegar a la pantalla de edición
-  final result = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => EditProfileScreen(
-        currentName: userName,
-        currentEmail: userEmail,
-        currentPhone: phoneNumber != 'N/A' ? phoneNumber : null,
-      ),
-    ),
-  );
-  
-  // Si se guardaron cambios, recargar el diálogo
-  if (result == true && context.mounted) {
-    await _showYourAccountDialog(context);
-  }
-}else if (action == 'delete') {
+      if (action == 'edit') {
+        // ✅ Navegar a la pantalla de edición
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditProfileScreen(
+              currentName: freshName,
+              currentEmail: freshEmail,
+              currentPhone: phoneNumber != 'N/A' ? phoneNumber : null,
+            ),
+          ),
+        );
+
+        // Si se guardaron cambios, recargar el diálogo
+        if (result == true && context.mounted) {
+          await _showYourAccountDialog(context);
+        }
+      } else if (action == 'delete') {
         // Confirmar eliminación
         try {
           await UserService.deleteAccount();
@@ -743,15 +753,14 @@ class CustomDrawer extends StatelessWidget {
         }
       }
       // Si action == 'ok' o null, simplemente cerrar
-      
     } catch (e) {
       print('❌ [CustomDrawer] Error: $e');
-      
+
       if (!context.mounted) return;
-      
+
       // Cerrar loading si todavía está abierto
       Navigator.pop(context);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error loading account information: $e'),
@@ -760,7 +769,6 @@ class CustomDrawer extends StatelessWidget {
       );
     }
   }
- 
 
   // ✅ NUEVO HELPER METHOD
   Widget _buildInfoRow(String label, String value) {

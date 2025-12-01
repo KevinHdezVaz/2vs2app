@@ -264,6 +264,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             ),
             backgroundColor: FrutiaColors.error,
             duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -445,24 +446,6 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       },
       child: Scaffold(
         backgroundColor: FrutiaColors.secondaryBackground,
-// ========================================
-// ✅ CAMBIOS PARA SessionControlPanel.dart
-// ========================================
-//
-// UBICACIÓN: Aproximadamente línea 595 del archivo
-// BUSCAR: return PopScope(
-//
-// REEMPLAZAR DESDE "appBar: AppBar(" HASTA el cierre de "actions: ["
-// ========================================
-// ========================================
-// ✅ CAMBIOS PARA SessionControlPanel.dart
-// ========================================
-//
-// UBICACIÓN: Aproximadamente línea 595 del archivo
-// BUSCAR: return PopScope(
-//
-// REEMPLAZAR DESDE "appBar: AppBar(" HASTA el cierre de "actions: ["
-// ========================================
 
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(75), // ✅ AUMENTADO de 56 → 82
@@ -478,14 +461,12 @@ class _SessionControlPanelState extends State<SessionControlPanel>
               ),
             ),
             title: Padding(
-              padding: const EdgeInsets.only(
-                  top: 10, bottom: 10), // ✅ Centrar verticalmente
+              padding: const EdgeInsets.only(top: 10, bottom: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize
-                    .min, // ✅ NUEVO: Tamaño mínimo para evitar overflow
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // ✅ Badge de "Spectator Mode" o "Moderator Mode"
+                  // Badge de Spectator o Moderator
                   if (isReallySpectator)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -512,14 +493,12 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                         ],
                       ),
                     )
-                  // ✅ NUEVO: Badge de "Moderator Mode"
                   else if (isModerator && !isOwner)
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: const Color(
-                            0xFF6B9BD1), // ✅ Azul claro del diálogo "Join as Moderator"
+                        color: const Color(0xFF6B9BD1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
@@ -542,9 +521,9 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                     ),
 
                   if (isReallySpectator || (isModerator && !isOwner))
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6), // ← Espacio después del badge
 
-                  // Línea 1: Courts/Players o Session Name
+                  // Línea 1: Session Name o Courts/Players
                   Text(
                     isReallySpectator || (isModerator && !isOwner)
                         ? '$numberOfCourts Courts | $numberOfPlayers Players'
@@ -552,14 +531,16 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      height: 1.2, // ✅ NUEVO: Altura de línea controlada
+                      fontSize: 14.5,
+                      height: 1.2,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
 
-                  // Línea 2: Session Name o Courts/Players
+                  const SizedBox(height: 5), // ← Espacio sutil entre líneas
+
+                  // Línea 2: Courts/Players o Session Name
                   Text(
                     isReallySpectator || (isModerator && !isOwner)
                         ? sessionName
@@ -568,21 +549,25 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
                       fontSize: 12,
+                      height: 1.2,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
 
-                  // Línea 3: Progress (solo si NO es espectador ni moderador)
+                  // Solo si NO es espectador ni moderador
                   if (!isReallySpectator && !(isModerator && !isOwner)) ...[
                     const SizedBox(
-                        height: 2), // ✅ NUEVO: Espaciado antes del progress
+                        height:
+                            7), // ← Espacio antes del % Complete (el toque perfecto)
+
                     Text(
                       '${progressPercentage.toInt()}% Complete',
                       style: GoogleFonts.lato(
-                        color: Colors.white70,
+                        color: Colors.white.withOpacity(0.9),
                         fontSize: 11,
-                        height: 1, // ✅ NUEVO: Altura de línea controlada
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ],
@@ -646,10 +631,6 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             ],
           ),
         ),
-
-// ========================================
-// FIN DE LOS CAMBIOS
-// ========================================
 
         // En la parte del build method, reemplaza la sección del TabBar con esto:
         body: Column(
@@ -2093,6 +2074,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
           ),
           backgroundColor: FrutiaColors.error,
           duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -2207,6 +2189,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error finalizing session: $e'),
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -2396,7 +2379,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 
       if (!isButtonEnabled) {
         disabledReason =
-            'Complete all pending games (${pendingGamesCount} remaining) before advancing to the next phase';
+            'All pending games (${pendingGamesCount} must be completed to advance to the next phase.';
       }
 
       print('========== MODERATOR ADVANCE BUTTON CHECK ==========');
@@ -2535,6 +2518,35 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                 ),
               ],
             ),
+            if (isModerator && !isOwner && !isButtonEnabled) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: FrutiaColors.warning.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border:
+                      Border.all(color: FrutiaColors.warning.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline,
+                        size: 18, color: FrutiaColors.warning),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'To end this phase early, please contact the Session Owner.',
+                        style: GoogleFonts.lato(
+                          fontSize: 13,
+                          color: FrutiaColors.warning,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             Container(
               height: 1,
               color: Colors.grey[300],
@@ -2684,7 +2696,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 
     if (sessionType == 'P4' || sessionType == 'P8') {
       buttonText = 'Advance to Playoffs';
-      description = 'Generate playoff bracket based on current rankings';
+      description = 'Generate Playoff bracket based on current rankings';
       buttonIcon = Icons.emoji_events;
 
       if (_nextGames.isNotEmpty) {
@@ -2755,6 +2767,34 @@ class _SessionControlPanelState extends State<SessionControlPanel>
               ),
             ],
           ),
+          if (isModerator && !isOwner && !isButtonEnabled) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: FrutiaColors.warning.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border:
+                    Border.all(color: FrutiaColors.warning.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 18, color: Colors.black),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'To end this phase early, please contact the Session Owner.',
+                      style: GoogleFonts.lato(
+                        fontSize: 13,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           Container(
             height: 1,
@@ -2865,7 +2905,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     if (sessionType == 'P4' || sessionType == 'P8') {
       title = 'Ready to start the Playoffs?';
       message =
-          'Ready for the finale? This action uses the current ranking to create the playoffs bracket. It cannot be undone.';
+          'Ready for the finale? This action uses the current ranking to create the Playoffs bracket. It cannot be undone.';
       confirmText = 'Start Playoffs!';
       titleIcon = Icons.emoji_events;
     } else if (sessionType == 'T') {
@@ -3339,9 +3379,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 // REEMPLAZAR TODO EL MÉTODO CON ESTE:
 // ========================================
 
- 
- 
- // ========================================
+  // ========================================
 // ✅ MÉTODO OPTIMIZADO PARA TEXTO EN CELULAR
 // ========================================
 //
@@ -3351,7 +3389,6 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 // REEMPLAZAR TODO EL MÉTODO CON ESTE:
 // ========================================
 
-  // ✅ MÉTODO OPTIMIZADO PARA CELULAR
   String _generateTextResults() {
     final sessionName = _sessionData?['session_name'] ?? 'Session';
     final sessionType = _sessionData?['session_type'] ?? 'O';
@@ -3377,7 +3414,6 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     String getPlayerName(Map<String, dynamic> player) {
       final firstName = player['first_name']?.toString() ?? '';
       final lastInitial = player['last_initial']?.toString() ?? '';
-
       if (firstName.isNotEmpty && lastInitial.isNotEmpty) {
         return '$firstName ${lastInitial}.';
       } else if (firstName.isNotEmpty) {
@@ -3386,61 +3422,55 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       return 'Unknown Player';
     }
 
-    StringBuffer text = StringBuffer();
+    final buffer = StringBuffer();
 
-    // ✅ Líneas acortadas 5 caracteres (de 31 a 26)
-    text.writeln('🏆 SESSION RESULTS 🏆');
-    text.writeln('══════════════════════════'); // ← 26 caracteres
-    text.writeln('📋 $sessionName');
-    text.writeln('🎾 ${getSessionTypeName(sessionType)}'); // ✅ Cambiado de 🎮 a 🎾
-    text.writeln('⏱️ Duration: $duration');
-    text.writeln('══════════════════════════\n'); // ← 26 caracteres
+    // Header bonito
+    buffer.writeln('SESSION RESULTS');
+    buffer.writeln('══════════════════════════');
+    buffer.writeln('$sessionName');
+    buffer.writeln('${getSessionTypeName(sessionType)}');
+    buffer.writeln('Duration: $duration');
+    buffer.writeln('══════════════════════════\n');
 
-    // ✅ Sección de Playoffs con MEDALLAS y nombres en una línea
+    // Medallas Playoffs (solo si aplica)
     if (sessionType == 'P4' || sessionType == 'P8') {
       final playoffResults = _getPlayoffWinners(sessionType);
 
-      // 🥇 GOLD MEDAL
       final champions = playoffResults['champions'] as List<dynamic>?;
       if (champions != null && champions.isNotEmpty) {
-        text.writeln('🥇 GOLD MEDAL');
         final names = champions
-            .where((p) => p != null)
-            .map((p) => getPlayerName(p))
+            .whereType<Map<String, dynamic>>()
+            .map(getPlayerName)
             .join(' & ');
-        text.writeln('$names\n');
+        buffer.writeln('GOLD MEDAL');
+        buffer.writeln('$names\n');
       }
 
-      // 🥈 SILVER MEDAL
       final runnersUp = playoffResults['runners_up'] as List<dynamic>?;
       if (runnersUp != null && runnersUp.isNotEmpty) {
-        text.writeln('🥈 SILVER MEDAL');
         final names = runnersUp
-            .where((p) => p != null)
-            .map((p) => getPlayerName(p))
+            .whereType<Map<String, dynamic>>()
+            .map(getPlayerName)
             .join(' & ');
-        text.writeln('$names\n');
+        buffer.writeln('SILVER MEDAL');
+        buffer.writeln('$names\n');
       }
 
-      // 🥉 BRONZE MEDAL
       final thirdPlace = playoffResults['third_place'] as List<dynamic>?;
       if (thirdPlace != null && thirdPlace.isNotEmpty) {
-        text.writeln('🥉 BRONZE MEDAL');
         final names = thirdPlace
-            .where((p) => p != null)
-            .map((p) => getPlayerName(p))
+            .whereType<Map<String, dynamic>>()
+            .map(getPlayerName)
             .join(' & ');
-        text.writeln('$names\n');
+        buffer.writeln('BRONZE MEDAL');
+        buffer.writeln('$names\n');
       }
-
-      text.writeln('📊 FINAL STANDINGS');
-      text.writeln('──────────────────────────'); // ← 26 caracteres
-    } else {
-      text.writeln('📊 FINAL RANKINGS');
-      text.writeln('──────────────────────────'); // ← 26 caracteres
     }
 
-    // ✅ Rankings con TODO EN UNA LÍNEA
+    // FINAL RANKINGS con # y alineación perfecta
+    buffer.writeln('FINAL RANKINGS');
+    buffer.writeln('──────────────────────────');
+
     final sortedPlayers = List<Map<String, dynamic>>.from(_players)
       ..sort((a, b) {
         final rankA = a['rank'] ?? a['current_rank'] ?? 999;
@@ -3451,22 +3481,26 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     for (var player in sortedPlayers) {
       final rank = player['rank'] ?? player['current_rank'] ?? '-';
       final name = getPlayerName(player);
-      final rating = player['current_rating']?.round() ?? 0;
+      final rating = (player['current_rating'] as num?)?.round() ?? 0;
       final wins = player['wins'] ?? player['games_won'] ?? 0;
       final losses = player['losses'] ?? player['games_lost'] ?? 0;
 
-      // ✅ TODO EN UNA LÍNEA: Rank, Nombre, Rating, W/L
-      text.writeln('$rank. $name - Ranking: $rating - W: $wins | L: $losses');
+      // Alineación perfecta: el W/L siempre empieza en la misma columna
+      final rankStr = rank.toString().padLeft(2); // 1 → " 1", 10 → "10"
+      final ratingStr =
+          rating.toString().padLeft(4); // 850 → " 850", 1250 → "1250"
+
+      buffer.writeln(
+          '#$rankStr. $name - Rating $ratingStr - W:$wins | L:$losses');
     }
 
-    // ✅ Footer con línea acortada
-    text.writeln('\n══════════════════════════'); // ← 26 caracteres
-    text.writeln('Powered by PickleBracket 🎾');
+    // Footer con branding y link
+    buffer.writeln('\n══════════════════════════');
+    buffer.writeln('Powered by PickleBracket');
+    buffer.writeln('Learn more at www.picklebracket.pro');
 
-    return text.toString();
+    return buffer.toString();
   }
- 
-
 
   Widget _buildShareOption({
     required IconData icon,
@@ -6690,14 +6724,33 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                             const SizedBox(height: 12),
 
                                             // Message
-                                            Text(
-                                              'Are you sure you want to cancel this game? It will be moved back to the list of pending matches.',
+                                            Text.rich(
                                               textAlign: TextAlign.center,
-                                              style: GoogleFonts.lato(
-                                                fontSize: 15,
-                                                color:
-                                                    FrutiaColors.secondaryText,
-                                                height: 1.5,
+                                              TextSpan(
+                                                style: GoogleFonts.lato(
+                                                  fontSize: 15,
+                                                  color: FrutiaColors
+                                                      .secondaryText,
+                                                  height: 1.5,
+                                                ),
+                                                children: const [
+                                                  TextSpan(
+                                                      text:
+                                                          'Are you sure you want to cancel this game?\n'),
+                                                  TextSpan(
+                                                      text:
+                                                          'This action will move the game back to the list of pending matches '),
+                                                  TextSpan(
+                                                    text: '(Next tab)',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color: FrutiaColors
+                                                          .primaryText, // ← negro o color principal (más oscuro y visible)
+                                                    ),
+                                                  ),
+                                                  TextSpan(text: '.'),
+                                                ],
                                               ),
                                             ),
                                             const SizedBox(height: 28),
@@ -6820,6 +6873,8 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                               ),
                                               backgroundColor:
                                                   FrutiaColors.success,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
                                             ),
                                           );
                                         }
@@ -6832,6 +6887,8 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                                   'Error: ${e.toString()}'),
                                               backgroundColor:
                                                   FrutiaColors.error,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
                                             ),
                                           );
                                         }
@@ -7168,6 +7225,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
               style: TextStyle(fontSize: 17), // ← Agregué fontSize
             ),
             backgroundColor: FrutiaColors.success,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -7183,6 +7241,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             ),
             backgroundColor: FrutiaColors.error,
             duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -7251,6 +7310,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
               style: TextStyle(fontSize: 17),
             ),
             backgroundColor: FrutiaColors.success,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -7272,6 +7332,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             content: Text(errorMessage),
             backgroundColor: FrutiaColors.error,
             duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }

@@ -38,7 +38,7 @@ class _SessionTypeScreenState extends State<SessionTypeScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Pick the Open Session type that best fits your group.',
+            'Select the mode that best matches your group\'s goals.',
             style: GoogleFonts.lato(
               fontSize: 14,
               color: FrutiaColors.secondaryText,
@@ -46,67 +46,68 @@ class _SessionTypeScreenState extends State<SessionTypeScreen> {
           ),
           const SizedBox(height: 24),
 
-_buildSessionTypeCard('S'), // ← PRIMERO
+          _buildSessionTypeCard('S'), // ← PRIMERO
 
-_buildSessionTypeCard('P4'),
-_buildSessionTypeCard('P8'),
-_buildSessionTypeCard('T'),
+          _buildSessionTypeCard('P4'),
+          _buildSessionTypeCard('P8'),
+          _buildSessionTypeCard('T'),
 
           const SizedBox(height: 32),
 
           // Buttons Row
-         Row(
-  children: [
-    Expanded(
-      child: OutlinedButton(
-        onPressed: widget.onBack,
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-          side: BorderSide(color: FrutiaColors.primary),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: widget.onBack,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 10),
+                    side: BorderSide(color: FrutiaColors.primary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Back: Session Details',
+                    textAlign: TextAlign.center, // ← Agrega esto
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: FrutiaColors.primary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: () {
+                    widget.sessionData.initializeCourts();
+                    widget.sessionData.initializePlayers();
+                    widget.onNext();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FrutiaColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Next: Court Details',
+                    textAlign: TextAlign.center, // ← Agrega esto
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-        child: Text(
-          'Back: Session Details',
-          textAlign: TextAlign.center,  // ← Agrega esto
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: FrutiaColors.primary,
-          ),
-        ),
-      ),
-    ),
-    const SizedBox(width: 16),
-    Expanded(
-      flex: 2,
-      child: ElevatedButton(
-        onPressed: () {
-          widget.sessionData.initializeCourts();
-          widget.sessionData.initializePlayers();
-          widget.onNext();
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: FrutiaColors.primary,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Text(
-          'Next: Court Details',
-          textAlign: TextAlign.center,  // ← Agrega esto
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    ),
-  ],
-),
           const SizedBox(height: 40),
         ],
       ),
@@ -120,26 +121,31 @@ _buildSessionTypeCard('T'),
     IconData icon;
 
     switch (type) {
-   case 'S':
-      title = 'MAX VARIETY';
-      description = 'Maximize court time and variety in partners and opponents. Enjoy continuous play with no dedicated finals or playoff brackets';
-      icon = Icons.groups;
-      break;
-      
+      case 'S':
+        title = 'MAX VARIETY';
+        description =
+            'Maximize court time and variety in partners and opponents. Enjoy continuous play with no dedicated finals or playoff brackets';
+        icon = Icons.groups;
+        break;
+
       case 'P4':
         title = 'TOP 4 PLAYOFFS';
-        description = 'Structured rotation followed by a winner-takes-all final. The top four players are selected to compete in a gold medal match!';
+        description =
+            'Structured rotation followed by a winner-takes-all final. The top four players are selected to compete in a gold medal match!';
         icon = Icons.filter_4;
         break;
       case 'P8':
         title = 'TOP 8 PLAYOFFS';
-        description = 'Extended rotation that ensures greater inclusion and variety. The top eight players compete in a 2-stage semifinal and final bracket.	';
+        description =
+            'Extended rotation that ensures greater inclusion and variety. The top eight players compete in a 2-stage semifinal and final bracket.	';
         icon = Icons.filter_8;
         break;
-             case 'T':
+      case 'T':
         title = 'COMPETITIVE MAX';
-        description = 'The premier rotation for consistent high-level matchups. Players are dynamically paired based on real-time results and performance.';
-    icon = Icons.flash_on; // ⚡ Más alusivo: velocidad, energía y optimización
+        description =
+            'The premier rotation for consistent high-level matchups. Players are dynamically paired based on real-time results and performance.';
+        icon =
+            Icons.flash_on; // ⚡ Más alusivo: velocidad, energía y optimización
         break;
       default:
         title = '';
