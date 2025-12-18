@@ -247,8 +247,8 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
     );
 
     if (confirm == true && mounted) {
-    Navigator.of(context).pop(); // Cierra solo la pantalla CreateSessionFlow
-  }
+      Navigator.of(context).pop(); // Cierra solo la pantalla CreateSessionFlow
+    }
   }
   // ========================================
   // ✅ VERSIÓN SIMPLIFICADA CON SHAREDPREFERENCES
@@ -492,7 +492,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                     color: FrutiaColors.primary, size: 28),
                 SizedBox(width: 12),
                 Text(
-                  _draftId != null ? 'Start Draft Session' : 'Start Session',
+                  _draftId != null ? 'Start Session' : 'Start Session',
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -503,7 +503,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
             ),
             content: Text(
               _draftId != null
-                  ? 'Ready to start this draft session? Settings cannot be changed once started.'
+                  ? 'Ready to start this session? Settings cannot be changed once started.'
                   : 'All set! Ready to start? Settings cannot be changed once started.',
               style: GoogleFonts.lato(
                 fontSize: 16,

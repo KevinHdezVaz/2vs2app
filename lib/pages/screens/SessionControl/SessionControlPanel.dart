@@ -786,6 +786,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       ],
     );
   }
+// ✅ MÉTODO ACTUALIZADO: _buildNextGamesTab con botón "Copy Schedule"
 
   Widget _buildNextGamesTab() {
     final shouldShowFinalsButton = _shouldShowStartFinalsButton();
@@ -805,7 +806,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                 children: [
                   Spacer(flex: 1),
 
-                  // ✅ BOTONES DE ACCIÓN (sin ícono de fondo)
+                  // ✅ BOTONES DE ACCIÓN
                   if (shouldShowFinalizeButton)
                     _buildFinalizeButton()
                   else if (shouldShowFinalsButton)
@@ -815,14 +816,12 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                           _sessionData!['session_type'] == 'P8' ||
                           _sessionData!['session_type'] == 'T' ||
                           _sessionData!['session_type'] == 'O' ||
-                          _sessionData!['session_type'] ==
-                              'S') && // ← ✅ AGREGADO 'S'
+                          _sessionData!['session_type'] == 'S') &&
                       _liveGames.isEmpty &&
                       !shouldShowFinalsButton &&
                       !shouldShowFinalizeButton &&
                       !shouldShowFinalResults)
                     _buildAdvanceStageButton()
-
                   // ✅ ÍCONO Y TEXTO (solo si NO hay botones de acción)
                   else ...[
                     Icon(Icons.queue,
@@ -857,36 +856,50 @@ class _SessionControlPanelState extends State<SessionControlPanel>
               itemCount: _nextGames.length +
                   (shouldShowFinalizeButton ? 1 : 0) +
                   (shouldShowFinalsButton ? 1 : 0) +
-                  1,
+                  1 + // ← Para el botón "Copy Schedule"
+                  1, // ← Para el botón de avanzar stage
               itemBuilder: (context, index) {
+                // Manejar botón de Finalize
                 if (shouldShowFinalizeButton && index == 0) {
                   return _buildFinalizeButton();
                 }
 
                 final finalizeOffset = shouldShowFinalizeButton ? 1 : 0;
 
+                // Manejar botón de Finals
                 if (shouldShowFinalsButton &&
                     index == _nextGames.length + finalizeOffset) {
                   return _buildStartFinalsButton();
                 }
 
+                // Manejar botón de View Schedule
                 if (index ==
                     _nextGames.length +
                         finalizeOffset +
                         (shouldShowFinalsButton ? 1 : 0)) {
+                  return _buildViewScheduleButton();
+                }
+
+                // Manejar botón de Advance Stage
+                if (index ==
+                    _nextGames.length +
+                        finalizeOffset +
+                        (shouldShowFinalsButton ? 1 : 0) +
+                        1) {
                   return _buildAdvanceStageButton();
                 }
 
-                final gameIndex = index;
-                final game = _nextGames[gameIndex];
-                final shouldShowStartGame = gameIndex < availableStartSlots;
+                // ✅ SOLUCIÓN: Calcular el índice REAL en _nextGames
+                final actualGameIndex = index - finalizeOffset;
+                final game = _nextGames[actualGameIndex];
 
-                print(
-                    '🎯 Game #${game['game_number']} - Show Start: $shouldShowStartGame (Position: ${gameIndex + 1}, Slot: ${gameIndex < availableStartSlots})');
+                // ✅ NUEVA LÓGICA: Solo el PRIMER juego puede iniciarse
+                final shouldShowStartGame =
+                    (actualGameIndex == 0 && availableStartSlots > 0);
 
                 return _buildGameCard(
                   game,
-                  queuePosition: gameIndex + 1,
+                  queuePosition: actualGameIndex + 1,
                   shouldShowStartGame: shouldShowStartGame,
                 );
               },
@@ -895,6 +908,566 @@ class _SessionControlPanelState extends State<SessionControlPanel>
         ),
       ],
     );
+  }
+
+// ✅ NUEVO WIDGET: Botón para ver schedule completo
+  Widget _buildViewScheduleButton() {
+    // ✅ NO MOSTRAR si es espectador
+    if (isReallySpectator) {
+      return const SizedBox.shrink();
+    }
+
+    // ✅ NO MOSTRAR si no hay juegos
+    if (_nextGames.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+      child: OutlinedButton.icon(
+        onPressed: _showScheduleDialog,
+        icon: Icon(
+          Icons.list_alt,
+          size: 18,
+          color: FrutiaColors.primary,
+        ),
+        label: Text(
+          'View & Share Schedule',
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: FrutiaColors.primary,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+          side: BorderSide(
+            color: FrutiaColors.primary.withOpacity(0.5),
+            width: 2,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          backgroundColor: FrutiaColors.primary.withOpacity(0.05),
+        ),
+      ),
+    );
+  } // ✅ NUEVO MÉTODO: Mostrar diálogo con schedule completo (MEJORADO)
+
+  Future<void> _showScheduleDialog() async {
+    final sessionName = _sessionData?['session_name'] ?? 'Session';
+
+    await showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: 500,
+            maxHeight: MediaQuery.of(context).size.height * 0.80,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ==================== HEADER ====================
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: FrutiaColors.primary,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.calendar_today,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Upcoming Games',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            sessionName,
+                            style: GoogleFonts.lato(
+                              fontSize: 13,
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ==================== REMAINING GAMES LABEL ====================
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                color: FrutiaColors.primaryBackground,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.schedule,
+                      size: 16,
+                      color: FrutiaColors.primary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Remaining Games: ${_nextGames.length}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: FrutiaColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ==================== GAMES LIST ====================
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _nextGames.length,
+                  itemBuilder: (context, index) {
+                    final game = _nextGames[index];
+                    final gameNumber = game['game_number'] ?? (index + 1);
+
+                    // Obtener nombres de jugadores
+                    final team1Player1 = game['team1_player1'];
+                    final team1Player2 = game['team1_player2'];
+                    final team2Player1 = game['team2_player1'];
+                    final team2Player2 = game['team2_player2'];
+
+                    // Helper para truncar nombres largos
+                    String _formatPlayerName(Map<String, dynamic> player) {
+                      final firstName = player['first_name'] ?? '';
+                      final lastInitial = player['last_initial'] ?? '';
+
+                      // Si el nombre es muy largo, truncar a 10 caracteres
+                      final displayName = firstName.length > 10
+                          ? firstName.substring(0, 10)
+                          : firstName;
+
+                      return '$displayName ${lastInitial}.';
+                    }
+
+                    final team1P1Name = _formatPlayerName(team1Player1);
+                    final team1P2Name = _formatPlayerName(team1Player2);
+                    final team2P1Name = _formatPlayerName(team2Player1);
+                    final team2P2Name = _formatPlayerName(team2Player2);
+
+                    // Info adicional
+                    final isPlayoffGame = game['is_playoff_game'] == 1 ||
+                        game['is_playoff_game'] == true;
+                    final playoffLabel =
+                        isPlayoffGame ? _getPlayoffLabel(game) : null;
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: isPlayoffGame
+                            ? FrutiaColors.accent.withOpacity(0.08)
+                            : FrutiaColors.primaryBackground,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isPlayoffGame
+                              ? _getPlayoffColor(game['playoff_round'])
+                              : FrutiaColors.tertiaryBackground,
+                          width: isPlayoffGame ? 2 : 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Game number + playoff badge
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: FrutiaColors.primary,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'Game $gameNumber',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              if (playoffLabel != null) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        _getPlayoffColor(game['playoff_round']),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    playoffLabel,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // ✅ EQUIPOS LADO A LADO
+                          Row(
+                            children: [
+                              // Team 1
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: FrutiaColors.accentLight,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            width: 20,
+                                            height: 20,
+                                            decoration: BoxDecoration(
+                                              color: FrutiaColors.primary,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                '1',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              'Team 1',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w600,
+                                                color:
+                                                    FrutiaColors.secondaryText,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        team1P1Name,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: FrutiaColors.primaryText,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        team1P2Name,
+                                        style: GoogleFonts.lato(
+                                          fontSize: 11,
+                                          color: FrutiaColors.secondaryText,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // VS
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                child: Text(
+                                  'VS',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: FrutiaColors.disabledText,
+                                  ),
+                                ),
+                              ),
+
+                              // Team 2
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: FrutiaColors.secondaryBackground,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            width: 20,
+                                            height: 20,
+                                            decoration: BoxDecoration(
+                                              color: FrutiaColors.primary,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                '2',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              'Team 2',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w600,
+                                                color:
+                                                    FrutiaColors.secondaryText,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        team2P1Name,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: FrutiaColors.primaryText,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        team2P2Name,
+                                        style: GoogleFonts.lato(
+                                          fontSize: 11,
+                                          color: FrutiaColors.secondaryText,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // ==================== FOOTER BUTTONS ====================
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // Botón Copiar
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          await _copyScheduleToClipboard();
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(
+                          Icons.content_copy,
+                          size: 18,
+                          color: FrutiaColors.primary,
+                        ),
+                        label: Text(
+                          'Copy',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: FrutiaColors.primary,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(
+                            color: FrutiaColors.primary.withOpacity(0.5),
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Botón Cerrar
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: FrutiaColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: Text(
+                          'Close',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+// ✅ MÉTODO AUXILIAR: Copiar schedule al clipboard (versión simple)
+  Future<void> _copyScheduleToClipboard() async {
+    try {
+      final buffer = StringBuffer();
+
+      // Header
+      final sessionName = _sessionData?['session_name'] ?? 'Session';
+      buffer.writeln('UPCOMING GAMES SCHEDULE');
+      buffer.writeln('══════════════════════════');
+      buffer.writeln('$sessionName');
+      buffer.writeln('Total Remaining: ${_nextGames.length} games');
+      buffer.writeln('══════════════════════════\n');
+
+      // Lista de juegos
+      for (int i = 0; i < _nextGames.length; i++) {
+        final game = _nextGames[i];
+        final gameNumber = game['game_number'] ?? (i + 1);
+
+        final team1Player1 = game['team1_player1'];
+        final team1Player2 = game['team1_player2'];
+        final team2Player1 = game['team2_player1'];
+        final team2Player2 = game['team2_player2'];
+
+        final team1P1Name =
+            '${team1Player1['first_name']} ${team1Player1['last_initial']}.';
+        final team1P2Name =
+            '${team1Player2['first_name']} ${team1Player2['last_initial']}.';
+        final team2P1Name =
+            '${team2Player1['first_name']} ${team2Player1['last_initial']}.';
+        final team2P2Name =
+            '${team2Player2['first_name']} ${team2Player2['last_initial']}.';
+
+        buffer.writeln(
+            'Game $gameNumber: $team1P1Name & $team1P2Name vs $team2P1Name & $team2P2Name');
+      }
+
+      buffer.writeln('\n══════════════════════════');
+
+      await Clipboard.setData(ClipboardData(text: buffer.toString()));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Schedule copied!',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: FrutiaColors.success,
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Error copying schedule: $e');
+    }
   }
 
   Widget _buildFinalResultsCard() {
@@ -3422,6 +3995,26 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       return 'Unknown Player';
     }
 
+    // ✅ NUEVO: Función para calcular Point Won %
+    // ✅ CORREGIDO: Función para calcular Point Won %
+    String getPointWonPercentage(Map<String, dynamic> player) {
+      // ✅ PRIMERO: Intentar usar el porcentaje ya calculado del backend
+      if (player['points_won_percentage'] != null) {
+        final percentage = player['points_won_percentage'] as num;
+        return '${percentage.toStringAsFixed(1)}%';
+      }
+
+      // ✅ FALLBACK: Calcular manualmente si no existe
+      final pointsWon = player['points_won'] ?? 0;
+      final pointsLost = player['points_lost'] ?? 0;
+      final totalPoints = pointsWon + pointsLost;
+
+      if (totalPoints == 0) return '0.0%';
+
+      final percentage = (pointsWon / totalPoints) * 100;
+      return '${percentage.toStringAsFixed(1)}%';
+    }
+
     final buffer = StringBuffer();
 
     // Header bonito
@@ -3467,7 +4060,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       }
     }
 
-    // FINAL RANKINGS con # y alineación perfecta
+    // FINAL RANKINGS con # y alineación perfecta + Point Won %
     buffer.writeln('FINAL RANKINGS');
     buffer.writeln('──────────────────────────');
 
@@ -3484,14 +4077,15 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       final rating = (player['current_rating'] as num?)?.round() ?? 0;
       final wins = player['wins'] ?? player['games_won'] ?? 0;
       final losses = player['losses'] ?? player['games_lost'] ?? 0;
+      final pointWonPct = getPointWonPercentage(player); // ✅ NUEVO
 
-      // Alineación perfecta: el W/L siempre empieza en la misma columna
-      final rankStr = rank.toString().padLeft(2); // 1 → " 1", 10 → "10"
-      final ratingStr =
-          rating.toString().padLeft(4); // 850 → " 850", 1250 → "1250"
+      // Alineación perfecta
+      final rankStr = rank.toString().padLeft(2);
+      final ratingStr = rating.toString().padLeft(4);
 
+      // ✅ NUEVO: Incluir Point Won %
       buffer.writeln(
-          '#$rankStr. $name - Rating $ratingStr - W:$wins | L:$losses');
+          '#$rankStr. $name - Rating $ratingStr - W:$wins | L:$losses | Pts Won: $pointWonPct');
     }
 
     // Footer con branding y link
@@ -6551,30 +7145,12 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'This action will:',
+                                              'This action will recalculate ALL player rankings based on the updated score.',
                                               style: GoogleFonts.lato(
-                                                fontWeight: FontWeight.w600,
                                                 color: FrutiaColors.primaryText,
                                               ),
                                             ),
-                                            const SizedBox(height: 8),
-                                            _buildWarningItem(
-                                                'Recalculate ALL player ratings'),
-                                            _buildWarningItem(
-                                                'Update current rankings'),
-                                            _buildWarningItem(
-                                                'Treat this game as played NOW'),
-                                            _buildWarningItem(
-                                                'Affect ongoing session progress'),
                                             const SizedBox(height: 12),
-                                            Text(
-                                              'This cannot be undone. Rankings may change significantly.',
-                                              style: GoogleFonts.lato(
-                                                color: FrutiaColors.error,
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 14,
-                                              ),
-                                            ),
                                           ],
                                         ),
                                         actions: [
@@ -6692,167 +7268,177 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                                 BorderRadius.circular(20)),
                                         contentPadding:
                                             const EdgeInsets.all(24),
-                                        content: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            // Icon
-                                            Container(
-                                              padding: const EdgeInsets.all(16),
-                                              decoration: BoxDecoration(
-                                                color: FrutiaColors.error
-                                                    .withOpacity(0.1),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Icon(
-                                                Icons.cancel_outlined,
-                                                color: FrutiaColors.error,
-                                                size: 48,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 20),
-
-                                            // Title
-                                            Text(
-                                              'Cancel game?',
-                                              textAlign: TextAlign.center,
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 22,
-                                                fontWeight: FontWeight.bold,
-                                                color: FrutiaColors.primaryText,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 12),
-
-                                            // Message
-                                            Text.rich(
-                                              textAlign: TextAlign.center,
-                                              TextSpan(
-                                                style: GoogleFonts.lato(
-                                                  fontSize: 15,
-                                                  color: FrutiaColors
-                                                      .secondaryText,
-                                                  height: 1.5,
+                                        content: SizedBox(
+                                          width: 380,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              // Icon
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.all(16),
+                                                decoration: BoxDecoration(
+                                                  color: FrutiaColors.error
+                                                      .withOpacity(0.1),
+                                                  shape: BoxShape.circle,
                                                 ),
-                                                children: const [
-                                                  TextSpan(
-                                                      text:
-                                                          'Are you sure you want to cancel this game?\n'),
-                                                  TextSpan(
-                                                      text:
-                                                          'This action will move the game back to the list of pending matches '),
-                                                  TextSpan(
-                                                    text: '(Next tab)',
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                      color: FrutiaColors
-                                                          .primaryText, // ← negro o color principal (más oscuro y visible)
-                                                    ),
-                                                  ),
-                                                  TextSpan(text: '.'),
-                                                ],
+                                                child: Icon(
+                                                  Icons.cancel_outlined,
+                                                  color: FrutiaColors.error,
+                                                  size: 48,
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 28),
+                                              const SizedBox(height: 20),
 
-                                            // Buttons
-                                            Row(
-                                              children: [
-                                                // Don't cancel button (Ghost style)
-                                                Expanded(
-                                                  child: OutlinedButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(
-                                                            context, false),
-                                                    style: OutlinedButton
-                                                        .styleFrom(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          vertical: 14),
-                                                      side: BorderSide(
-                                                        color: FrutiaColors
-                                                            .primaryText
-                                                            .withOpacity(0.3),
-                                                        width: 1.5,
-                                                      ),
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(12),
-                                                      ),
-                                                    ),
-                                                    child: Text(
-                                                      "Don't cancel",
-                                                      style:
-                                                          GoogleFonts.poppins(
-                                                        fontSize: 15,
+                                              // Title
+                                              Text(
+                                                'Cancel Game?',
+                                                textAlign: TextAlign.center,
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 22,
+                                                  fontWeight: FontWeight.bold,
+                                                  color:
+                                                      FrutiaColors.primaryText,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 12),
+
+                                              // Message
+                                              Text.rich(
+                                                textAlign: TextAlign.center,
+                                                TextSpan(
+                                                  style: GoogleFonts.lato(
+                                                    fontSize: 15,
+                                                    color: FrutiaColors
+                                                        .secondaryText,
+                                                    height: 1.5,
+                                                  ),
+                                                  children: const [
+                                                    TextSpan(
+                                                        text:
+                                                            'Are you sure you want to cancel this game?\n'),
+                                                    TextSpan(
+                                                        text:
+                                                            'This action will move the game back to the list of pending matches '),
+                                                    TextSpan(
+                                                      text: '(Next tab)',
+                                                      style: TextStyle(
                                                         fontWeight:
-                                                            FontWeight.w600,
+                                                            FontWeight.w700,
                                                         color: FrutiaColors
-                                                            .primaryText,
+                                                            .primaryText, // ← negro o color principal (más oscuro y visible)
                                                       ),
                                                     ),
-                                                  ),
+                                                    TextSpan(text: '.'),
+                                                  ],
                                                 ),
-                                                const SizedBox(width: 12),
+                                              ),
+                                              const SizedBox(height: 28),
 
-                                                // Cancel button (Red with shadow)
-                                                Expanded(
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              12),
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: FrutiaColors
-                                                              .error
-                                                              .withOpacity(0.4),
-                                                          blurRadius: 12,
-                                                          offset: const Offset(
-                                                              0, 6),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    child: ElevatedButton(
+                                              // Buttons
+                                              Row(
+                                                children: [
+                                                  // Don't cancel button (Ghost style)
+                                                  Expanded(
+                                                    child: OutlinedButton(
                                                       onPressed: () =>
                                                           Navigator.pop(
-                                                              context, true),
-                                                      style: ElevatedButton
+                                                              context, false),
+                                                      style: OutlinedButton
                                                           .styleFrom(
-                                                        backgroundColor:
-                                                            FrutiaColors.error,
-                                                        foregroundColor:
-                                                            Colors.white,
                                                         padding:
                                                             const EdgeInsets
                                                                 .symmetric(
                                                                 vertical: 14),
+                                                        side: BorderSide(
+                                                          color: FrutiaColors
+                                                              .primaryText
+                                                              .withOpacity(0.3),
+                                                          width: 1.5,
+                                                        ),
                                                         shape:
                                                             RoundedRectangleBorder(
                                                           borderRadius:
                                                               BorderRadius
                                                                   .circular(12),
                                                         ),
-                                                        elevation: 0,
                                                       ),
                                                       child: Text(
-                                                        'Cancel Game',
+                                                        "Don't cancel",
                                                         style:
                                                             GoogleFonts.poppins(
                                                           fontSize: 15,
                                                           fontWeight:
-                                                              FontWeight.w700,
-                                                          color: Colors.white,
+                                                              FontWeight.w600,
+                                                          color: FrutiaColors
+                                                              .primaryText,
                                                         ),
                                                       ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
+                                                  const SizedBox(width: 12),
+
+                                                  // Cancel button (Red with shadow)
+                                                  Expanded(
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: FrutiaColors
+                                                                .error
+                                                                .withOpacity(
+                                                                    0.4),
+                                                            blurRadius: 12,
+                                                            offset:
+                                                                const Offset(
+                                                                    0, 6),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      child: ElevatedButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                                context, true),
+                                                        style: ElevatedButton
+                                                            .styleFrom(
+                                                          backgroundColor:
+                                                              FrutiaColors
+                                                                  .error,
+                                                          foregroundColor:
+                                                              Colors.white,
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                  vertical: 14),
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        12),
+                                                          ),
+                                                          elevation: 0,
+                                                        ),
+                                                        child: Text(
+                                                          'Cancel Game',
+                                                          style: GoogleFonts
+                                                              .poppins(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     );

@@ -31,9 +31,10 @@ class _RegisterPageState extends State<RegisterPage>
   final _phoneController = TextEditingController();
   final _ageController = TextEditingController();
   final _authService = AuthService();
- final GoogleSignIn _googleSignIn = GoogleSignIn(
-  clientId: '943019607563-jnuk83jvn36jpq1il30mtackaff3jfhk.apps.googleusercontent.com',
-);
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId:
+        '943019607563-jnuk83jvn36jpq1il30mtackaff3jfhk.apps.googleusercontent.com',
+  );
 
   final _affiliateCodeController = TextEditingController();
 
@@ -232,8 +233,8 @@ class _RegisterPageState extends State<RegisterPage>
                     backgroundColor: Colors.transparent,
                     elevation: 0,
                     leading: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios,
-                          color: Colors.black),
+                      icon:
+                          const Icon(Icons.arrow_back_ios, color: Colors.black),
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
@@ -257,308 +258,342 @@ class _RegisterPageState extends State<RegisterPage>
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
-                          child: Container(
-                      height: size.height * 0.75,
-                    width: size.width * 0.9,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white,
-                          FrutiaColors.primary.withOpacity(0.05), // Verde muy sutil
-                        ],
-                      ),
-                    ),
+                            child: Container(
+                              height: size.height * 0.75,
+                              width: size.width * 0.9,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.white,
+                                    FrutiaColors.primary.withOpacity(0.05),
+                                  ],
+                                ),
+                              ),
                               padding: EdgeInsets.all(16.0),
                               child: SingleChildScrollView(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    SizedBox(height: 20),
-                                    // Welcome Text
-                                    Text(
-                                      "Welcome, Complete your registration.",
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.lato(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: FrutiaColors.primary,
-                                      ),
-                                    ),
-                                    SizedBox(height: 30),
-                                    // Name TextField
-                                    SlideTransition(
-                                      position: _slideAnimation,
-                                      child: TextField(
-                                        cursorColor: FrutiaColors.primary,
-                                        controller: _nameController,
-                                        decoration: InputDecoration(
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            borderSide: BorderSide(
-                                              color: FrutiaColors.secondaryText,
-                                              width: 1.0,
-                                            ),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            borderSide: BorderSide(
-                                              color: FrutiaColors.primary,
-                                              width: 1.5,
-                                            ),
-                                          ),
-                                          labelText: "Full Name",
-                                          labelStyle: TextStyle(
-                                              color: FrutiaColors.primaryText),
-                                          prefixIcon: Icon(
-                                            Icons.person,
-                                            color: FrutiaColors.primary,
-                                          ),
-                                          filled: true,
-                                          fillColor:
-                                              FrutiaColors.primaryBackground,
+                                child: AutofillGroup(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(height: 20),
+                                      // Welcome Text
+                                      Text(
+                                        "Welcome, Complete your registration.",
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.lato(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: FrutiaColors.primary,
                                         ),
-                                        style:
-                                            TextStyle(color: FrutiaColors.primaryText),
                                       ),
-                                    ),
-
-                                    SizedBox(height: 20),
-                                    // Email TextField
-                                    SlideTransition(
-                                      position: _slideAnimation,
-                                      child: TextField(
-                                        cursorColor: FrutiaColors.primary,
-                                        controller: _emailController,
-                                        decoration: InputDecoration(
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            borderSide: BorderSide(
-                                              color: FrutiaColors.secondaryText,
-                                              width: 1.0,
-                                            ),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            borderSide: BorderSide(
-                                              color: FrutiaColors.primary,
-                                              width: 1.5,
-                                            ),
-                                          ),
-                                          labelText: "Email",
-                                          labelStyle: TextStyle(
-                                              color: FrutiaColors.primaryText),
-                                          prefixIcon: Icon(
-                                            Icons.email_outlined,
-                                            color: FrutiaColors.primary,
-                                          ),
-                                          filled: true,
-                                          fillColor:
-                                              FrutiaColors.primaryBackground,
-                                        ),
-                                        style:
-                                            TextStyle(color: FrutiaColors.primaryText),
-                                      ),
-                                    ),
-                                    SizedBox(height: 20),
-                                    // Phone Field with country selector
-                                    SlideTransition(
-                                      position: _slideAnimation,
-                                      child: IntlPhoneField(
-                                        decoration: InputDecoration(
-                                          labelText: 'Phone Number',
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            borderSide: BorderSide(
-                                              color: FrutiaColors.secondaryText,
-                                              width: 1.0,
-                                            ),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            borderSide: BorderSide(
-                                              color: FrutiaColors.primary,
-                                              width: 1.5,
-                                            ),
-                                          ),
-                                          filled: true,
-                                          fillColor:
-                                              FrutiaColors.primaryBackground,
-                                          labelStyle: TextStyle(
-                                              color: FrutiaColors.primaryText),
-                                        ),
-                                        initialCountryCode: 'US',
-                                        onChanged: (phone) {
-                                          setState(() {
-                                            _fullPhoneNumber =
-                                                phone.completeNumber;
-                                          });
-                                        },
-                                        validator: (phoneNumber) {
-                                          if (phoneNumber == null ||
-                                              phoneNumber.number.isEmpty) {
-                                            return 'Please enter a number';
-                                          }
-                                          if (!phoneNumber.isValidNumber()) {
-                                            return 'The phone number is not valid for the selected country.';
-                                          }
-                                          return null;
-                                        },
-                                        style:
-                                            TextStyle(color: FrutiaColors.primaryText),
-                                        cursorColor: FrutiaColors.primary,
-                                      ),
-                                    ),
-                                    SizedBox(height: 20),
-
-                                    // Password TextField
-                                    SlideTransition(
-                                      position: _slideAnimation,
-                                      child: TextField(
-                                        cursorColor: FrutiaColors.primary,
-                                        controller: _passwordController,
-                                        obscureText: isObscure,
-                                        decoration: InputDecoration(
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            borderSide: BorderSide(
-                                              color: FrutiaColors.secondaryText,
-                                              width: 1.0,
-                                            ),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            borderSide: BorderSide(
-                                              color: FrutiaColors.primary,
-                                              width: 1.5,
-                                            ),
-                                          ),
-                                          labelText: "Password",
-                                          labelStyle: TextStyle(
-                                              color: FrutiaColors.primaryText),
-                                          prefixIcon: Icon(
-                                            Icons.lock_outline,
-                                            color: FrutiaColors.primary,
-                                          ),
-                                          suffixIcon: IconButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                isObscure = !isObscure;
-                                              });
-                                            },
-                                            icon: Icon(
-                                              isObscure
-                                                  ? Icons.visibility_off
-                                                  : Icons.visibility,
-                                              color: FrutiaColors.primary,
-                                            ),
-                                          ),
-                                          filled: true,
-                                          fillColor:
-                                              FrutiaColors.primaryBackground,
-                                        ),
-                                        style:
-                                            TextStyle(color: FrutiaColors.primaryText),
-                                      ),
-                                    ),
-                                    SizedBox(height: 20),
-                                    // Confirm Password TextField
-                                    SlideTransition(
-                                      position: _slideAnimation,
-                                      child: TextField(
-                                        cursorColor: FrutiaColors.primary,
-                                        controller: _confirmPasswordController,
-                                        obscureText: isObscureConfirm,
-                                        decoration: InputDecoration(
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            borderSide: BorderSide(
-                                              color: FrutiaColors.secondaryText,
-                                              width: 1.0,
-                                            ),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            borderSide: BorderSide(
-                                              color: FrutiaColors.primary,
-                                              width: 1.5,
-                                            ),
-                                          ),
-                                          labelText: "Confirm Password",
-                                          labelStyle: TextStyle(
-                                              color: FrutiaColors.primaryText),
-                                          prefixIcon: Icon(
-                                            Icons.lock_outline,
-                                            color: FrutiaColors.primary,
-                                          ),
-                                          suffixIcon: IconButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                isObscureConfirm =
-                                                    !isObscureConfirm;
-                                              });
-                                            },
-                                            icon: Icon(
-                                              isObscureConfirm
-                                                  ? Icons.visibility_off
-                                                  : Icons.visibility,
-                                              color: FrutiaColors.primary,
-                                            ),
-                                          ),
-                                          filled: true,
-                                          fillColor:
-                                              FrutiaColors.primaryBackground,
-                                        ),
-                                        style:
-                                            TextStyle(color: FrutiaColors.primaryText),
-                                      ),
-                                    ),
-
-                                    SizedBox(height: 40),
-
-                                    // Sign Up Button
-                                    SlideTransition(
-                                      position: _slideAnimation,
-                                      child: Container(
-                                        width: size.width * 0.8,
-                                        child: ElevatedButton(
-                                          onPressed: signUp,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                                FrutiaColors.primary,
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 16),
-                                            shape: RoundedRectangleBorder(
+                                      SizedBox(height: 30),
+                                      // ✅ Name TextField con AutofillHints
+                                      SlideTransition(
+                                        position: _slideAnimation,
+                                        child: TextField(
+                                          cursorColor: FrutiaColors.primary,
+                                          controller: _nameController,
+                                          keyboardType: TextInputType.name,
+                                          autofillHints: const [
+                                            AutofillHints.name
+                                          ],
+                                          textInputAction: TextInputAction.next,
+                                          textCapitalization:
+                                              TextCapitalization.words,
+                                          decoration: InputDecoration(
+                                            enabledBorder: OutlineInputBorder(
                                               borderRadius:
                                                   BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color:
+                                                    FrutiaColors.secondaryText,
+                                                width: 1.0,
+                                              ),
                                             ),
-                                            elevation: 8,
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color: FrutiaColors.primary,
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            labelText: "Full Name",
+                                            labelStyle: TextStyle(
+                                                color:
+                                                    FrutiaColors.primaryText),
+                                            prefixIcon: Icon(
+                                              Icons.person,
+                                              color: FrutiaColors.primary,
+                                            ),
+                                            filled: true,
+                                            fillColor:
+                                                FrutiaColors.primaryBackground,
                                           ),
-                                          child: Text(
-                                            "Create your account",
-                                            style: GoogleFonts.inter(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
+                                          style: TextStyle(
+                                              color: FrutiaColors.primaryText),
+                                        ),
+                                      ),
+
+                                      SizedBox(height: 20),
+                                      // ✅ Email TextField con AutofillHints
+                                      SlideTransition(
+                                        position: _slideAnimation,
+                                        child: TextField(
+                                          cursorColor: FrutiaColors.primary,
+                                          controller: _emailController,
+                                          keyboardType:
+                                              TextInputType.emailAddress,
+                                          autofillHints: const [
+                                            AutofillHints.email
+                                          ],
+                                          textInputAction: TextInputAction.next,
+                                          decoration: InputDecoration(
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color:
+                                                    FrutiaColors.secondaryText,
+                                                width: 1.0,
+                                              ),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color: FrutiaColors.primary,
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            labelText: "Email",
+                                            labelStyle: TextStyle(
+                                                color:
+                                                    FrutiaColors.primaryText),
+                                            prefixIcon: Icon(
+                                              Icons.email_outlined,
+                                              color: FrutiaColors.primary,
+                                            ),
+                                            filled: true,
+                                            fillColor:
+                                                FrutiaColors.primaryBackground,
+                                          ),
+                                          style: TextStyle(
+                                              color: FrutiaColors.primaryText),
+                                        ),
+                                      ),
+                                      SizedBox(height: 20),
+                                      // ✅ Phone Field con AutofillHints
+                                      SlideTransition(
+                                        position: _slideAnimation,
+                                        child: IntlPhoneField(
+                                          decoration: InputDecoration(
+                                            labelText: 'Phone Number',
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color:
+                                                    FrutiaColors.secondaryText,
+                                                width: 1.0,
+                                              ),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color: FrutiaColors.primary,
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            filled: true,
+                                            fillColor:
+                                                FrutiaColors.primaryBackground,
+                                            labelStyle: TextStyle(
+                                                color:
+                                                    FrutiaColors.primaryText),
+                                          ),
+                                          initialCountryCode: 'US',
+                                          onChanged: (phone) {
+                                            setState(() {
+                                              _fullPhoneNumber =
+                                                  phone.completeNumber;
+                                            });
+                                          },
+                                          validator: (phoneNumber) {
+                                            if (phoneNumber == null ||
+                                                phoneNumber.number.isEmpty) {
+                                              return 'Please enter a number';
+                                            }
+                                            if (!phoneNumber.isValidNumber()) {
+                                              return 'The phone number is not valid for the selected country.';
+                                            }
+                                            return null;
+                                          },
+                                          style: TextStyle(
+                                              color: FrutiaColors.primaryText),
+                                          cursorColor: FrutiaColors.primary,
+                                        ),
+                                      ),
+                                      SizedBox(height: 20),
+
+                                      // ✅ Password TextField con AutofillHints
+                                      SlideTransition(
+                                        position: _slideAnimation,
+                                        child: TextField(
+                                          cursorColor: FrutiaColors.primary,
+                                          controller: _passwordController,
+                                          obscureText: isObscure,
+                                          autofillHints: const [
+                                            AutofillHints.newPassword
+                                          ],
+                                          textInputAction: TextInputAction.next,
+                                          decoration: InputDecoration(
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color:
+                                                    FrutiaColors.secondaryText,
+                                                width: 1.0,
+                                              ),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color: FrutiaColors.primary,
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            labelText: "Password",
+                                            labelStyle: TextStyle(
+                                                color:
+                                                    FrutiaColors.primaryText),
+                                            prefixIcon: Icon(
+                                              Icons.lock_outline,
+                                              color: FrutiaColors.primary,
+                                            ),
+                                            suffixIcon: IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  isObscure = !isObscure;
+                                                });
+                                              },
+                                              icon: Icon(
+                                                isObscure
+                                                    ? Icons.visibility_off
+                                                    : Icons.visibility,
+                                                color: FrutiaColors.primary,
+                                              ),
+                                            ),
+                                            filled: true,
+                                            fillColor:
+                                                FrutiaColors.primaryBackground,
+                                          ),
+                                          style: TextStyle(
+                                              color: FrutiaColors.primaryText),
+                                        ),
+                                      ),
+                                      SizedBox(height: 20),
+                                      // ✅ Confirm Password TextField con AutofillHints
+                                      SlideTransition(
+                                        position: _slideAnimation,
+                                        child: TextField(
+                                          cursorColor: FrutiaColors.primary,
+                                          controller:
+                                              _confirmPasswordController,
+                                          obscureText: isObscureConfirm,
+                                          autofillHints: const [
+                                            AutofillHints.newPassword
+                                          ],
+                                          textInputAction: TextInputAction.done,
+                                          onSubmitted: (_) => signUp(),
+                                          decoration: InputDecoration(
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color:
+                                                    FrutiaColors.secondaryText,
+                                                width: 1.0,
+                                              ),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                color: FrutiaColors.primary,
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            labelText: "Confirm Password",
+                                            labelStyle: TextStyle(
+                                                color:
+                                                    FrutiaColors.primaryText),
+                                            prefixIcon: Icon(
+                                              Icons.lock_outline,
+                                              color: FrutiaColors.primary,
+                                            ),
+                                            suffixIcon: IconButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  isObscureConfirm =
+                                                      !isObscureConfirm;
+                                                });
+                                              },
+                                              icon: Icon(
+                                                isObscureConfirm
+                                                    ? Icons.visibility_off
+                                                    : Icons.visibility,
+                                                color: FrutiaColors.primary,
+                                              ),
+                                            ),
+                                            filled: true,
+                                            fillColor:
+                                                FrutiaColors.primaryBackground,
+                                          ),
+                                          style: TextStyle(
+                                              color: FrutiaColors.primaryText),
+                                        ),
+                                      ),
+
+                                      SizedBox(height: 40),
+
+                                      // Sign Up Button
+                                      SlideTransition(
+                                        position: _slideAnimation,
+                                        child: Container(
+                                          width: size.width * 0.8,
+                                          child: ElevatedButton(
+                                            onPressed: signUp,
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  FrutiaColors.primary,
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 16),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              elevation: 8,
+                                            ),
+                                            child: Text(
+                                              "Create your account",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-  
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),

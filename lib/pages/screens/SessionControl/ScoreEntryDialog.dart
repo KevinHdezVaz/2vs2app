@@ -1,6 +1,6 @@
 // lib/pages/screens/sessionControl/widgets/ScoreEntryDialog.dart
 import 'package:Frutia/services/2vs2/SessionService.dart';
- import 'package:Frutia/utils/colors.dart';
+import 'package:Frutia/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,47 +27,47 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
   // Controllers para Best of 1
   final _team1Controller = TextEditingController();
   final _team2Controller = TextEditingController();
-  
+
   // Controllers para Best of 3 - Set 1
   final _team1Set1Controller = TextEditingController();
   final _team2Set1Controller = TextEditingController();
-  
+
   // Controllers para Best of 3 - Set 2
   final _team1Set2Controller = TextEditingController();
   final _team2Set2Controller = TextEditingController();
-  
+
   // Controllers para Best of 3 - Set 3 (solo si hay empate)
   final _team1Set3Controller = TextEditingController();
   final _team2Set3Controller = TextEditingController();
-  
+
   bool _isSubmitting = false;
   String? _errorMessage;
-  
-  // ✅ NUEVO: Variable para habilitar Set 3
   bool _enableSet3 = false;
 
   @override
   void initState() {
     super.initState();
     if (widget.isEditing) {
-      // Si está editando, cargar scores existentes
       if (_isBestOf3()) {
-        _team1Set1Controller.text = widget.game['team1_set1_score']?.toString() ?? '';
-        _team2Set1Controller.text = widget.game['team2_set1_score']?.toString() ?? '';
-        _team1Set2Controller.text = widget.game['team1_set2_score']?.toString() ?? '';
-        _team2Set2Controller.text = widget.game['team2_set2_score']?.toString() ?? '';
-        _team1Set3Controller.text = widget.game['team1_set3_score']?.toString() ?? '';
-        _team2Set3Controller.text = widget.game['team2_set3_score']?.toString() ?? '';
-        
-        // Verificar si debe habilitar Set 3
+        _team1Set1Controller.text =
+            widget.game['team1_set1_score']?.toString() ?? '';
+        _team2Set1Controller.text =
+            widget.game['team2_set1_score']?.toString() ?? '';
+        _team1Set2Controller.text =
+            widget.game['team1_set2_score']?.toString() ?? '';
+        _team2Set2Controller.text =
+            widget.game['team2_set2_score']?.toString() ?? '';
+        _team1Set3Controller.text =
+            widget.game['team1_set3_score']?.toString() ?? '';
+        _team2Set3Controller.text =
+            widget.game['team2_set3_score']?.toString() ?? '';
         _checkIfSet3Needed();
       } else {
         _team1Controller.text = widget.game['team1_score']?.toString() ?? '';
         _team2Controller.text = widget.game['team2_score']?.toString() ?? '';
       }
     }
-    
-    // Agregar listeners para detectar cuándo activar Set 3
+
     if (_isBestOf3()) {
       _team1Set1Controller.addListener(_checkIfSet3Needed);
       _team2Set1Controller.addListener(_checkIfSet3Needed);
@@ -89,48 +89,46 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     super.dispose();
   }
 
-  // ✅ NUEVO: Verificar si es Best of 3
   bool _isBestOf3() {
     return widget.session['number_of_sets'].toString() == '3';
   }
 
-  // ✅ NUEVO: Verificar si se necesita habilitar el Set 3
   void _checkIfSet3Needed() {
     if (!_isBestOf3()) return;
-    
+
     final set1Team1 = int.tryParse(_team1Set1Controller.text);
     final set1Team2 = int.tryParse(_team2Set1Controller.text);
     final set2Team1 = int.tryParse(_team1Set2Controller.text);
     final set2Team2 = int.tryParse(_team2Set2Controller.text);
-    
-    if (set1Team1 == null || set1Team2 == null || 
-        set2Team1 == null || set2Team2 == null) {
+
+    if (set1Team1 == null ||
+        set1Team2 == null ||
+        set2Team1 == null ||
+        set2Team2 == null) {
       setState(() {
         _enableSet3 = false;
       });
       return;
     }
-    
-    // Validar que ambos sets sean válidos primero
-    if (!_isSetValid(set1Team1, set1Team2) || 
+
+    if (!_isSetValid(set1Team1, set1Team2) ||
         !_isSetValid(set2Team1, set2Team2)) {
       setState(() {
         _enableSet3 = false;
       });
       return;
     }
-    
-    // Contar sets ganados
-    final team1Sets = (set1Team1 > set1Team2 ? 1 : 0) + (set2Team1 > set2Team2 ? 1 : 0);
-    final team2Sets = (set1Team2 > set1Team1 ? 1 : 0) + (set2Team2 > set2Team1 ? 1 : 0);
-    
-    // Habilitar Set 3 solo si hay empate 1-1
+
+    final team1Sets =
+        (set1Team1 > set1Team2 ? 1 : 0) + (set2Team1 > set2Team2 ? 1 : 0);
+    final team2Sets =
+        (set1Team2 > set1Team1 ? 1 : 0) + (set2Team2 > set2Team1 ? 1 : 0);
+
     setState(() {
       _enableSet3 = (team1Sets == 1 && team2Sets == 1);
     });
   }
 
-  // ✅ NUEVO: Validación principal que decide entre Best of 1 o Best of 3
   bool _isScoreValid() {
     if (_isBestOf3()) {
       return _isScoreValidBestOf3();
@@ -139,7 +137,6 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     }
   }
 
-  // Validación para Best of 1 (lógica original)
   bool _isScoreValidBestOf1() {
     if (_team1Controller.text.isEmpty || _team2Controller.text.isEmpty) {
       return false;
@@ -155,7 +152,6 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     final pointsPerGame = widget.session['points_per_game'] as int;
     final winBy = widget.session['win_by'] as int;
 
-    // ✅ No empates
     if (team1Score == team2Score) {
       setState(() {
         _errorMessage = 'Ties are not allowed';
@@ -167,69 +163,65 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     final loserScore = team1Score > team2Score ? team2Score : team1Score;
     final scoreDiff = winnerScore - loserScore;
 
-    // ✅ VALIDACIÓN PARA "WIN BY 2"
-// ✅ VALIDACIÓN PARA "WIN BY 2"
-if (winBy == 2) {
-  if (winnerScore == pointsPerGame) {
-    if (loserScore > pointsPerGame - 2) {
-      setState(() {
-        _errorMessage = 'With winner at $pointsPerGame, loser cannot have more than ${pointsPerGame - 2} points';
-      });
-      return false;
+    if (winBy == 2) {
+      if (winnerScore == pointsPerGame) {
+        if (loserScore > pointsPerGame - 2) {
+          setState(() {
+            _errorMessage =
+                'With winner at $pointsPerGame, loser cannot have more than ${pointsPerGame - 2} points';
+          });
+          return false;
+        }
+      } else if (winnerScore > pointsPerGame) {
+        if (loserScore < pointsPerGame - 1) {
+          setState(() {
+            _errorMessage =
+                'With winner above $pointsPerGame, loser must have at least ${pointsPerGame - 1} points';
+          });
+          return false;
+        }
+
+        if (scoreDiff != 2) {
+          setState(() {
+            _errorMessage =
+                'With scores above $pointsPerGame, must win by exactly 2 points';
+          });
+          return false;
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'Winner must have at least $pointsPerGame points';
+        });
+        return false;
+      }
     }
-  }
-  else if (winnerScore > pointsPerGame) {
-    if (loserScore < pointsPerGame - 1) {
-      setState(() {
-        _errorMessage = 'With winner above $pointsPerGame, loser must have at least ${pointsPerGame - 1} points';
-      });
-      return false;
+
+    if (winBy == 1) {
+      // Con win by 1, el partido termina cuando alguien llega a pointsPerGame
+      // No puede haber extensión más allá del puntaje objetivo
+      if (winnerScore > pointsPerGame) {
+        setState(() {
+          _errorMessage =
+              'With win by 1, maximum score is $pointsPerGame points (no overtime)';
+        });
+        return false;
+      }
+
+      if (winnerScore < pointsPerGame) {
+        setState(() {
+          _errorMessage = 'Winner must have at least $pointsPerGame points';
+        });
+        return false;
+      }
+
+      // Si el ganador tiene exactamente pointsPerGame, solo necesita ganar por 1
+      if (scoreDiff < 1) {
+        setState(() {
+          _errorMessage = 'Must win by at least 1 point';
+        });
+        return false;
+      }
     }
-    
-    if (scoreDiff != 2) {
-      setState(() {
-        _errorMessage = 'With scores above $pointsPerGame, must win by exactly 2 points';
-      });
-      return false;
-    }
-    
-    // ❌ ELIMINADO: Límite máximo de pointsPerGame + 10
-    // Ya no restringimos el puntaje máximo
-  }
-  else {
-    setState(() {
-      _errorMessage = 'Winner must have at least $pointsPerGame points';
-    });
-    return false;
-  }
-}
-    // ✅ VALIDACIÓN PARA "WIN BY 1"
-  // ✅ VALIDACIÓN PARA "WIN BY 1"
-if (winBy == 1) {
-  if (winnerScore < pointsPerGame) {
-    setState(() {
-      _errorMessage = 'Winner must have at least $pointsPerGame points';
-    });
-    return false;
-  }
-  
-  if (scoreDiff < 1) {
-    setState(() {
-      _errorMessage = 'Must win by at least 1 point';
-    });
-    return false;
-  }
-  
-  if (winnerScore == pointsPerGame && loserScore >= pointsPerGame) {
-    setState(() {
-      _errorMessage = 'With winner at $pointsPerGame, loser cannot have $pointsPerGame or more points';
-    });
-    return false;
-  }
-  
-  // ❌ ELIMINADO: Límite máximo de pointsPerGame + 10
-  // Ya no restringimos el puntaje máximo
-}
 
     setState(() {
       _errorMessage = null;
@@ -237,11 +229,11 @@ if (winBy == 1) {
     return true;
   }
 
-  // ✅ NUEVO: Validación para Best of 3
   bool _isScoreValidBestOf3() {
-    // Validar que Set 1 y Set 2 tengan valores
-    if (_team1Set1Controller.text.isEmpty || _team2Set1Controller.text.isEmpty ||
-        _team1Set2Controller.text.isEmpty || _team2Set2Controller.text.isEmpty) {
+    if (_team1Set1Controller.text.isEmpty ||
+        _team2Set1Controller.text.isEmpty ||
+        _team1Set2Controller.text.isEmpty ||
+        _team2Set2Controller.text.isEmpty) {
       setState(() {
         _errorMessage = 'Sets 1 and 2 are required';
       });
@@ -253,15 +245,16 @@ if (winBy == 1) {
     final set2Team1 = int.tryParse(_team1Set2Controller.text);
     final set2Team2 = int.tryParse(_team2Set2Controller.text);
 
-    if (set1Team1 == null || set1Team2 == null || 
-        set2Team1 == null || set2Team2 == null) {
+    if (set1Team1 == null ||
+        set1Team2 == null ||
+        set2Team1 == null ||
+        set2Team2 == null) {
       setState(() {
         _errorMessage = 'Invalid scores in Sets 1 or 2';
       });
       return false;
     }
 
-    // Validar cada set individualmente
     if (!_isSetValid(set1Team1, set1Team2)) {
       setState(() {
         _errorMessage = 'Set 1 has invalid scores';
@@ -276,7 +269,6 @@ if (winBy == 1) {
       return false;
     }
 
-    // Contar sets ganados
     int team1SetsWon = 0;
     int team2SetsWon = 0;
 
@@ -292,9 +284,9 @@ if (winBy == 1) {
       team2SetsWon++;
     }
 
-    // Si hay empate 1-1, DEBE haber Set 3
     if (team1SetsWon == 1 && team2SetsWon == 1) {
-      if (_team1Set3Controller.text.isEmpty || _team2Set3Controller.text.isEmpty) {
+      if (_team1Set3Controller.text.isEmpty ||
+          _team2Set3Controller.text.isEmpty) {
         setState(() {
           _errorMessage = 'Set 3 is required (tied 1-1)';
         });
@@ -318,7 +310,6 @@ if (winBy == 1) {
         return false;
       }
 
-      // Actualizar contador de sets con Set 3
       if (set3Team1 > set3Team2) {
         team1SetsWon++;
       } else {
@@ -326,7 +317,6 @@ if (winBy == 1) {
       }
     }
 
-    // Verificar que alguien haya ganado 2 sets
     if (team1SetsWon != 2 && team2SetsWon != 2) {
       setState(() {
         _errorMessage = 'One team must win 2 sets';
@@ -340,167 +330,271 @@ if (winBy == 1) {
     return true;
   }
 
-  // ✅ NUEVO: Validar un set individual (misma lógica que Best of 1)
+  bool _isSetValid(int score1, int score2) {
+    final pointsPerGame = widget.session['points_per_game'] as int;
+    final winBy = widget.session['win_by'] as int;
 
-// ✅ NUEVO: Validar un set individual (misma lógica que Best of 1)
-bool _isSetValid(int score1, int score2) {
-  final pointsPerGame = widget.session['points_per_game'] as int;
-  final winBy = widget.session['win_by'] as int;
-
-  if (score1 == score2) {
-    return false;
-  }
-
-  final winnerScore = score1 > score2 ? score1 : score2;
-  final loserScore = score1 > score2 ? score2 : score1;
-  final scoreDiff = winnerScore - loserScore;
-
-  if (winBy == 2) {
-    if (winnerScore == pointsPerGame) {
-      if (loserScore > pointsPerGame - 2) {
-        return false;
-      }
-    } else if (winnerScore > pointsPerGame) {
-      if (loserScore < pointsPerGame - 1) {
-        return false;
-      }
-      if (scoreDiff != 2) {
-        return false;
-      }
-      // ❌ ELIMINADO: Límite máximo
-    } else {
+    if (score1 == score2) {
       return false;
     }
-  }
 
-  if (winBy == 1) {
-    if (winnerScore < pointsPerGame) {
-      return false;
-    }
-    if (scoreDiff < 1) {
-      return false;
-    }
-    if (winnerScore == pointsPerGame && loserScore >= pointsPerGame) {
-      return false;
-    }
-    // ❌ ELIMINADO: Límite máximo
-  }
+    final winnerScore = score1 > score2 ? score1 : score2;
+    final loserScore = score1 > score2 ? score2 : score1;
+    final scoreDiff = winnerScore - loserScore;
 
-  return true;
-}
-
- Future<void> _submitScore() async {
-  if (!_isScoreValid()) return;
-
-  setState(() {
-    _isSubmitting = true;
-  });
-
-  try {
-    if (_isBestOf3()) {
-      await _submitBestOf3Score();
-    } else {
-      await _submitBestOf1Score();
-    }
-
-    if (!mounted) return;
-
-    // ✅ NUEVO: Intentar auto-generar finals si están listas
-    try {
-      final sessionId = widget.session['id'];
-      final autoGenResult = await SessionService.autoGenerateFinalsIfReady(sessionId);
-      
-      if (autoGenResult['auto_generated'] == true) {
-        // ✅ Finals generadas automáticamente
-        final message = autoGenResult['message'] ?? 'Finals created!';
-        
-        print('🎉 Finals auto-generated: $message');
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Icon(Icons.auto_awesome, color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      message,
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        color: Colors.white, // ← TEXTO BLANCO
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: FrutiaColors.success, // ← COLOR DE ÉXITO CONSISTENTE
-              duration: const Duration(seconds: 4),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+    if (winBy == 2) {
+      if (winnerScore == pointsPerGame) {
+        if (loserScore > pointsPerGame - 2) {
+          return false;
+        }
+      } else if (winnerScore > pointsPerGame) {
+        if (loserScore < pointsPerGame - 1) {
+          return false;
+        }
+        if (scoreDiff != 2) {
+          return false;
         }
       } else {
-        // No se generaron finals (normal)
-        print('ℹ️  No finals auto-generated');
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                widget.isEditing ? 'Score updated successfully' : 'Score registered successfully!',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: Colors.white, // ← TEXTO BLANCO
-                ),
-              ),
-              backgroundColor: FrutiaColors.success, // ← COLOR DE ÉXITO CONSISTENTE
-              duration: const Duration(seconds: 3),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
+        return false;
       }
-    } catch (e) {
-      print('⚠️  Error checking auto-generation: $e');
-      
-      // Mostrar mensaje normal si falla la auto-generación
+    }
+
+    if (winBy == 1) {
+      // Con win by 1, el partido termina cuando alguien llega a pointsPerGame
+      // No puede haber extensión más allá del puntaje objetivo
+      if (winnerScore > pointsPerGame) {
+        return false;
+      }
+
+      if (winnerScore < pointsPerGame) {
+        return false;
+      }
+
+      // Si el ganador tiene exactamente pointsPerGame, solo necesita ganar por 1
+      if (scoreDiff < 1) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  int _calculateSetsWon(bool isTeam1) {
+    final set1Team1 = int.tryParse(_team1Set1Controller.text) ?? 0;
+    final set1Team2 = int.tryParse(_team2Set1Controller.text) ?? 0;
+    final set2Team1 = int.tryParse(_team1Set2Controller.text) ?? 0;
+    final set2Team2 = int.tryParse(_team2Set2Controller.text) ?? 0;
+    final set3Team1 = int.tryParse(_team1Set3Controller.text) ?? 0;
+    final set3Team2 = int.tryParse(_team2Set3Controller.text) ?? 0;
+
+    int setsWon = 0;
+
+    if (isTeam1) {
+      if (set1Team1 > set1Team2) setsWon++;
+      if (set2Team1 > set2Team2) setsWon++;
+      if (_enableSet3 && set3Team1 > set3Team2) setsWon++;
+    } else {
+      if (set1Team2 > set1Team1) setsWon++;
+      if (set2Team2 > set2Team1) setsWon++;
+      if (_enableSet3 && set3Team2 > set3Team1) setsWon++;
+    }
+
+    return setsWon;
+  }
+
+  int _getTotalScore(bool isTeam1) {
+    final set1 = int.tryParse(
+            isTeam1 ? _team1Set1Controller.text : _team2Set1Controller.text) ??
+        0;
+    final set2 = int.tryParse(
+            isTeam1 ? _team1Set2Controller.text : _team2Set2Controller.text) ??
+        0;
+    final set3 = int.tryParse(
+            isTeam1 ? _team1Set3Controller.text : _team2Set3Controller.text) ??
+        0;
+
+    return set1 + set2 + set3;
+  }
+
+  Future<void> _submitScore() async {
+    if (!_isScoreValid()) {
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      // ✅ Si es EDICIÓN, usar flujo con recalculación
+      if (widget.isEditing) {
+        await _handleScoreEditWithRecalculation();
+        return;
+      }
+
+      // ✅ FLUJO NORMAL: Submit nuevo (sin edición)
+      if (_isBestOf3()) {
+        await _submitBestOf3Score();
+      } else {
+        await _submitBestOf1Score();
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              widget.isEditing ? 'Score updated successfully' : 'Score registered successfully!',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: Colors.white, // ← TEXTO BLANCO
-              ),
+              'Score recorded successfully!',
+              style: TextStyle(fontSize: 17),
             ),
-            backgroundColor: FrutiaColors.success, // ← COLOR DE ÉXITO CONSISTENTE
-            duration: const Duration(seconds: 3),
+            backgroundColor: FrutiaColors.success,
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
-    }
 
-    // Callback to refresh
-    widget.onScoreSubmitted();
+      widget.onScoreSubmitted();
 
-    // Close dialog
-    if (mounted) {
-      Navigator.pop(context);
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error: ${e.toString().replaceAll('Exception: ', '')}',
+              style: TextStyle(fontSize: 17),
+            ),
+            backgroundColor: FrutiaColors.error,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
     }
-  } catch (e) {
-    print('[ScoreEntryDialog] Error: $e');
-    setState(() {
-      _isSubmitting = false;
-      _errorMessage = 'Error ${widget.isEditing ? 'updating' : 'registering'}: ${e.toString()}';
-    });
   }
-}
 
+  // ✅ MÉTODO: Manejar edición con recalculación completa
+  Future<void> _handleScoreEditWithRecalculation() async {
+    // Mostrar loading especial
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => WillPopScope(
+        onWillPop: () async => false,
+        child: AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text(
+                'Recalculating all ratings...',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'This may take a moment',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
 
-  // Submit para Best of 1 (lógica original)
+    try {
+      Map<String, dynamic> result;
+
+      if (_isBestOf3()) {
+        result = await SessionService.updateScoreBestOf3WithRecalculation(
+          gameId: widget.game['id'],
+          team1TotalScore: _getTotalScore(true),
+          team2TotalScore: _getTotalScore(false),
+          team1Set1Score: int.parse(_team1Set1Controller.text),
+          team2Set1Score: int.parse(_team2Set1Controller.text),
+          team1Set2Score: int.parse(_team1Set2Controller.text),
+          team2Set2Score: int.parse(_team2Set2Controller.text),
+          team1Set3Score: _team1Set3Controller.text.isNotEmpty
+              ? int.parse(_team1Set3Controller.text)
+              : null,
+          team2Set3Score: _team2Set3Controller.text.isNotEmpty
+              ? int.parse(_team2Set3Controller.text)
+              : null,
+          team1SetsWon: _calculateSetsWon(true),
+          team2SetsWon: _calculateSetsWon(false),
+        );
+      } else {
+        result = await SessionService.updateScoreWithRecalculation(
+          gameId: widget.game['id'],
+          team1Score: int.parse(_team1Controller.text),
+          team2Score: int.parse(_team2Controller.text),
+        );
+      }
+
+      // Cerrar loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      if (result['success']) {
+        if (mounted) {
+          final gamesRecalculated = result['games_recalculated'] ?? 0;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Score updated! Rankings recalculated',
+                style: TextStyle(fontSize: 17),
+              ),
+              backgroundColor: FrutiaColors.success,
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+
+        widget.onScoreSubmitted();
+        if (mounted) Navigator.of(context).pop();
+      } else {
+        throw Exception(result['error'] ?? 'Unknown error');
+      }
+    } catch (e) {
+      // Cerrar loading dialog si está abierto
+      if (mounted) {
+        try {
+          Navigator.of(context).pop();
+        } catch (_) {}
+      }
+
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error: ${e.toString().replaceAll('Exception: ', '')}',
+              style: TextStyle(fontSize: 17),
+            ),
+            backgroundColor: FrutiaColors.error,
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _submitBestOf1Score() async {
     final team1Score = int.parse(_team1Controller.text);
     final team2Score = int.parse(_team2Controller.text);
@@ -520,36 +614,27 @@ bool _isSetValid(int score1, int score2) {
     }
   }
 
-  // ✅ NUEVO: Submit para Best of 3
   Future<void> _submitBestOf3Score() async {
     final set1Team1 = int.parse(_team1Set1Controller.text);
     final set1Team2 = int.parse(_team2Set1Controller.text);
     final set2Team1 = int.parse(_team1Set2Controller.text);
     final set2Team2 = int.parse(_team2Set2Controller.text);
-    
+
     int? set3Team1;
     int? set3Team2;
-    
-    if (_enableSet3 && 
-        _team1Set3Controller.text.isNotEmpty && 
+
+    if (_enableSet3 &&
+        _team1Set3Controller.text.isNotEmpty &&
         _team2Set3Controller.text.isNotEmpty) {
       set3Team1 = int.parse(_team1Set3Controller.text);
       set3Team2 = int.parse(_team2Set3Controller.text);
     }
 
-    // Calcular totales
     int team1Total = set1Team1 + set2Team1 + (set3Team1 ?? 0);
     int team2Total = set1Team2 + set2Team2 + (set3Team2 ?? 0);
 
-    // Calcular sets ganados
-    int team1SetsWon = 0;
-    int team2SetsWon = 0;
-    
-    if (set1Team1 > set1Team2) team1SetsWon++; else team2SetsWon++;
-    if (set2Team1 > set2Team2) team1SetsWon++; else team2SetsWon++;
-    if (set3Team1 != null && set3Team2 != null) {
-      if (set3Team1 > set3Team2) team1SetsWon++; else team2SetsWon++;
-    }
+    int team1SetsWon = _calculateSetsWon(true);
+    int team2SetsWon = _calculateSetsWon(false);
 
     if (widget.isEditing) {
       await SessionService.updateScoreBestOf3(
@@ -582,7 +667,6 @@ bool _isSetValid(int score1, int score2) {
     }
   }
 
-  // ✅ NUEVO: Build para una fila de set (2 cajas de input)
   Widget _buildSetRow({
     required String setLabel,
     required TextEditingController team1Controller,
@@ -593,7 +677,6 @@ bool _isSetValid(int score1, int score2) {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          // Label del set
           SizedBox(
             width: 50,
             child: Text(
@@ -601,14 +684,13 @@ bool _isSetValid(int score1, int score2) {
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: enabled ? FrutiaColors.primaryText : FrutiaColors.disabledText,
+                color: enabled
+                    ? FrutiaColors.primaryText
+                    : FrutiaColors.disabledText,
               ),
             ),
           ),
-          
           const SizedBox(width: 8),
-          
-          // Input Team 1
           Expanded(
             child: TextField(
               controller: team1Controller,
@@ -618,7 +700,9 @@ bool _isSetValid(int score1, int score2) {
               style: GoogleFonts.robotoMono(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: enabled ? FrutiaColors.primaryText : FrutiaColors.disabledText,
+                color: enabled
+                    ? FrutiaColors.primaryText
+                    : FrutiaColors.disabledText,
               ),
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
@@ -629,15 +713,18 @@ bool _isSetValid(int score1, int score2) {
                 hintStyle: TextStyle(color: FrutiaColors.disabledText),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: FrutiaColors.tertiaryBackground),
+                  borderSide:
+                      BorderSide(color: FrutiaColors.tertiaryBackground),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: FrutiaColors.tertiaryBackground),
+                  borderSide:
+                      BorderSide(color: FrutiaColors.tertiaryBackground),
                 ),
                 disabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: FrutiaColors.tertiaryBackground.withOpacity(0.3)),
+                  borderSide: BorderSide(
+                      color: FrutiaColors.tertiaryBackground.withOpacity(0.3)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -645,16 +732,13 @@ bool _isSetValid(int score1, int score2) {
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 filled: true,
-                fillColor: enabled 
-                    ? FrutiaColors.primaryBackground 
+                fillColor: enabled
+                    ? FrutiaColors.primaryBackground
                     : FrutiaColors.tertiaryBackground.withOpacity(0.3),
               ),
             ),
           ),
-          
           const SizedBox(width: 8),
-          
-          // VS divider
           Text(
             'vs',
             style: GoogleFonts.poppins(
@@ -662,10 +746,7 @@ bool _isSetValid(int score1, int score2) {
               color: FrutiaColors.disabledText,
             ),
           ),
-          
           const SizedBox(width: 8),
-          
-          // Input Team 2
           Expanded(
             child: TextField(
               controller: team2Controller,
@@ -675,7 +756,9 @@ bool _isSetValid(int score1, int score2) {
               style: GoogleFonts.robotoMono(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: enabled ? FrutiaColors.primaryText : FrutiaColors.disabledText,
+                color: enabled
+                    ? FrutiaColors.primaryText
+                    : FrutiaColors.disabledText,
               ),
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
@@ -686,15 +769,18 @@ bool _isSetValid(int score1, int score2) {
                 hintStyle: TextStyle(color: FrutiaColors.disabledText),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: FrutiaColors.tertiaryBackground),
+                  borderSide:
+                      BorderSide(color: FrutiaColors.tertiaryBackground),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: FrutiaColors.tertiaryBackground),
+                  borderSide:
+                      BorderSide(color: FrutiaColors.tertiaryBackground),
                 ),
                 disabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: FrutiaColors.tertiaryBackground.withOpacity(0.3)),
+                  borderSide: BorderSide(
+                      color: FrutiaColors.tertiaryBackground.withOpacity(0.3)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -702,8 +788,8 @@ bool _isSetValid(int score1, int score2) {
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 filled: true,
-                fillColor: enabled 
-                    ? FrutiaColors.primaryBackground 
+                fillColor: enabled
+                    ? FrutiaColors.primaryBackground
                     : FrutiaColors.tertiaryBackground.withOpacity(0.3),
               ),
             ),
@@ -713,7 +799,6 @@ bool _isSetValid(int score1, int score2) {
     );
   }
 
-  // Método original para Best of 1
   Widget _buildTeamRow({
     required String player1Name,
     required String player2Name,
@@ -772,11 +857,13 @@ bool _isSetValid(int score1, int score2) {
                 hintStyle: TextStyle(color: FrutiaColors.disabledText),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: FrutiaColors.tertiaryBackground),
+                  borderSide:
+                      BorderSide(color: FrutiaColors.tertiaryBackground),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: FrutiaColors.tertiaryBackground),
+                  borderSide:
+                      BorderSide(color: FrutiaColors.tertiaryBackground),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -811,7 +898,6 @@ bool _isSetValid(int score1, int score2) {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Title
               Text(
                 widget.isEditing ? 'Edit Score' : 'Submit Score',
                 style: GoogleFonts.poppins(
@@ -830,17 +916,13 @@ bool _isSetValid(int score1, int score2) {
                 ),
               ),
               const SizedBox(height: 18),
-
-              // ✅ CONDICIONAL: Mostrar UI según Best of 1 o Best of 3
               if (_isBestOf3()) ...[
-                // UI para Best of 3
-                _buildBestOf3UI(team1Player1, team1Player2, team2Player1, team2Player2),
+                _buildBestOf3UI(
+                    team1Player1, team1Player2, team2Player1, team2Player2),
               ] else ...[
-                // UI para Best of 1 (original)
-                _buildBestOf1UI(team1Player1, team1Player2, team2Player1, team2Player2),
+                _buildBestOf1UI(
+                    team1Player1, team1Player2, team2Player1, team2Player2),
               ],
-
-              // Error message
               if (_errorMessage != null) ...[
                 const SizedBox(height: 14),
                 Container(
@@ -871,18 +953,17 @@ bool _isSetValid(int score1, int score2) {
                   ),
                 ),
               ],
-
               const SizedBox(height: 20),
-
-              // Buttons
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+                      onPressed:
+                          _isSubmitting ? null : () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(color: FrutiaColors.tertiaryBackground),
+                        side:
+                            BorderSide(color: FrutiaColors.tertiaryBackground),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -902,7 +983,8 @@ bool _isSetValid(int score1, int score2) {
                       onPressed: !_isSubmitting ? _submitScore : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: FrutiaColors.primary,
-                        disabledBackgroundColor: FrutiaColors.tertiaryBackground,
+                        disabledBackgroundColor:
+                            FrutiaColors.tertiaryBackground,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -914,7 +996,8 @@ bool _isSetValid(int score1, int score2) {
                               width: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : Text(
@@ -935,7 +1018,6 @@ bool _isSetValid(int score1, int score2) {
     );
   }
 
-  // ✅ NUEVO: UI para Best of 3
   Widget _buildBestOf3UI(
     Map<String, dynamic> team1Player1,
     Map<String, dynamic> team1Player2,
@@ -945,10 +1027,9 @@ bool _isSetValid(int score1, int score2) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Team names header
         Row(
           children: [
-            const SizedBox(width: 50), // Space for set label
+            const SizedBox(width: 50),
             const SizedBox(width: 8),
             Expanded(
               child: Container(
@@ -1009,33 +1090,25 @@ bool _isSetValid(int score1, int score2) {
             ),
           ],
         ),
-        
         const SizedBox(height: 16),
-
-        // Set 1
         _buildSetRow(
           setLabel: 'Set 1',
           team1Controller: _team1Set1Controller,
           team2Controller: _team2Set1Controller,
           enabled: true,
         ),
-
-        // Set 2
         _buildSetRow(
           setLabel: 'Set 2',
           team1Controller: _team1Set2Controller,
           team2Controller: _team2Set2Controller,
           enabled: true,
         ),
-
-        // Set 3 (solo si hay empate)
         _buildSetRow(
           setLabel: 'Set 3',
           team1Controller: _team1Set3Controller,
           team2Controller: _team2Set3Controller,
           enabled: _enableSet3,
         ),
-        
         if (_enableSet3) ...[
           const SizedBox(height: 8),
           Container(
@@ -1065,7 +1138,6 @@ bool _isSetValid(int score1, int score2) {
     );
   }
 
-  // UI para Best of 1 (original)
   Widget _buildBestOf1UI(
     Map<String, dynamic> team1Player1,
     Map<String, dynamic> team1Player2,
@@ -1075,8 +1147,10 @@ bool _isSetValid(int score1, int score2) {
     return Column(
       children: [
         _buildTeamRow(
-          player1Name: '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
-          player2Name: '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
+          player1Name:
+              '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
+          player2Name:
+              '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
           controller: _team1Controller,
           backgroundColor: FrutiaColors.accentLight,
         ),
@@ -1091,8 +1165,10 @@ bool _isSetValid(int score1, int score2) {
         ),
         const SizedBox(height: 12),
         _buildTeamRow(
-          player1Name: '${team2Player1['first_name']} ${team2Player1['last_initial']}.',
-          player2Name: '${team2Player2['first_name']} ${team2Player2['last_initial']}.',
+          player1Name:
+              '${team2Player1['first_name']} ${team2Player1['last_initial']}.',
+          player2Name:
+              '${team2Player2['first_name']} ${team2Player2['last_initial']}.',
           controller: _team2Controller,
           backgroundColor: FrutiaColors.secondaryBackground,
         ),
