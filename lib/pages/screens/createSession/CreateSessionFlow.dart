@@ -95,7 +95,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                       height: 4,
                       decoration: BoxDecoration(
                         color: i <= _currentPage
-                            ? FrutiaColors.accent
+                            ? FrutiaColors.ElectricLime
                             : Colors.grey[300],
                         borderRadius: BorderRadius.circular(2),
                       ),
@@ -313,8 +313,9 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                 ),
               ],
             ),
-            backgroundColor: FrutiaColors.success,
+            backgroundColor: FrutiaColors.ElectricLime,
             duration: Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating, // Add floating behavior
           ),
         );
       } else {
@@ -339,9 +340,10 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Session started successfully!',
-                style: TextStyle(fontSize: 17)),
-            backgroundColor: Colors.green,
+                style: TextStyle(fontSize: 17, color: FrutiaColors.primary)),
+            backgroundColor: FrutiaColors.ElectricLime,
             duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
           ),
         );
 
@@ -409,9 +411,13 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $errorMessage'),
-            backgroundColor: FrutiaColors.error,
+            content: Text(
+              'Error: $errorMessage',
+              style: TextStyle(color: FrutiaColors.primary),
+            ),
+            backgroundColor: FrutiaColors.ElectricLime,
             duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -539,7 +545,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(context, true),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: FrutiaColors.primary,
+                        backgroundColor: FrutiaColors.ElectricLime,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -550,7 +556,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: FrutiaColors.primary,
                         ),
                       ),
                     ),

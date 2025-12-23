@@ -21,14 +21,16 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _nameController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
-  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-  
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
   bool _isLoading = false;
   bool _changePassword = false;
   bool _obscureCurrentPassword = true;
@@ -63,20 +65,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       await UserService.updateProfile(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
-        phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
-        currentPassword: _changePassword ? _currentPasswordController.text : null,
+        phone: _phoneController.text.trim().isEmpty
+            ? null
+            : _phoneController.text.trim(),
+        currentPassword:
+            _changePassword ? _currentPasswordController.text : null,
         newPassword: _changePassword ? _newPasswordController.text : null,
-        newPasswordConfirmation: _changePassword ? _confirmPasswordController.text : null,
+        newPasswordConfirmation:
+            _changePassword ? _confirmPasswordController.text : null,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Profile updated successfully!'),
-            backgroundColor: FrutiaColors.success,
+            content: Text(
+              'Profile updated successfully!',
+              style: TextStyle(color: FrutiaColors.primary),
+            ),
+            backgroundColor: FrutiaColors.ElectricLime,
+            behavior: SnackBarBehavior.floating,
           ),
         );
-        
+
         // Regresar con señal de recarga
         Navigator.pop(context, true);
       }
@@ -84,8 +94,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: FrutiaColors.error,
+            content: Text(
+              e.toString().replaceAll('Exception: ', ''),
+              style: TextStyle(color: FrutiaColors.primary),
+            ),
+            backgroundColor: FrutiaColors.ElectricLime,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -161,7 +175,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 24),
 
             // Change Password Switch
-            
 
             // Password fields (if enabled)
             if (_changePassword) ...[
@@ -170,7 +183,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 controller: _currentPasswordController,
                 label: 'Current Password',
                 obscureText: _obscureCurrentPassword,
-                onToggle: () => setState(() => _obscureCurrentPassword = !_obscureCurrentPassword),
+                onToggle: () => setState(
+                    () => _obscureCurrentPassword = !_obscureCurrentPassword),
                 validator: (value) {
                   if (_changePassword && (value == null || value.isEmpty)) {
                     return 'Current password is required';
@@ -183,7 +197,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 controller: _newPasswordController,
                 label: 'New Password',
                 obscureText: _obscureNewPassword,
-                onToggle: () => setState(() => _obscureNewPassword = !_obscureNewPassword),
+                onToggle: () =>
+                    setState(() => _obscureNewPassword = !_obscureNewPassword),
                 validator: (value) {
                   if (_changePassword && (value == null || value.isEmpty)) {
                     return 'New password is required';
@@ -199,7 +214,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 controller: _confirmPasswordController,
                 label: 'Confirm New Password',
                 obscureText: _obscureConfirmPassword,
-                onToggle: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                onToggle: () => setState(
+                    () => _obscureConfirmPassword = !_obscureConfirmPassword),
                 validator: (value) {
                   if (_changePassword && value != _newPasswordController.text) {
                     return 'Passwords do not match';
@@ -216,8 +232,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               onPressed: _isLoading ? null : _saveChanges,
               style: ElevatedButton.styleFrom(
                 backgroundColor: FrutiaColors.primary,
-                
-                padding: const EdgeInsets.symmetric(vertical: 16,),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

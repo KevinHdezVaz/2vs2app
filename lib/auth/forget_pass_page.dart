@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'package:Frutia/utils/constantes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:Frutia/utils/constantes.dart';
+import 'package:Frutia/utils/colors.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -28,11 +29,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text("Password reset link sent successfully!"),
+            content: Text(
+              "Password reset link sent successfully!",
+              style: TextStyle(color: FrutiaColors.primary),
+            ),
             duration: const Duration(seconds: 3),
-            backgroundColor: Colors.green[400],
+            backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       } else {
@@ -41,11 +46,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(
+            e.toString(),
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
           duration: const Duration(seconds: 3),
-          backgroundColor: Colors.red[400],
+          backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     } finally {
@@ -122,7 +131,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         width: 1.5,
                       ),
                     ),
-                    prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey),
+                    prefixIcon:
+                        const Icon(Icons.email_outlined, color: Colors.grey),
                   ),
                 ),
                 const SizedBox(height: 32),

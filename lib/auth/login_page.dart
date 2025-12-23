@@ -110,7 +110,14 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       if (!mounted) return;
       Navigator.of(context).pop(); // cerrar loading
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message), backgroundColor: FrutiaColors.error),
+        SnackBar(
+          content: Text(
+            e.message,
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     } catch (e) {
       print('Generic error: $e');
@@ -118,7 +125,13 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       Navigator.of(context).pop(); // cerrar loading
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('Error: $e'), backgroundColor: FrutiaColors.error),
+          content: Text(
+            'Error: $e',
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
@@ -285,9 +298,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       SnackBar(
         content: Text(
           message,
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: FrutiaColors.primary),
         ),
-        backgroundColor: FrutiaColors.error,
+        backgroundColor: FrutiaColors.ElectricLime,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),

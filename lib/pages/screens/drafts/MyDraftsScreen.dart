@@ -30,7 +30,7 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
 
     try {
       final drafts = await SessionService.getDrafts();
-      
+
       if (!mounted) return;
 
       setState(() {
@@ -41,7 +41,7 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
       print('[MyDrafts] Loaded ${drafts.length} drafts');
     } catch (e) {
       print('[MyDrafts] Error: $e');
-      
+
       if (!mounted) return;
 
       setState(() {
@@ -50,8 +50,12 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error loading drafts: ${e.toString()}'),
-          backgroundColor: FrutiaColors.error,
+          content: Text(
+            'Error loading drafts: ${e.toString()}',
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -136,7 +140,7 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
   }
 
   Widget _buildDraftCard(Map<String, dynamic> draft, int index) {
-  String getSessionTypeName(String type) {
+    String getSessionTypeName(String type) {
       switch (type) {
         case 'S':
           return 'MAX VARIETY';
@@ -152,7 +156,6 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
           return type;
       }
     }
-
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -359,9 +362,10 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
           ),
         ],
       ),
-    ).animate(delay: Duration(milliseconds: 100 * index))
-     .fadeIn(duration: 400.ms)
-     .slideY(begin: 0.1, duration: 400.ms);
+    )
+        .animate(delay: Duration(milliseconds: 100 * index))
+        .fadeIn(duration: 400.ms)
+        .slideY(begin: 0.1, duration: 400.ms);
   }
 
   Widget _buildInfoItem(IconData icon, String text) {
@@ -413,7 +417,8 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
         ),
         title: Row(
           children: [
-            Icon(Icons.play_circle_outline, color: FrutiaColors.primary, size: 28),
+            Icon(Icons.play_circle_outline,
+                color: FrutiaColors.primary, size: 28),
             const SizedBox(width: 12),
             Text(
               'Activate Session',
@@ -488,9 +493,13 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
       Navigator.of(context).pop(); // Close loading
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Session activated successfully!'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: Text(
+            'Session activated successfully!',
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
 
@@ -501,18 +510,21 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
         ),
         (route) => route.isFirst,
       );
-
     } catch (e) {
       print('[MyDrafts] Error activating: $e');
-      
+
       if (!mounted) return;
 
       Navigator.of(context).pop(); // Close loading
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: FrutiaColors.error,
+          content: Text(
+            'Error: ${e.toString()}',
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -578,23 +590,30 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Draft deleted successfully'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: Text(
+            'Draft deleted successfully',
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
 
       _loadDrafts(); // Reload list
-
     } catch (e) {
       print('[MyDrafts] Error deleting: $e');
-      
+
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: FrutiaColors.error,
+          content: Text(
+            'Error: ${e.toString()}',
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }

@@ -136,8 +136,12 @@ class _HomePageState extends State<HomePage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error loading sessions: ${e.toString()}'),
-            backgroundColor: FrutiaColors.error,
+            content: Text(
+              'Error loading sessions: ${e.toString()}',
+              style: TextStyle(color: FrutiaColors.primary),
+            ),
+            backgroundColor: FrutiaColors.ElectricLime,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -176,6 +180,7 @@ class _HomePageState extends State<HomePage> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(color: FrutiaColors.primary),
         ),
+        iconTheme: const IconThemeData(color: Colors.white),
         leadingWidth: 40,
         title: Text(
           'Dashboard',
@@ -306,7 +311,7 @@ class _HomePageState extends State<HomePage> {
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: FrutiaColors.primaryText,
+              color: FrutiaColors.primary,
             ),
           ),
           const SizedBox(height: 12),
@@ -315,8 +320,8 @@ class _HomePageState extends State<HomePage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  FrutiaColors.primary,
-                  FrutiaColors.primary.withOpacity(0.9)
+                  FrutiaColors.LighterNavy,
+                  FrutiaColors.LighterNavy.withOpacity(0.9)
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -367,13 +372,11 @@ class _HomePageState extends State<HomePage> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              value,
-              style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
-            ),
+            Text(value,
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: FrutiaColors.ElectricLime)),
             Text(
               label,
               style: GoogleFonts.lato(fontSize: 10, color: Colors.white70),
@@ -390,6 +393,8 @@ class _HomePageState extends State<HomePage> {
     required String subtitle,
     required List<Color> gradientColors,
     required VoidCallback onTap,
+    Color textColor = Colors.white,
+    Color iconColor = Colors.white,
   }) {
     return InkWell(
       onTap: onTap,
@@ -424,8 +429,7 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.white.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
-              child:
-                  Icon(icon, color: Colors.white, size: 24), // ✅ Reducido de 30
+              child: Icon(icon, color: iconColor, size: 24), // ✅ Reducido de 30
             ),
             const SizedBox(width: 12), // ✅ Reducido de 14
             Expanded(
@@ -439,7 +443,7 @@ class _HomePageState extends State<HomePage> {
                     style: GoogleFonts.poppins(
                       fontSize: 16, // ✅ Reducido de 18
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: textColor,
                     ),
                   ),
                   const SizedBox(height: 2), // ✅ Reducido de 4
@@ -447,7 +451,7 @@ class _HomePageState extends State<HomePage> {
                     subtitle,
                     style: GoogleFonts.lato(
                       fontSize: 12, // ✅ Reducido de 13
-                      color: Colors.white.withOpacity(0.9),
+                      color: textColor.withOpacity(0.9),
                     ),
                     maxLines: 2, // ✅ Permitir 2 líneas si es necesario
                     overflow: TextOverflow.ellipsis,
@@ -456,8 +460,8 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.arrow_forward_ios,
-                color: Colors.white, size: 16), // ✅ Reducido de 18
+            Icon(Icons.arrow_forward_ios,
+                color: iconColor, size: 16), // ✅ Reducido de 18
           ],
         ),
       ),
@@ -475,7 +479,7 @@ class _HomePageState extends State<HomePage> {
             style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: FrutiaColors.primaryText),
+                color: FrutiaColors.primary),
           ),
           const SizedBox(height: 16),
 
@@ -486,9 +490,11 @@ class _HomePageState extends State<HomePage> {
               icon: Icons.add_circle,
               title: 'Create New Session',
               subtitle: 'Start a new Open Play session',
+              textColor: FrutiaColors.primary,
+              iconColor: FrutiaColors.primary,
               gradientColors: [
-                FrutiaColors.success,
-                FrutiaColors.success.withOpacity(0.8)
+                FrutiaColors.ElectricLime,
+                FrutiaColors.ElectricLime
               ],
               onTap: () async {
                 final result = await Navigator.push(
@@ -509,9 +515,11 @@ class _HomePageState extends State<HomePage> {
               icon: Icons.remove_red_eye,
               title: 'Join as Spectator',
               subtitle: 'Follow a live Open Play session',
+              textColor: FrutiaColors.primary,
+              iconColor: FrutiaColors.primary,
               gradientColors: [
-                FrutiaColors.warning.withOpacity(0.8),
-                FrutiaColors.warning.withOpacity(0.5)
+                FrutiaColors.SpectatorGreen,
+                FrutiaColors.SpectatorGreen
               ],
               onTap: () => showDialog(
                   context: context,
@@ -528,8 +536,8 @@ class _HomePageState extends State<HomePage> {
               title: 'Join as Moderator',
               subtitle: 'Help manage a live session',
               gradientColors: [
-                FrutiaColors.primary.withOpacity(0.9),
-                FrutiaColors.primary.withOpacity(0.7)
+                FrutiaColors.ModeratorTea,
+                FrutiaColors.ModeratorTea
               ],
               onTap: () => showDialog(
                   context: context,
@@ -555,7 +563,7 @@ class _HomePageState extends State<HomePage> {
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: FrutiaColors.primaryText,
+                color: FrutiaColors.primary,
               ),
             ),
             const SizedBox(height: 16),
@@ -703,10 +711,9 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: (isDraft || isLocalDraft)
-              ? FrutiaColors.warning.withOpacity(0.3)
-              : FrutiaColors.progress
-                  .withOpacity(0.3), // ← Cambiado de 0.1 a 0.3
-          width: 3,
+              ? FrutiaColors.ModeratorTea
+              : FrutiaColors.LighterNavy,
+          width: 2,
         ),
         boxShadow: [
           BoxShadow(
@@ -810,8 +817,8 @@ class _HomePageState extends State<HomePage> {
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: (isDraft || isLocalDraft)
-                                    ? FrutiaColors.warning
-                                    : FrutiaColors.progress,
+                                    ? FrutiaColors.ModeratorTea
+                                    : FrutiaColors.LighterNavy,
                               ),
                             ),
                             // ✅ Badge para drafts locales
@@ -910,78 +917,77 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
- 
- Widget _buildSessionList(List<dynamic> sessions, {
-  bool isActive = false,
-  bool isDraft = false,
-  bool isCompleted = false,
-}) {
-  if (sessions.isEmpty) {
-    return Column(
-      children: [
-         Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isActive
-                  ? Icons.play_circle_outline
-                  : isDraft
-                      ? Icons.edit_square
-                      : Icons.check_circle_outline,
-              size: 56, // Un poco más grande para impacto
-              color: FrutiaColors.disabledText.withOpacity(0.7),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No ${isDraft ? 'draft' : isActive ? 'active' : 'completed'} sessions',
-              style: GoogleFonts.lato(
-                color: FrutiaColors.secondaryText,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+  Widget _buildSessionList(
+    List<dynamic> sessions, {
+    bool isActive = false,
+    bool isDraft = false,
+    bool isCompleted = false,
+  }) {
+    if (sessions.isEmpty) {
+      return Column(
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isActive
+                    ? Icons.play_circle_outline
+                    : isDraft
+                        ? Icons.edit_square
+                        : Icons.check_circle_outline,
+                size: 56, // Un poco más grande para impacto
+                color: FrutiaColors.disabledText.withOpacity(0.7),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              isActive
-                  ? 'Create one to get started!'
-                  : isDraft
-                      ? 'Your drafts will appear here'
-                      : 'Completed sessions will show here',
-              style: GoogleFonts.lato(
-                color: FrutiaColors.disabledText,
-                fontSize: 13,
+              const SizedBox(height: 16),
+              Text(
+                'No ${isDraft ? 'draft' : isActive ? 'active' : 'completed'} sessions',
+                style: GoogleFonts.lato(
+                  color: FrutiaColors.secondaryText,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        const Spacer(flex: 2), // Más espacio abajo para balance
-      ],
+              const SizedBox(height: 8),
+              Text(
+                isActive
+                    ? 'Create one to get started!'
+                    : isDraft
+                        ? 'Your drafts will appear here'
+                        : 'Completed sessions will show here',
+                style: GoogleFonts.lato(
+                  color: FrutiaColors.disabledText,
+                  fontSize: 13,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          const Spacer(flex: 2), // Más espacio abajo para balance
+        ],
+      );
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.zero,
+      physics: const AlwaysScrollableScrollPhysics(),
+      itemCount: sessions.length,
+      itemBuilder: (context, index) {
+        final session = sessions[index];
+        if (isCompleted || isDraft) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _buildCompletedSessionCard(session),
+          );
+        } else {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildSessionCard(session),
+          );
+        }
+      },
     );
   }
-
-  return ListView.builder(
-    padding: EdgeInsets.zero,
-    physics: const AlwaysScrollableScrollPhysics(),
-    itemCount: sessions.length,
-    itemBuilder: (context, index) {
-      final session = sessions[index];
-      if (isCompleted || isDraft) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: _buildCompletedSessionCard(session),
-        );
-      } else {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _buildSessionCard(session),
-        );
-      }
-    },
-  );
-}
-
 
   // ==================== CARD DE SESIÓN ACTIVA ====================
   Widget _buildSessionCard(Map<String, dynamic> session) {
@@ -992,7 +998,7 @@ class _HomePageState extends State<HomePage> {
 
     switch (status) {
       case 'active':
-        statusColor = FrutiaColors.success;
+        statusColor = FrutiaColors.SpectatorGreen;
         statusIcon = Icons.play_circle_filled;
         statusText = 'In Progress';
         break;
@@ -1029,8 +1035,8 @@ class _HomePageState extends State<HomePage> {
         color: FrutiaColors.primaryBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: statusColor.withOpacity(0.3), // Usa el color del estado
-          width: 3,
+          color: statusColor,
+          width: 2,
         ),
         boxShadow: [
           BoxShadow(
@@ -1344,9 +1350,10 @@ class _HomePageState extends State<HomePage> {
           SnackBar(
             content: Text(
               'Draft deleted successfully!',
-              style: TextStyle(fontSize: 16),
+              style: TextStyle(fontSize: 16, color: FrutiaColors.primary),
             ),
-            backgroundColor: FrutiaColors.success,
+            backgroundColor: FrutiaColors.ElectricLime,
+            behavior: SnackBarBehavior.floating,
             duration: Duration(seconds: 2),
           ),
         );
@@ -1357,8 +1364,12 @@ class _HomePageState extends State<HomePage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error deleting draft: ${e.toString()}'),
-            backgroundColor: FrutiaColors.error,
+            content: Text(
+              'Error deleting draft: ${e.toString()}',
+              style: TextStyle(color: FrutiaColors.primary),
+            ),
+            backgroundColor: FrutiaColors.ElectricLime,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }

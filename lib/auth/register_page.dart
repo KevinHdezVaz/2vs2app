@@ -131,8 +131,12 @@ class _RegisterPageState extends State<RegisterPage>
       // Show welcome message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Welcome, $userName! Registration successful.'),
-          backgroundColor: FrutiaColors.success,
+          content: Text(
+            'Welcome, $userName! Registration successful.',
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
 
@@ -147,8 +151,12 @@ class _RegisterPageState extends State<RegisterPage>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.message),
-          backgroundColor: FrutiaColors.error,
+          content: Text(
+            e.message,
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     } catch (e) {
@@ -157,8 +165,12 @@ class _RegisterPageState extends State<RegisterPage>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('An unexpected error occurred. Please try again.'),
-          backgroundColor: FrutiaColors.error,
+          content: Text(
+            'An unexpected error occurred. Please try again.',
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -201,9 +213,9 @@ class _RegisterPageState extends State<RegisterPage>
       SnackBar(
         content: Text(
           message,
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: FrutiaColors.primary),
         ),
-        backgroundColor: FrutiaColors.error,
+        backgroundColor: FrutiaColors.ElectricLime,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),

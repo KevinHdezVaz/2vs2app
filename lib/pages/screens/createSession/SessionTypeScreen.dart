@@ -97,11 +97,11 @@ class _SessionTypeScreenState extends State<SessionTypeScreen> {
                   ),
                   child: Text(
                     'Next: Court Details',
-                    textAlign: TextAlign.center, // ← Agrega esto
+                    textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: FrutiaColors.ElectricLime,
                     ),
                   ),
                 ),
@@ -164,12 +164,12 @@ class _SessionTypeScreenState extends State<SessionTypeScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? FrutiaColors.primary.withOpacity(0.1)
+              ? FrutiaColors.ElectricLime.withOpacity(0.1)
               : FrutiaColors.primaryBackground,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
-                ? FrutiaColors.primary
+                ? FrutiaColors.ElectricLime
                 : FrutiaColors.tertiaryBackground,
             width: isSelected ? 2 : 1,
           ),
@@ -180,15 +180,13 @@ class _SessionTypeScreenState extends State<SessionTypeScreen> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? FrutiaColors.primary.withOpacity(0.2)
+                    ? Colors.white
                     : FrutiaColors.secondaryBackground,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: isSelected
-                    ? FrutiaColors.primary
-                    : FrutiaColors.secondaryText,
+                color: isSelected ? FrutiaColors.primary : FrutiaColors.primary,
                 size: 24,
               ),
             ),

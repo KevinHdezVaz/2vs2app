@@ -392,28 +392,30 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
     return Dialog(
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: Colors.transparent,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: FrutiaColors.primary.withOpacity(0.2),
-              blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-          ],
+          color: Colors.white,
         ),
         child: SingleChildScrollView(
-          // <--- AÑADIDO
-          padding: const EdgeInsets.only(bottom: 20), // Espacio para teclado
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // === HEADER (sin cambios) ===
+              // ✅ HEADER DE COLOR (NUEVO)
               Container(
-                padding: const EdgeInsets.all(24),
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.05),
+                  gradient: LinearGradient(
+                    colors: [
+                      FrutiaColors.ModeratorTea,
+                      FrutiaColors.ModeratorTea
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(24),
                     topRight: Radius.circular(24),
@@ -424,13 +426,18 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: FrutiaColors.primary.withOpacity(0.2),
+                        color: Colors.white.withOpacity(0.2),
                         shape: BoxShape.circle,
-                        border:
-                            Border.all(color: FrutiaColors.primary, width: 2),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 2,
+                        ),
                       ),
-                      child: const Icon(Icons.admin_panel_settings,
-                          color: FrutiaColors.primary, size: 48),
+                      child: Icon(
+                        Icons.admin_panel_settings,
+                        color: Colors.white.withOpacity(0.9),
+                        size: 48,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -438,29 +445,32 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                       style: GoogleFonts.poppins(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: Colors.white,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Enter the Session Code and Moderator Key',
-                      style: GoogleFonts.lato(
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
 
-              // === INPUTS (reducimos un poco el font para seguridad) ===
+              // ✅ RESTO DEL CONTENIDO (IGUAL QUE ANTES)
+
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Column(
                   children: [
                     // Session Code
+                    const SizedBox(height: 8),
+                    Text(
+                      'Enter the Session Code and Moderator Key',
+                      style: GoogleFonts.lato(
+                        fontSize: 15,
+                        color: Colors.black.withOpacity(0.9),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 18),
+
                     TextField(
                       controller: _sessionCodeController,
                       textCapitalization: TextCapitalization.characters,
@@ -468,14 +478,14 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                       textAlign: TextAlign.center,
                       enabled: !_isLoading,
                       style: GoogleFonts.robotoMono(
-                        fontSize: 24, // Reducido de 28 → 24
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 5,
                         color: Colors.black,
                       ),
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.qr_code,
-                            color: FrutiaColors.warning),
+                            color: FrutiaColors.ModeratorTea),
                         hintText: 'e.g., A1B2C3',
                         hintStyle: GoogleFonts.lato(
                           fontSize: 16,
@@ -487,16 +497,16 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
-                              color: FrutiaColors.primary.withOpacity(0.6),
+                              color: FrutiaColors.ModeratorTea.withOpacity(0.6),
                               width: 2),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                              color: FrutiaColors.primary, width: 2),
+                              color: FrutiaColors.ModeratorTea, width: 2),
                         ),
                         filled: true,
-                        fillColor: FrutiaColors.primary.withOpacity(0.05),
+                        fillColor: FrutiaColors.ModeratorTea.withOpacity(0.05),
                       ),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
@@ -512,14 +522,14 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                       textAlign: TextAlign.center,
                       enabled: !_isLoading,
                       style: GoogleFonts.robotoMono(
-                        fontSize: 24, // Reducido de 28 → 24
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 5,
                         color: Colors.black,
                       ),
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.security,
-                            color: FrutiaColors.primary),
+                            color: FrutiaColors.ModeratorTea),
                         hintText: 'e.g., 12',
                         hintStyle: GoogleFonts.lato(
                           fontSize: 16,
@@ -531,16 +541,16 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
-                              color: FrutiaColors.primary.withOpacity(0.6),
+                              color: FrutiaColors.ModeratorTea.withOpacity(0.6),
                               width: 2),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                              color: FrutiaColors.primary, width: 2),
+                              color: FrutiaColors.ModeratorTea, width: 2),
                         ),
                         filled: true,
-                        fillColor: FrutiaColors.primary.withOpacity(0.05),
+                        fillColor: FrutiaColors.ModeratorTea.withOpacity(0.05),
                       ),
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
@@ -552,22 +562,21 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: FrutiaColors.warning.withOpacity(0.15),
+                        color: Colors.grey.withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: FrutiaColors.warning.withOpacity(0.5),
-                            width: 1.5),
+                            color: Colors.grey.withOpacity(0.5), width: 1.5),
                       ),
                       child: Row(
                         children: [
                           Icon(Icons.info_outline,
-                              color: FrutiaColors.warning, size: 22),
+                              color: Colors.grey, size: 22),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Ask the Session Owner for both codes to begin moderation.',
                               style: GoogleFonts.lato(
-                                fontSize: 15,
+                                fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.black87,
                                 height: 1.4,
@@ -581,7 +590,7 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                 ),
               ),
 
-              // === BOTONES (sin cambios) ===
+              // BOTONES
               Padding(
                 padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
                 child: Row(
@@ -621,8 +630,8 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                                     FrutiaColors.disabledText
                                   ]
                                 : [
-                                    FrutiaColors.primary,
-                                    FrutiaColors.primary.withOpacity(0.8)
+                                    FrutiaColors.ModeratorTea,
+                                    FrutiaColors.ModeratorTea
                                   ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -632,7 +641,8 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                               : [
                                   BoxShadow(
                                     color:
-                                        FrutiaColors.primary.withOpacity(0.4),
+                                        FrutiaColors.ModeratorTea.withOpacity(
+                                            0.4),
                                     blurRadius: 12,
                                     offset: const Offset(0, 6),
                                   ),

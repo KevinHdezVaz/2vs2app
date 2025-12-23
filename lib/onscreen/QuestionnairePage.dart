@@ -66,9 +66,11 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('¡Datos guardados con éxito!'),
-                backgroundColor: Colors.green),
+            SnackBar(
+                content: Text('¡Datos guardados con éxito!',
+                    style: TextStyle(color: FrutiaColors.primary)),
+                backgroundColor: FrutiaColors.ElectricLime,
+                behavior: SnackBarBehavior.floating),
           );
 
           // Call onSuccess to refresh HomePage
@@ -85,8 +87,10 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text('Error al guardar el perfil: $e'),
-                backgroundColor: Colors.redAccent),
+                content: Text('Error al guardar el perfil: $e',
+                    style: TextStyle(color: FrutiaColors.primary)),
+                backgroundColor: FrutiaColors.ElectricLime,
+                behavior: SnackBarBehavior.floating),
           );
         }
       } finally {
@@ -97,9 +101,11 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
     } else {
       // Mostrar mensaje si no pasa las validaciones
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, complete todos los campos requeridos.'),
-          backgroundColor: Colors.redAccent,
+        SnackBar(
+          content: Text('Por favor, complete todos los campos requeridos.',
+              style: TextStyle(color: FrutiaColors.primary)),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }

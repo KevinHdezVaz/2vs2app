@@ -192,17 +192,17 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                         }
                       : null,
                   icon: const Icon(Icons.play_arrow,
-                      color: Colors.white, size: 24),
+                      color: FrutiaColors.primary, size: 24),
                   label: Text(
                     'Start Session',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: FrutiaColors.primary,
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: FrutiaColors.accent,
+                    backgroundColor: FrutiaColors.ElectricLime,
                     disabledBackgroundColor: FrutiaColors.disabledText,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -230,21 +230,18 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: 
-                        
-                        Text(
-                'Back:\nCourt Details',  // ← 3 líneas
-                textAlign: TextAlign.center,
-                maxLines: 3,
-                overflow: TextOverflow.visible,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: FrutiaColors.primary,
-                  height: 1.1,
-                ),
-              ),
-
+                        child: Text(
+                          'Back:\nCourt Details', // ← 3 líneas
+                          textAlign: TextAlign.center,
+                          maxLines: 3,
+                          overflow: TextOverflow.visible,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: FrutiaColors.primary,
+                            height: 1.1,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -253,7 +250,10 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                   // Save Draft button
                   Expanded(
                     child: Container(
-                      color: FrutiaColors.warning.withOpacity(0.15),
+                      decoration: BoxDecoration(
+                        color: FrutiaColors.ModeratorTea,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: SizedBox(
                         height: 50,
                         child: OutlinedButton.icon(
@@ -264,18 +264,17 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
                           icon: Icon(
                             Icons.save_outlined,
                             size: 20,
-                            color: FrutiaColors.warning,
+                            color: Colors.white,
                           ),
                           label: Text(
                             'Save Draft',
                             style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: FrutiaColors.warning,
-                            ),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white),
                           ),
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: FrutiaColors.warning),
+                            side: BorderSide(color: FrutiaColors.ModeratorTea),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -317,8 +316,6 @@ class _PlayerDetailsScreenState extends State<PlayerDetailsScreen> {
               ],
             ],
           ),
-
-          
 
           const SizedBox(height: 40),
         ],

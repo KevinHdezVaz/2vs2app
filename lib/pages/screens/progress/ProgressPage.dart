@@ -110,15 +110,21 @@ class _ProgressScreenState extends State<ProgressScreen> {
       await _fetchProfileData(); // Recargamos para actualizar todo
       scaffoldMessenger.showSnackBar(
         SnackBar(
-          content:
-              Text('¡Felicidades! Tu racha ahora es de $_currentStreak días.'),
-          backgroundColor: Colors.green,
+          content: Text(
+              '¡Felicidades! Tu racha ahora es de $_currentStreak días.',
+              style: TextStyle(color: FrutiaColors.primary)),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     } catch (e) {
       if (mounted) {
         scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text(e.toString(),
+                  style: TextStyle(color: FrutiaColors.primary)),
+              backgroundColor: FrutiaColors.ElectricLime,
+              behavior: SnackBarBehavior.floating),
         );
       }
     } finally {

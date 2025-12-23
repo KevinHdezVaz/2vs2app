@@ -1,5 +1,5 @@
 // lib/services/SessionResultsImage.dart
-// ✅ ACTUALIZADO: Incluye Point Won % en las tarjetas de jugadores
+// ✅ DISEÑO ACTUALIZADO: Basado en el mockup HTML con estilo moderno y compacto
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -11,10 +11,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Definición de colores clave
-const Color _primaryColorDark = Color(0xFF2B5F5F); // Teal oscuro
-const Color _backgroundColor =
-    Color(0xFF1E4D4D); // Fondo más oscuro para el header
+// Colores del brand - confirmados del HTML
+const Color _navy = Color(0xFF061848);
+const Color _lime = Color(0xFFE9FE1F);
+const Color _teal = Color(0xFF0D505D);
+const Color _bgCard = Color(0x0DFFFFFF); // rgba(255, 255, 255, 0.05)
 
 class SessionResultsImageService {
   /// Genera y comparte una imagen con los resultados de la sesión
@@ -80,10 +81,8 @@ Learn more: www.picklebracket.pro
     required String sessionType,
     List<dynamic>? playoffWinners,
   }) async {
-    // Crear un GlobalKey para capturar el widget
     final GlobalKey repaintKey = GlobalKey();
 
-    // Crear el widget que se va a renderizar
     final widget = RepaintBoundary(
       key: repaintKey,
       child: _ResultsImageWidget(
@@ -94,29 +93,24 @@ Learn more: www.picklebracket.pro
       ),
     );
 
-    // Renderizar el widget en un overlay temporal
     final overlay = OverlayEntry(
       builder: (context) => Positioned(
-        left: -10000, // Fuera de la pantalla
+        left: -10000,
         top: -10000,
         child: Material(
           child: Container(
-            width: 1080, // Ancho fijo para la imagen
-            color: Colors.white,
+            width: 1080,
+            color: const Color(0xFF1A1A1A),
             child: widget,
           ),
         ),
       ),
     );
 
-    // Agregar al overlay
     Overlay.of(context).insert(overlay);
-
-    // Esperar a que se renderice
     await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      // Capturar la imagen
       final RenderRepaintBoundary boundary = repaintKey.currentContext!
           .findRenderObject() as RenderRepaintBoundary;
 
@@ -124,9 +118,7 @@ Learn more: www.picklebracket.pro
       final ByteData? byteData =
           await image.toByteData(format: ui.ImageByteFormat.png);
 
-      // Remover del overlay
       overlay.remove();
-
       return byteData!.buffer.asUint8List();
     } catch (e) {
       overlay.remove();
@@ -145,7 +137,7 @@ Learn more: www.picklebracket.pro
       case 'T':
         return 'COMPETITIVE MAX';
       case 'O':
-        return 'Optimized';
+        return 'OPTIMIZED';
       default:
         return sessionType;
     }
@@ -205,34 +197,48 @@ class _ResultsImageWidget extends StatelessWidget {
 
     return Container(
       width: 1080,
-      color: Colors.white,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // HEADER
-          _buildHeader(),
+      color: const Color(0xFF1A1A1A),
+      padding: const EdgeInsets.all(40),
+      child: Container(
+        decoration: BoxDecoration(
+          color: _navy,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: _lime, width: 12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.6),
+              blurRadius: 80,
+              offset: const Offset(0, 40),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // COMPACT HEADER
+            _buildCompactHeader(),
 
-          // SESSION INFO
-          _buildSessionInfo(),
+            // FINALISTS (solo para playoffs)
+            if (sessionType == 'P4' || sessionType == 'P8') ...[
+              const SizedBox(height: 30),
+              _buildFinalistsSection(),
+            ],
 
-          // MEDAL WINNERS (solo para playoffs)
-          if (sessionType == 'P4' || sessionType == 'P8') _buildMedalWinners(),
+            // FINAL RANKINGS
+            const SizedBox(height: 30),
+            _buildFinalRankings(showTop: topRankCount),
 
-          // TOP RANKINGS
-          const SizedBox(height: 30),
-          _buildTopRankings(showTop: topRankCount),
-
-          // FOOTER
-          const SizedBox(height: 40),
-          _buildFooterSimple(),
-
-          const SizedBox(height: 30),
-        ],
+            // FOOTER
+            const SizedBox(height: 30),
+            _buildModernFooter(),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildCompactHeader() {
     final sessionName = sessionData['session_name']?.toString().toUpperCase() ??
         'SESSION RESULTS';
     final sessionTypeFormatted =
@@ -241,44 +247,7 @@ class _ResultsImageWidget extends StatelessWidget {
       sessionData['created_at']?.toString(),
     );
 
-    return Container(
-      width: 1080,
-      decoration: const BoxDecoration(
-        color: _backgroundColor,
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 50),
-      child: Column(
-        children: [
-          // Título de la sesión
-          Text(
-            sessionName,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 38,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              letterSpacing: 1.2,
-            ),
-          ),
-
-          const SizedBox(height: 15),
-
-          // Session type y fecha
-          Text(
-            '$sessionTypeFormatted | $dateFormatted',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.95),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSessionInfo() {
+    // Calcular datos de sesión
     int duration = 0;
     if (sessionData['elapsed_seconds'] != null) {
       duration = sessionData['elapsed_seconds'] as int;
@@ -289,7 +258,6 @@ class _ResultsImageWidget extends StatelessWidget {
     final numberOfPlayers = sessionData['number_of_players'] ?? 0;
     final numberOfCourts = sessionData['number_of_courts'] ?? 0;
 
-    // Calcular juegos completados de forma real
     int completedGames = 0;
     if (players.isNotEmpty && players[0]['games_played'] != null) {
       int totalGamesPlayed = 0;
@@ -300,112 +268,61 @@ class _ResultsImageWidget extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
-      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+      padding: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
           ),
-        ],
+        ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoBox('$numberOfPlayers', 'PLAYERS', Icons.people),
-          _buildInfoBox('$numberOfCourts', 'COURTS', Icons.sports_tennis),
-          _buildInfoBox(
-            SessionResultsImageService._formatDuration(duration),
-            'DURATION',
-            Icons.access_time,
-          ),
-          _buildInfoBox('$completedGames', 'GAMES PLAYED', Icons.sports_score),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoBox(String value, String label, IconData icon) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _primaryColorDark.withOpacity(0.1),
-          ),
-          child: Icon(icon, size: 32, color: _primaryColorDark),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          value,
-          style: GoogleFonts.poppins(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF1A1A1A),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: GoogleFonts.lato(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF5A5A5A),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMedalWinners() {
-    if (playoffWinners == null || playoffWinners!.isEmpty) {
-      print('⚠️  No playoff winners data available');
-      return const SizedBox.shrink();
-    }
-
-    print('');
-    print('🏆 Building medal winners:');
-    print('   Total teams: ${playoffWinners!.length}');
-
-    final champions = playoffWinners!.length > 0 ? playoffWinners![0] : null;
-    final runnersUp = playoffWinners!.length > 1 ? playoffWinners![1] : null;
-    final thirdPlace = playoffWinners!.length > 2 ? playoffWinners![2] : null;
-
-    print('   Champions: $champions');
-    print('   Runners-up: $runnersUp');
-    print('   Third Place: $thirdPlace');
-    print('');
-
-    if (champions == null) {
-      print('⚠️  No champions data - skipping medals section');
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 50),
-      child: Column(
-        children: [
-          Text(
-            '-- FINALISTS --',
-            style: GoogleFonts.poppins(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF5A5A5A),
+          // LEFT: Session name and type
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  sessionName,
+                  style: GoogleFonts.oswald(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    height: 1,
+                    letterSpacing: 1,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '$sessionTypeFormatted • $dateFormatted',
+                  style: GoogleFonts.robotoMono(
+                    fontSize: 13,
+                    color: _lime,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 25),
+
+          // RIGHT: Stats strip (enlarged)
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              if (runnersUp != null) _buildMedalCard('SILVER', runnersUp),
-              _buildMedalCard('GOLD', champions),
-              if (thirdPlace != null) _buildMedalCard('BRONZE', thirdPlace),
+              _buildStatBox('$numberOfPlayers', 'Players'),
+              const SizedBox(width: 24),
+              _buildStatBox('$numberOfCourts', 'Courts'),
+              const SizedBox(width: 24),
+              _buildStatBox(
+                SessionResultsImageService._formatDuration(duration),
+                'Duration',
+              ),
+              const SizedBox(width: 24),
+              _buildStatBox('$completedGames', 'Games'),
             ],
           ),
         ],
@@ -413,110 +330,183 @@ class _ResultsImageWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMedalCard(String medal, dynamic team) {
-    print('🎴 Building medal card for $medal with data: $team');
+  Widget _buildStatBox(String value, String label) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          value,
+          style: GoogleFonts.robotoMono(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          label.toUpperCase(),
+          style: GoogleFonts.robotoMono(
+            fontSize: 9,
+            color: Colors.white.withOpacity(0.5),
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
+    );
+  }
 
-    String teamNames = 'Team';
-
-    if (team is List && team.isNotEmpty) {
-      final player1 = _getPlayerNameWithInitial(team[0]);
-      final player2 = team.length > 1 ? _getPlayerNameWithInitial(team[1]) : '';
-
-      teamNames = player2.isNotEmpty ? '$player1 & $player2' : player1;
-      print('   ✅ List format: $teamNames');
-    } else if (team is Map) {
-      final p1FirstName = team['first_name']?.toString() ?? '';
-      final p1LastInitial = team['last_initial']?.toString() ?? '';
-      final p2FirstName = team['second_player_name']?.toString() ?? '';
-      final p2LastInitial =
-          team['second_player_last_initial']?.toString() ?? '';
-
-      final player1 = p1LastInitial.isNotEmpty
-          ? '$p1FirstName ${p1LastInitial}.'
-          : p1FirstName;
-
-      final player2 = p2FirstName.isNotEmpty && p2LastInitial.isNotEmpty
-          ? '& $p2FirstName ${p2LastInitial}.'
-          : (p2FirstName.isNotEmpty ? '& $p2FirstName' : '');
-
-      teamNames = player2.isNotEmpty ? '$player1 $player2' : player1;
-      print('   ✅ Map format: $teamNames');
-    } else {
-      print('   ⚠️  Unknown format, using default');
-      teamNames = 'Team Name';
+  Widget _buildFinalistsSection() {
+    if (playoffWinners == null || playoffWinners!.isEmpty) {
+      return const SizedBox.shrink();
     }
 
-    final Gradient cardGradient;
-    final Color textColor;
-    final String medalEmoji;
+    final champions = playoffWinners!.length > 0 ? playoffWinners![0] : null;
+    final runnersUp = playoffWinners!.length > 1 ? playoffWinners![1] : null;
+    final thirdPlace = playoffWinners!.length > 2 ? playoffWinners![2] : null;
+
+    if (champions == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        Text(
+          'FINALISTS',
+          style: GoogleFonts.oswald(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: Colors.white.withOpacity(0.8),
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(height: 20),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // SILVER (Runner-up) - Left
+            if (runnersUp != null)
+              Expanded(
+                flex: 10,
+                child: _buildMedalCard('SILVER', runnersUp, isGold: false),
+              ),
+            if (runnersUp != null) const SizedBox(width: 15),
+
+            // GOLD (Champions) - Center (slightly larger)
+            Expanded(
+              flex: 11,
+              child: _buildMedalCard('GOLD', champions, isGold: true),
+            ),
+
+            // BRONZE (3rd Place) - Right
+            if (thirdPlace != null) const SizedBox(width: 15),
+            if (thirdPlace != null)
+              Expanded(
+                flex: 10,
+                child: _buildMedalCard('BRONZE', thirdPlace, isGold: false),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMedalCard(String medal, dynamic team, {required bool isGold}) {
+    String teamNames = _getTeamNames(team);
+
+    final Color circleStartColor;
+    final Color circleEndColor;
+    final String medalNumber;
+    final String medalLabel;
 
     switch (medal) {
       case 'GOLD':
-        cardGradient = const LinearGradient(
-          colors: [Color(0xFFFFD700), Color(0xFFFFEC8B), Color(0xFFFFD700)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-        textColor = const Color(0xFF8B6914);
-        medalEmoji = '🥇';
+        circleStartColor = const Color(0xFFFFD700);
+        circleEndColor = const Color(0xFFB8860B);
+        medalNumber = '1';
+        medalLabel = 'CHAMPIONS';
         break;
-
       case 'SILVER':
-        cardGradient = const LinearGradient(
-          colors: [Color(0xFFC0C0C0), Color(0xFFF0F0F0), Color(0xFFC0C0C0)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-        textColor = const Color(0xFF505050);
-        medalEmoji = '🥈';
+        circleStartColor = const Color(0xFFE0E0E0);
+        circleEndColor = const Color(0xFF8E8E8E);
+        medalNumber = '2';
+        medalLabel = 'RUNNER UP';
         break;
-
       case 'BRONZE':
-        cardGradient = const LinearGradient(
-          colors: [Color(0xFFCD7F32), Color(0xFFE8B886), Color(0xFFCD7F32)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-        textColor = const Color(0xFF5D4037);
-        medalEmoji = '🥉';
+        circleStartColor = const Color(0xFFCD7F32);
+        circleEndColor = const Color(0xFF8B4513);
+        medalNumber = '3';
+        medalLabel = '3RD PLACE';
         break;
-
       default:
-        cardGradient =
-            const LinearGradient(colors: [Colors.grey, Colors.white]);
-        textColor = Colors.black;
-        medalEmoji = '🏅';
+        circleStartColor = Colors.grey;
+        circleEndColor = Colors.grey;
+        medalNumber = '?';
+        medalLabel = 'FINALIST';
     }
 
     return Container(
-      width: 300,
-      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 15),
+      padding: EdgeInsets.symmetric(
+        vertical: isGold ? 24 : 16,
+        horizontal: 16,
+      ),
       decoration: BoxDecoration(
-        gradient: cardGradient,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: textColor.withOpacity(0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: isGold ? _lime.withOpacity(0.05) : _bgCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isGold ? _lime : Colors.white.withOpacity(0.1),
+          width: isGold ? 2 : 1,
+        ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            medalEmoji,
-            style: const TextStyle(fontSize: 60),
+          // Medal circle
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [circleStartColor, circleEndColor],
+              ),
+            ),
+            child: Center(
+              child: Text(
+                medalNumber,
+                style: GoogleFonts.oswald(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: _navy,
+                ),
+              ),
+            ),
           ),
-          const SizedBox(height: 15),
+          const SizedBox(height: 12),
+
+          // Winner names
           Text(
             teamNames,
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: textColor,
-              height: 1.2,
+            style: GoogleFonts.oswald(
+              fontSize: isGold ? 20 : 18,
+              fontWeight: FontWeight.w700,
+              color: isGold ? _lime : Colors.white,
+              height: 1.1,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+
+          const SizedBox(height: 6),
+
+          // Medal label
+          Text(
+            medalLabel,
+            style: GoogleFonts.robotoMono(
+              fontSize: 9,
+              color: Colors.white.withOpacity(0.5),
+              letterSpacing: 0.5,
             ),
           ),
         ],
@@ -524,7 +514,7 @@ class _ResultsImageWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildTopRankings({int showTop = 12}) {
+  Widget _buildFinalRankings({int showTop = 12}) {
     final topPlayers = players.take(showTop).toList();
 
     if (topPlayers.isEmpty) {
@@ -542,168 +532,183 @@ class _ResultsImageWidget extends StatelessWidget {
       }
     }
 
+    return Column(
+      children: [
+        Text(
+          'FINAL RANKINGS',
+          style: GoogleFonts.oswald(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: Colors.white.withOpacity(0.8),
+            letterSpacing: 2,
+          ),
+        ),
+        const SizedBox(height: 20),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                children: List.generate(
+                  leftColumn.length,
+                  (index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildRankRow(index + 1, leftColumn[index]),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 25),
+            Expanded(
+              child: Column(
+                children: List.generate(
+                  rightColumn.length,
+                  (index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _buildRankRow(index + 7, rightColumn[index]),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRankRow(int rank, dynamic player) {
+    final gamesWon = player['games_won'] ?? 0;
+    final gamesLost = player['games_lost'] ?? 0;
+    final currentRating = player['current_rating']?.round() ?? 0;
+
+    final pointsWon = player['points_won'] ?? 0;
+    final pointsLost = player['points_lost'] ?? 0;
+    final totalPoints = pointsWon + pointsLost;
+
+    final pointWonPct = player['points_won_percentage'] != null
+        ? (player['points_won_percentage'] as num).round()
+        : (totalPoints > 0 ? ((pointsWon / totalPoints) * 100).round() : 0);
+
+    final bool isTopTier = rank <= 3;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 50),
-      child: Column(
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(10),
+        border: Border(
+          left: BorderSide(
+            color: isTopTier ? _lime : Colors.transparent,
+            width: 3,
+          ),
+        ),
+      ),
+      child: Row(
         children: [
-          Text(
-            '-- FINAL RANKINGS --',
-            style: GoogleFonts.poppins(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF5A5A5A),
+          // Rank number
+          SizedBox(
+            width: 35,
+            child: Text(
+              '#$rank',
+              style: GoogleFonts.oswald(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: _lime,
+              ),
             ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  children: List.generate(
-                    leftColumn.length,
-                    (index) => Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _buildPlayerRankCardCompact(
-                          index + 1, leftColumn[index]),
-                    ),
+
+          // Player info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _getPlayerNameWithInitial(player),
+                  style: GoogleFonts.sora(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Rating: $currentRating • W:$gamesWon L:$gamesLost',
+                  style: GoogleFonts.robotoMono(
+                    fontSize: 9,
+                    color: Colors.white.withOpacity(0.4),
                   ),
                 ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  children: List.generate(
-                    rightColumn.length,
-                    (index) => Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _buildPlayerRankCardCompact(
-                        index + 7,
-                        rightColumn[index],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
+          ),
+
+          // Point won percentage
+          Text(
+            '$pointWonPct%',
+            style: GoogleFonts.robotoMono(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: _lime,
+            ),
           ),
         ],
       ),
     );
   }
 
-  /// ✅ ACTUALIZADO: Card con Point Won %
-  Widget _buildPlayerRankCardCompact(int rank, dynamic player) {
-    final gamesWon = player['games_won'] ?? 0;
-    final gamesLost = player['games_lost'] ?? 0;
-    final currentRating = player['current_rating']?.round() ?? 0;
-
-    // ✅ NUEVO: Calcular Point Won %
-    final pointsWon = player['points_won'] ?? 0;
-    final pointsLost = player['points_lost'] ?? 0;
-    final totalPoints = pointsWon + pointsLost;
-
-// ✅ CORREGIDO en _buildPlayerRankCardCompact
-    final pointWonPct = player['points_won_percentage'] != null
-        ? (player['points_won_percentage'] as num).round()
-        : (totalPoints > 0 ? ((pointsWon / totalPoints) * 100).round() : 0);
-
-    final Color rankColor =
-        (rank == 1 || rank == 2) ? _primaryColorDark : const Color(0xFF5A5A5A);
-
+  Widget _buildModernFooter() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.only(top: 25),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withOpacity(0.1),
+            width: 1,
           ),
-        ],
+        ),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // RANK NUMBER
-          SizedBox(
-            width: 50,
-            child: Text(
-              '#$rank',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: rankColor,
+          // Brand tag
+          RichText(
+            text: TextSpan(
+              style: GoogleFonts.oswald(
+                fontSize: 16,
+                letterSpacing: 1,
+                color: Colors.white,
               ),
+              children: [
+                const TextSpan(text: 'CREATED BY '),
+                TextSpan(
+                  text: 'PICKLEBRACKET',
+                  style: GoogleFonts.oswald(
+                    color: _lime,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
           ),
 
-          const SizedBox(width: 8),
-
-          // Player info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+          // Web link
+          RichText(
+            text: TextSpan(
+              style: GoogleFonts.robotoMono(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: Colors.white.withOpacity(0.6),
+              ),
               children: [
-                // Nombre
-                Text(
-                  _getPlayerNameWithInitial(player),
-                  style: GoogleFonts.poppins(
-                    fontSize: 17,
+                const TextSpan(text: 'Learn more at '),
+                TextSpan(
+                  text: 'www.picklebracket.pro',
+                  style: GoogleFonts.robotoMono(
+                    color: _lime,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1A1A),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-
-                const SizedBox(height: 2),
-
-                // Rating y Record en la MISMA línea
-                Row(
-                  children: [
-                    Text(
-                      'Rating: $currentRating',
-                      style: GoogleFonts.lato(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF5A5A5A),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '•',
-                      style: TextStyle(
-                        color: const Color(0xFF5A5A5A),
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'W:$gamesWon L:$gamesLost',
-                      style: GoogleFonts.lato(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF5A5A5A),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 2),
-
-                // ✅ NUEVO: Point Won %
-                Text(
-                  'Pts Won: $pointWonPct%',
-                  style: GoogleFonts.lato(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: _primaryColorDark,
                   ),
                 ),
               ],
@@ -714,69 +719,33 @@ class _ResultsImageWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildFooterSimple() {
-    return Container(
-      width: 1080,
-      padding: const EdgeInsets.symmetric(horizontal: 50),
-      child: Column(
-        children: [
-          Text(
-            '-- CREATED BY PICKLEBRACKET --',
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF5A5A5A),
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 15),
-          Text(
-            'Create and run competitive and fun Open Play sessions quickly and smoothly.\nPick from different game modes and see who shines today!',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.lato(
-              fontSize: 18,
-              color: const Color(0xFF5A5A5A),
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 25),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 35,
-                height: 35,
-                decoration: BoxDecoration(
-                  color: _primaryColorDark,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text('PB',
-                      style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Learn more: www.picklebracket.pro',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: _primaryColorDark,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+  String _getTeamNames(dynamic team) {
+    if (team is List && team.isNotEmpty) {
+      final player1 = _getPlayerNameWithInitial(team[0]);
+      final player2 = team.length > 1 ? _getPlayerNameWithInitial(team[1]) : '';
+      return player2.isNotEmpty ? '$player1 & $player2' : player1;
+    } else if (team is Map) {
+      final p1FirstName = team['first_name']?.toString() ?? '';
+      final p1LastInitial = team['last_initial']?.toString() ?? '';
+      final p2FirstName = team['second_player_name']?.toString() ?? '';
+      final p2LastInitial =
+          team['second_player_last_initial']?.toString() ?? '';
+
+      final player1 = p1LastInitial.isNotEmpty
+          ? '$p1FirstName ${p1LastInitial}.'
+          : p1FirstName;
+
+      final player2 = p2FirstName.isNotEmpty && p2LastInitial.isNotEmpty
+          ? '& $p2FirstName ${p2LastInitial}.'
+          : (p2FirstName.isNotEmpty ? '& $p2FirstName' : '');
+
+      return player2.isNotEmpty ? '$player1 $player2' : player1;
+    }
+    return 'Team Name';
   }
 
   String _getPlayerNameWithInitial(dynamic player) {
     if (player == null) return 'Unknown Player';
-
     if (player is String) return player;
 
     final firstName = player['first_name']?.toString() ?? '';

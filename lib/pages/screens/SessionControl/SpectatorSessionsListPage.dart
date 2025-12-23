@@ -9,7 +9,8 @@ class SpectatorSessionsListPage extends StatefulWidget {
   const SpectatorSessionsListPage({super.key});
 
   @override
-  State<SpectatorSessionsListPage> createState() => _SpectatorSessionsListPageState();
+  State<SpectatorSessionsListPage> createState() =>
+      _SpectatorSessionsListPageState();
 }
 
 class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
@@ -39,8 +40,12 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error loading sessions: $e'),
-          backgroundColor: FrutiaColors.error,
+          content: Text(
+            'Error loading sessions: $e',
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -75,7 +80,8 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.sports_tennis, size: 64, color: FrutiaColors.disabledText),
+                      Icon(Icons.sports_tennis,
+                          size: 64, color: FrutiaColors.disabledText),
                       SizedBox(height: 16),
                       Text(
                         'No active sessions',
@@ -102,28 +108,27 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
     );
   }
 
-
   // Reemplaza el Container del badge "LIVE" con este código:
 
-Widget _buildStatusBadge(Map<String, dynamic> session) {
-  final isCompleted = (session['progress_percentage'] ?? 0) >= 100;
-  
-  return Container(
-    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-    decoration: BoxDecoration(
-      color: isCompleted ? FrutiaColors.primary : FrutiaColors.success,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Text(
-      isCompleted ? 'COMPLETED' : 'LIVE',
-      style: GoogleFonts.lato(
-        fontSize: 10,
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
+  Widget _buildStatusBadge(Map<String, dynamic> session) {
+    final isCompleted = (session['progress_percentage'] ?? 0) >= 100;
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isCompleted ? FrutiaColors.primary : FrutiaColors.success,
+        borderRadius: BorderRadius.circular(12),
       ),
-    ),
-  );
-} 
+      child: Text(
+        isCompleted ? 'COMPLETED' : 'LIVE',
+        style: GoogleFonts.lato(
+          fontSize: 10,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
 
   Widget _buildSessionCard(Map<String, dynamic> session) {
     return Container(
@@ -131,7 +136,8 @@ Widget _buildStatusBadge(Map<String, dynamic> session) {
       decoration: BoxDecoration(
         color: FrutiaColors.primaryBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: FrutiaColors.primary.withOpacity(0.4), width: 2),
+        border:
+            Border.all(color: FrutiaColors.primary.withOpacity(0.4), width: 2),
       ),
       child: InkWell(
         onTap: () {
@@ -166,13 +172,13 @@ Widget _buildStatusBadge(Map<String, dynamic> session) {
                     ),
                   ),
                   _buildStatusBadge(session),
-
                 ],
               ),
               SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.people, size: 16, color: FrutiaColors.secondaryText),
+                  Icon(Icons.people,
+                      size: 16, color: FrutiaColors.secondaryText),
                   SizedBox(width: 4),
                   Text(
                     '${session['number_of_players']} players',
@@ -182,7 +188,8 @@ Widget _buildStatusBadge(Map<String, dynamic> session) {
                     ),
                   ),
                   SizedBox(width: 16),
-                  Icon(Icons.location_on, size: 16, color: FrutiaColors.secondaryText),
+                  Icon(Icons.location_on,
+                      size: 16, color: FrutiaColors.secondaryText),
                   SizedBox(width: 4),
                   Text(
                     '${session['number_of_courts']} courts',

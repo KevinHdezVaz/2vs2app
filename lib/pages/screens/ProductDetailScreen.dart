@@ -85,7 +85,13 @@ class ProductDetailScreen extends StatelessWidget {
           context.read<ShoppingProvider>().addItemToUserList(item);
           Navigator.pop(context); // Opcional: regresa a la pantalla anterior
           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${item.name} añadido a tu lista')));
+            SnackBar(
+              content: Text('${item.name} añadido a tu lista',
+                  style: TextStyle(color: FrutiaColors.primary)),
+              backgroundColor: FrutiaColors.ElectricLime,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         },
         label: const Text('Añadir a mi lista'),
         icon: const Icon(Icons.add_shopping_cart),

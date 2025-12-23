@@ -46,16 +46,16 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               ),
             ),
             const SizedBox(height: 8),
-          Text(
-  'courts, players, and time \nwe\'ll handle the matchups!',
-  style: GoogleFonts.lato(
-    fontSize: 16,
-    color: FrutiaColors.secondaryText,
-  ),
-),
+            Text(
+              'courts, players, and time \nwe\'ll handle the matchups!',
+              style: GoogleFonts.lato(
+                fontSize: 16,
+                color: FrutiaColors.secondaryText,
+              ),
+            ),
 
             const SizedBox(height: 24),
-            
+
             // Session Name
             TextFormField(
               controller: _sessionNameController,
@@ -63,7 +63,8 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 labelText: 'Session Name',
                 hintText: 'e.g., Weekend Optimized',
                 prefixIcon: Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8), // ← Cambiado aquí
+                  padding:
+                      const EdgeInsets.fromLTRB(16, 8, 8, 8), // ← Cambiado aquí
                   child: Image.asset(
                     'assets/icons/raaqueta.png',
                     width: 12,
@@ -92,9 +93,9 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 widget.sessionData.sessionName = value;
               },
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Number of Courts
             _buildNumberSelector(
               label: 'Number of Courts',
@@ -109,7 +110,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 });
               },
             ),
-            
+
             // Duration
             _buildNumberSelector(
               label: 'Duration (Hours)',
@@ -123,7 +124,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 });
               },
             ),
-            
+
             // Number of Players
             _buildNumberSelector(
               label: 'Number of Players',
@@ -137,11 +138,11 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 });
               },
             ),
-            
+
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 24),
-            
+
             Text(
               'Game Settings',
               style: GoogleFonts.poppins(
@@ -151,7 +152,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Points per Game
             _buildDropdownField(
               label: 'Points per Game',
@@ -164,7 +165,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 });
               },
             ),
-            
+
             // Win By
             _buildDropdownField(
               label: 'Win By',
@@ -177,7 +178,7 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 });
               },
             ),
-            
+
             // Number of Sets
             _buildDropdownField(
               label: 'Number of Sets',
@@ -190,47 +191,47 @@ class _SessionDetailsScreenState extends State<SessionDetailsScreen> {
                 });
               },
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Next Button
 // En el botón "Next: Session Type" - LÍNEA ~95
 
 // Next Button
-SizedBox(
-  width: double.infinity,
-  child: ElevatedButton(
-    onPressed: () {
-      if (_formKey.currentState!.validate()) {
-        // ✅ SOLO inicializar si las listas están vacías
-        if (widget.sessionData.courtNames.isEmpty) {
-          widget.sessionData.initializeCourts();
-        }
-        
-        if (widget.sessionData.players.isEmpty) {
-          widget.sessionData.initializePlayers();
-        }
-        
-        widget.onNext();
-      }
-    },
-    style: ElevatedButton.styleFrom(
-      backgroundColor: FrutiaColors.primary,
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-    ),
-    child: Text(
-      'Next: Session Type',
-      style: GoogleFonts.poppins(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-      ),
-    ),
-  ),
-),            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    // ✅ SOLO inicializar si las listas están vacías
+                    if (widget.sessionData.courtNames.isEmpty) {
+                      widget.sessionData.initializeCourts();
+                    }
+
+                    if (widget.sessionData.players.isEmpty) {
+                      widget.sessionData.initializePlayers();
+                    }
+
+                    widget.onNext();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: FrutiaColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'Next: Session Type',
+                  style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: FrutiaColors.ElectricLime),
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
           ],
         ),
       ),
@@ -241,95 +242,98 @@ SizedBox(
     // QUITADA LA LÓGICA QUE LIMITABA JUGADORES BASADO EN CANCHAS
   }
 
-Widget _buildNumberSelector({
-  required String label,
-  required int value,
-  required int min,
-  required int max,
-  required IconData icon,
-  required Function(int) onChanged,
-}) {
-  final bool useCustomIcon = label == 'Number of Courts';
-  
-  return Container(
-    margin: const EdgeInsets.only(bottom: 16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.lato(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: FrutiaColors.primaryText,
+  Widget _buildNumberSelector({
+    required String label,
+    required int value,
+    required int min,
+    required int max,
+    required IconData icon,
+    required Function(int) onChanged,
+  }) {
+    final bool useCustomIcon = label == 'Number of Courts';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.lato(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: FrutiaColors.primaryText,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: FrutiaColors.primaryBackground,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: FrutiaColors.tertiaryBackground),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              // Contenedor con padding derecho para mover el icono a la derecha
-              Container(
-                width: 32,
-                height: 32,
-                alignment: Alignment.center,
-                // Agregar padding a la derecha para mover el icono
-                padding: const EdgeInsets.only(right: 4), // ← Ajusta este valor
-                child: useCustomIcon
-                    ? Image.asset(
-                        'assets/icons/icono_cancha.png',
-                        width: 32,
-                        height: 32,
-                        color: FrutiaColors.primary,
-                        colorBlendMode: BlendMode.srcIn,
-                      )
-                    : Icon(
-                        icon, 
-                        color: FrutiaColors.primary, 
-                        size: 24,
-                      ),
-              ),
-              const SizedBox(width: 12), // Puedes reducir este espacio también
-              Expanded(
-                child: Text(
-                  value.toString(),
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: FrutiaColors.primaryText,
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: FrutiaColors.primaryBackground,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: FrutiaColors.tertiaryBackground),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                // Contenedor con padding derecho para mover el icono a la derecha
+                Container(
+                  width: 32,
+                  height: 32,
+                  alignment: Alignment.center,
+                  // Agregar padding a la derecha para mover el icono
+                  padding:
+                      const EdgeInsets.only(right: 4), // ← Ajusta este valor
+                  child: useCustomIcon
+                      ? Image.asset(
+                          'assets/icons/icono_cancha.png',
+                          width: 32,
+                          height: 32,
+                          color: FrutiaColors.primary,
+                          colorBlendMode: BlendMode.srcIn,
+                        )
+                      : Icon(
+                          icon,
+                          color: FrutiaColors.primary,
+                          size: 24,
+                        ),
+                ),
+                const SizedBox(
+                    width: 12), // Puedes reducir este espacio también
+                Expanded(
+                  child: Text(
+                    value.toString(),
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: FrutiaColors.primaryText,
+                    ),
                   ),
                 ),
-              ),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: value > min ? () => onChanged(value - 1) : null,
-                    icon: const Icon(Icons.remove_circle_outline),
-                    color: FrutiaColors.primary,
-                    iconSize: 24,
-                  ),
-                  IconButton(
-                    onPressed: value < max ? () => onChanged(value + 1) : null,
-                    icon: const Icon(Icons.add_circle_outline),
-                    color: FrutiaColors.primary,
-                    iconSize: 24,
-                  ),
-                ],
-              ),
-            ],
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed:
+                          value > min ? () => onChanged(value - 1) : null,
+                      icon: const Icon(Icons.remove_circle_outline),
+                      color: FrutiaColors.primary,
+                      iconSize: 24,
+                    ),
+                    IconButton(
+                      onPressed:
+                          value < max ? () => onChanged(value + 1) : null,
+                      icon: const Icon(Icons.add_circle_outline),
+                      color: FrutiaColors.primary,
+                      iconSize: 24,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
-
+        ],
+      ),
+    );
+  }
 
   Widget _buildDropdownField({
     required String label,
@@ -413,17 +417,20 @@ Widget _buildNumberSelector({
     switch (type) {
       case 'T':
         title = 'Optimized';
-        description = 'Structured tournament in 3 stages with rotation and ranked play';
+        description =
+            'Structured tournament in 3 stages with rotation and ranked play';
         icon = Icons.emoji_events;
         break;
       case 'P4':
         title = 'Playoff 4';
-        description = 'Random matches leading to a final with the top 4 players';
+        description =
+            'Random matches leading to a final with the top 4 players';
         icon = Icons.filter_4;
         break;
       case 'P8':
         title = 'Playoff 8';
-        description = 'Random matches, then semifinals and finals with the top 8 players';
+        description =
+            'Random matches, then semifinals and finals with the top 8 players';
         icon = Icons.filter_8;
         break;
       default:

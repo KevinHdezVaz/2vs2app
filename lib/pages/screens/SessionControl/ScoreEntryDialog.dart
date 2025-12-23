@@ -444,9 +444,9 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
           SnackBar(
             content: Text(
               'Score recorded successfully!',
-              style: TextStyle(fontSize: 17),
+              style: TextStyle(fontSize: 17, color: FrutiaColors.primary),
             ),
-            backgroundColor: FrutiaColors.success,
+            backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -467,9 +467,9 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
           SnackBar(
             content: Text(
               'Error: ${e.toString().replaceAll('Exception: ', '')}',
-              style: TextStyle(fontSize: 17),
+              style: TextStyle(fontSize: 17, color: FrutiaColors.primary),
             ),
-            backgroundColor: FrutiaColors.error,
+            backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,
             duration: Duration(seconds: 4),
           ),
@@ -553,9 +553,9 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
             SnackBar(
               content: Text(
                 'Score updated! Rankings recalculated',
-                style: TextStyle(fontSize: 17),
+                style: TextStyle(fontSize: 17, color: FrutiaColors.primary),
               ),
-              backgroundColor: FrutiaColors.success,
+              backgroundColor: FrutiaColors.ElectricLime,
               behavior: SnackBarBehavior.floating,
               duration: Duration(seconds: 3),
             ),
@@ -584,9 +584,9 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
           SnackBar(
             content: Text(
               'Error: ${e.toString().replaceAll('Exception: ', '')}',
-              style: TextStyle(fontSize: 17),
+              style: TextStyle(fontSize: 17, color: FrutiaColors.primary),
             ),
-            backgroundColor: FrutiaColors.error,
+            backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,
             duration: Duration(seconds: 4),
           ),
@@ -810,6 +810,7 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: backgroundColor, width: 4),
       ),
       child: Row(
         children: [
@@ -819,18 +820,11 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  player1Name,
+                  '$player1Name / $player2Name',
                   style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: FrutiaColors.primaryText,
-                  ),
-                ),
-                Text(
-                  player2Name,
-                  style: GoogleFonts.lato(
-                    fontSize: 13,
-                    color: FrutiaColors.secondaryText,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: FrutiaColors.primary,
                   ),
                 ),
               ],
@@ -1004,7 +998,7 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
                               widget.isEditing ? 'Update' : 'Submit',
                               style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                                color: FrutiaColors.ElectricLime,
                               ),
                             ),
                     ),
@@ -1043,15 +1037,15 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
                     Text(
                       '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
                       style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        color: FrutiaColors.primary,
                       ),
                     ),
                     Text(
                       '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
                       style: GoogleFonts.lato(
-                        fontSize: 11,
-                        color: FrutiaColors.secondaryText,
+                        fontSize: 14,
+                        color: FrutiaColors.primary,
                       ),
                     ),
                   ],
@@ -1073,15 +1067,15 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
                     Text(
                       '${team2Player1['first_name']} ${team2Player1['last_initial']}.',
                       style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        color: FrutiaColors.primary,
                       ),
                     ),
                     Text(
                       '${team2Player2['first_name']} ${team2Player2['last_initial']}.',
                       style: GoogleFonts.lato(
-                        fontSize: 11,
-                        color: FrutiaColors.secondaryText,
+                        fontSize: 14,
+                        color: FrutiaColors.primary,
                       ),
                     ),
                   ],
@@ -1114,7 +1108,7 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: FrutiaColors.primary.withOpacity(0.1),
+              color: FrutiaColors.ElectricLime.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -1147,13 +1141,12 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     return Column(
       children: [
         _buildTeamRow(
-          player1Name:
-              '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
-          player2Name:
-              '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
-          controller: _team1Controller,
-          backgroundColor: FrutiaColors.accentLight,
-        ),
+            player1Name:
+                '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
+            player2Name:
+                '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
+            controller: _team1Controller,
+            backgroundColor: FrutiaColors.ElectricLime.withOpacity(0.13)),
         const SizedBox(height: 12),
         Text(
           'VS',

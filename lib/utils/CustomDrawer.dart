@@ -106,8 +106,12 @@ class CustomDrawer extends StatelessWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error logging out: $e'),
-              backgroundColor: FrutiaColors.error,
+              content: Text(
+                'Error logging out: $e',
+                style: TextStyle(color: FrutiaColors.primary),
+              ),
+              backgroundColor: FrutiaColors.ElectricLime,
+              behavior: SnackBarBehavior.floating,
             ),
           );
         }
@@ -735,8 +739,12 @@ class CustomDrawer extends StatelessWidget {
             );
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text('Account deleted successfully'),
-                backgroundColor: FrutiaColors.primary,
+                content: const Text(
+                  'Account deleted successfully',
+                  style: TextStyle(color: FrutiaColors.primary),
+                ),
+                backgroundColor: FrutiaColors.ElectricLime,
+                behavior: SnackBarBehavior.floating,
               ),
             );
           }
@@ -745,8 +753,12 @@ class CustomDrawer extends StatelessWidget {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Error deleting account: $e'),
-                backgroundColor: FrutiaColors.error,
+                content: Text(
+                  'Error deleting account: $e',
+                  style: TextStyle(color: FrutiaColors.primary),
+                ),
+                backgroundColor: FrutiaColors.ElectricLime,
+                behavior: SnackBarBehavior.floating,
               ),
             );
           }
@@ -763,8 +775,12 @@ class CustomDrawer extends StatelessWidget {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error loading account information: $e'),
-          backgroundColor: FrutiaColors.error,
+          content: Text(
+            'Error loading account information: $e',
+            style: TextStyle(color: FrutiaColors.primary),
+          ),
+          backgroundColor: FrutiaColors.ElectricLime,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
