@@ -113,7 +113,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         SnackBar(
           content: Text(
             e.message,
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
@@ -127,7 +128,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         SnackBar(
           content: Text(
             'Error: $e',
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
@@ -298,7 +300,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       SnackBar(
         content: Text(
           message,
-          style: TextStyle(color: FrutiaColors.primary),
+          style: TextStyle(
+              color: FrutiaColors.primary, fontWeight: FontWeight.bold),
         ),
         backgroundColor: FrutiaColors.ElectricLime,
         behavior: SnackBarBehavior.floating,

@@ -133,7 +133,8 @@ class _RegisterPageState extends State<RegisterPage>
         SnackBar(
           content: Text(
             'Welcome, $userName! Registration successful.',
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
@@ -153,7 +154,8 @@ class _RegisterPageState extends State<RegisterPage>
         SnackBar(
           content: Text(
             e.message,
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
@@ -167,7 +169,8 @@ class _RegisterPageState extends State<RegisterPage>
         SnackBar(
           content: Text(
             'An unexpected error occurred. Please try again.',
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
@@ -213,7 +216,8 @@ class _RegisterPageState extends State<RegisterPage>
       SnackBar(
         content: Text(
           message,
-          style: TextStyle(color: FrutiaColors.primary),
+          style: TextStyle(
+              color: FrutiaColors.primary, fontWeight: FontWeight.bold),
         ),
         backgroundColor: FrutiaColors.ElectricLime,
         behavior: SnackBarBehavior.floating,

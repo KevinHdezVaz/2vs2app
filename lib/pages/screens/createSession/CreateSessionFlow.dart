@@ -307,6 +307,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                         : 'Draft saved successfully!',
                     style: TextStyle(
                       fontSize: 16,
+                      color: FrutiaColors.LighterNavy,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -340,7 +341,10 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Session started successfully!',
-                style: TextStyle(fontSize: 17, color: FrutiaColors.primary)),
+                style: TextStyle(
+                    fontSize: 17,
+                    color: FrutiaColors.primary,
+                    fontWeight: FontWeight.bold)),
             backgroundColor: FrutiaColors.ElectricLime,
             duration: Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
@@ -413,7 +417,8 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
           SnackBar(
             content: Text(
               'Error: $errorMessage',
-              style: TextStyle(color: FrutiaColors.primary),
+              style: TextStyle(
+                  color: FrutiaColors.primary, fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             duration: const Duration(seconds: 4),

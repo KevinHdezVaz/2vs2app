@@ -112,7 +112,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
         SnackBar(
           content: Text(
               '¡Felicidades! Tu racha ahora es de $_currentStreak días.',
-              style: TextStyle(color: FrutiaColors.primary)),
+              style: TextStyle(
+                  color: FrutiaColors.primary, fontWeight: FontWeight.bold)),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
         ),
@@ -122,7 +123,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
         scaffoldMessenger.showSnackBar(
           SnackBar(
               content: Text(e.toString(),
-                  style: TextStyle(color: FrutiaColors.primary)),
+                  style: TextStyle(
+                      color: FrutiaColors.primary,
+                      fontWeight: FontWeight.bold)),
               backgroundColor: FrutiaColors.ElectricLime,
               behavior: SnackBarBehavior.floating),
         );

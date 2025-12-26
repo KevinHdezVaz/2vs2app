@@ -444,7 +444,10 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
           SnackBar(
             content: Text(
               'Score recorded successfully!',
-              style: TextStyle(fontSize: 17, color: FrutiaColors.primary),
+              style: TextStyle(
+                  fontSize: 17,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,
@@ -467,7 +470,10 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
           SnackBar(
             content: Text(
               'Error: ${e.toString().replaceAll('Exception: ', '')}',
-              style: TextStyle(fontSize: 17, color: FrutiaColors.primary),
+              style: TextStyle(
+                  fontSize: 17,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,
@@ -553,7 +559,10 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
             SnackBar(
               content: Text(
                 'Score updated! Rankings recalculated',
-                style: TextStyle(fontSize: 17, color: FrutiaColors.primary),
+                style: TextStyle(
+                    fontSize: 17,
+                    color: FrutiaColors.primary,
+                    fontWeight: FontWeight.bold),
               ),
               backgroundColor: FrutiaColors.ElectricLime,
               behavior: SnackBarBehavior.floating,
@@ -584,7 +593,10 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
           SnackBar(
             content: Text(
               'Error: ${e.toString().replaceAll('Exception: ', '')}',
-              style: TextStyle(fontSize: 17, color: FrutiaColors.primary),
+              style: TextStyle(
+                  fontSize: 17,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,

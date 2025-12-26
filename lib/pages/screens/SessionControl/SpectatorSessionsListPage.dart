@@ -42,7 +42,8 @@ class _SpectatorSessionsListPageState extends State<SpectatorSessionsListPage> {
         SnackBar(
           content: Text(
             'Error loading sessions: $e',
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,

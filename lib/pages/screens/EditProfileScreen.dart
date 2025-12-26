@@ -80,7 +80,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           SnackBar(
             content: Text(
               'Profile updated successfully!',
-              style: TextStyle(color: FrutiaColors.primary),
+              style: TextStyle(
+                  color: FrutiaColors.primary, fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,
@@ -96,7 +97,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           SnackBar(
             content: Text(
               e.toString().replaceAll('Exception: ', ''),
-              style: TextStyle(color: FrutiaColors.primary),
+              style: TextStyle(
+                  color: FrutiaColors.primary, fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,

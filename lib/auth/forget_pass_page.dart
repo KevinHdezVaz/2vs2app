@@ -31,7 +31,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           SnackBar(
             content: Text(
               "Password reset link sent successfully!",
-              style: TextStyle(color: FrutiaColors.primary),
+              style: TextStyle(
+                  color: FrutiaColors.primary, fontWeight: FontWeight.bold),
             ),
             duration: const Duration(seconds: 3),
             backgroundColor: FrutiaColors.ElectricLime,
@@ -48,7 +49,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         SnackBar(
           content: Text(
             e.toString(),
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           duration: const Duration(seconds: 3),
           backgroundColor: FrutiaColors.ElectricLime,

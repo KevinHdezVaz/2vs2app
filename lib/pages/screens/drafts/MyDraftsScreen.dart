@@ -52,7 +52,8 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
         SnackBar(
           content: Text(
             'Error loading drafts: ${e.toString()}',
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
@@ -496,7 +497,8 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
         SnackBar(
           content: Text(
             'Session activated successfully!',
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
@@ -521,7 +523,8 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
         SnackBar(
           content: Text(
             'Error: ${e.toString()}',
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
@@ -593,7 +596,8 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
         SnackBar(
           content: Text(
             'Draft deleted successfully',
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
@@ -610,7 +614,8 @@ class _MyDraftsScreenState extends State<MyDraftsScreen> {
         SnackBar(
           content: Text(
             'Error: ${e.toString()}',
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,

@@ -138,7 +138,8 @@ class _HomePageState extends State<HomePage> {
           SnackBar(
             content: Text(
               'Error loading sessions: ${e.toString()}',
-              style: TextStyle(color: FrutiaColors.primary),
+              style: TextStyle(
+                  color: FrutiaColors.primary, fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,
@@ -779,8 +780,8 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: (isDraft || isLocalDraft)
-                          ? FrutiaColors.warning.withOpacity(0.1)
-                          : FrutiaColors.progress.withOpacity(0.1),
+                          ? FrutiaColors.ModeratorTea.withOpacity(0.1)
+                          : FrutiaColors.LighterNavy.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -788,8 +789,8 @@ class _HomePageState extends State<HomePage> {
                           ? Icons.edit_square
                           : Icons.check_circle,
                       color: (isDraft || isLocalDraft)
-                          ? FrutiaColors.warning
-                          : FrutiaColors.progress,
+                          ? FrutiaColors.ModeratorTea
+                          : FrutiaColors.LighterNavy,
                       size: 20,
                     ),
                   ),

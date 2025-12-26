@@ -261,7 +261,9 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             content: Text(
               'Error loading session: ${e.toString()}',
               style: GoogleFonts.poppins(
-                  fontSize: 16, color: FrutiaColors.primary),
+                  fontSize: 16,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             duration: const Duration(seconds: 4),
@@ -653,7 +655,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                 controller: _tabController,
                 labelColor: FrutiaColors.primary,
                 unselectedLabelColor: FrutiaColors.disabledText,
-                indicatorColor: FrutiaColors.ElectricLime,
+                indicatorColor: FrutiaColors.LighterNavy,
                 indicatorWeight: 3, // ← Grosor de la línea
                 labelPadding:
                     const EdgeInsets.only(bottom: 9), // ← TEXTOS MÁS ARRIBA
@@ -1488,7 +1490,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: FrutiaColors.success.withOpacity(0.3),
+          color: Colors.grey.withOpacity(0.3),
           width: 2,
         ),
         boxShadow: [
@@ -1517,12 +1519,12 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: FrutiaColors.success.withOpacity(0.2),
+                      color: FrutiaColors.primary.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.emoji_events,
-                      color: FrutiaColors.success,
+                      color: FrutiaColors.primary,
                       size: 26,
                     ),
                   ),
@@ -1536,7 +1538,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                           style: GoogleFonts.poppins(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: FrutiaColors.primaryText,
+                            color: FrutiaColors.primary,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -1569,9 +1571,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                 decoration: BoxDecoration(
                   color: FrutiaColors.secondaryBackground.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: Colors.grey.withOpacity(0.2),
-                  ),
+                  border: Border.all(color: FrutiaColors.primary, width: 2),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -1612,9 +1612,10 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
+                          backgroundColor: FrutiaColors.ElectricLime,
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           side: BorderSide(
-                            color: FrutiaColors.primary.withOpacity(0.5),
+                            color: FrutiaColors.ElectricLime.withOpacity(0.5),
                             width: 1.5,
                           ),
                           shape: RoundedRectangleBorder(
@@ -2054,13 +2055,20 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       return '$firstName ${lastInitial}.';
     }).join(' & ');
 
+    // Determinar si es primer lugar
+    final isFirstPlace = title == '1st Place';
+
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: FrutiaColors.secondaryBackground.withOpacity(0.5),
+        color: isFirstPlace
+            ? FrutiaColors.LighterLime
+            : FrutiaColors.secondaryBackground.withOpacity(0.5),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: Colors.grey.withOpacity(0.1),
+          color: isFirstPlace
+              ? FrutiaColors.LighterLime.withOpacity(0.2)
+              : Colors.grey.withOpacity(0.1),
         ),
       ),
       child: Row(
@@ -2076,7 +2084,8 @@ class _SessionControlPanelState extends State<SessionControlPanel>
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: FrutiaColors.primaryText,
+                color:
+                    isFirstPlace ? FrutiaColors.primary : FrutiaColors.primary,
               ),
               overflow: TextOverflow.ellipsis,
               maxLines: 2,
@@ -2267,7 +2276,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
           style: GoogleFonts.poppins(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: FrutiaColors.primaryText,
+            color: FrutiaColors.primary,
           ),
         ),
         Text(
@@ -2527,7 +2536,9 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             content: Text(
               '✅ Finals generated successfully!',
               style: GoogleFonts.poppins(
-                  fontSize: 16, color: FrutiaColors.primary),
+                  fontSize: 16,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             duration: const Duration(seconds: 3),
@@ -2544,7 +2555,9 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             content: Text(
               '❌ Error: ${e.toString().replaceAll('Exception: ', '')}',
               style: GoogleFonts.poppins(
-                  fontSize: 16, color: FrutiaColors.primary),
+                  fontSize: 16,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             duration: const Duration(seconds: 4),
@@ -2647,8 +2660,10 @@ class _SessionControlPanelState extends State<SessionControlPanel>
         SnackBar(
           content: Text(
             '❌ Only the Session Owner can finalize the session',
-            style:
-                GoogleFonts.poppins(fontSize: 16, color: FrutiaColors.primary),
+            style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: FrutiaColors.primary,
+                fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           duration: const Duration(seconds: 3),
@@ -2768,7 +2783,8 @@ class _SessionControlPanelState extends State<SessionControlPanel>
         SnackBar(
           content: Text(
             'Error finalizing session: $e',
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
@@ -3916,7 +3932,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                       'Results copied to clipboard!',
                       style: GoogleFonts.poppins(
                         fontSize: 15,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                         color: FrutiaColors.primary,
                       ),
                     ),
@@ -3941,7 +3957,9 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             content: Text(
               'Error: ${e.toString()}',
               style: GoogleFonts.poppins(
-                  fontSize: 14, color: FrutiaColors.primary),
+                  fontSize: 14,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             duration: const Duration(seconds: 4),
@@ -4306,16 +4324,15 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  FrutiaColors.SpectatorGreen,
-                                  FrutiaColors.SpectatorGreen
+                                  FrutiaColors.SpectatorGreen.withOpacity(0.2),
+                                  FrutiaColors.SpectatorGreen.withOpacity(0.2)
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: FrutiaColors.SpectatorGreen.withOpacity(
-                                    0.3),
+                                color: FrutiaColors.SpectatorGreen,
                                 width: 2,
                               ),
                             ),
@@ -4348,9 +4365,6 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                         horizontal: 12, vertical: 10),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                          color: FrutiaColors.SpectatorGreen
-                                              .withOpacity(0.3)),
                                     ),
                                     child: Column(
                                       mainAxisAlignment:
@@ -4433,15 +4447,15 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    FrutiaColors.ModeratorTea,
-                                    FrutiaColors.ModeratorTea,
+                                    FrutiaColors.ModeratorTea.withOpacity(0.2),
+                                    FrutiaColors.ModeratorTea.withOpacity(0.2),
                                   ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: FrutiaColors.primary.withOpacity(0.3),
+                                  color: FrutiaColors.primary,
                                   width: 2,
                                 ),
                               ),
@@ -4454,14 +4468,15 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(Icons.vpn_key,
-                                          color: Colors.white, size: 16),
+                                          color: FrutiaColors.primary,
+                                          size: 16),
                                       const SizedBox(width: 4),
                                       Text(
                                         'Key',
                                         style: GoogleFonts.poppins(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.white,
+                                          color: FrutiaColors.primary,
                                         ),
                                       ),
                                     ],
@@ -4474,9 +4489,6 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                           horizontal: 8, vertical: 10),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                            color: FrutiaColors.ModeratorTea
-                                                .withOpacity(0.3)),
                                       ),
                                       child: Column(
                                         mainAxisAlignment:
@@ -4488,7 +4500,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.bold,
                                                 letterSpacing: 6,
-                                                color: Colors.white),
+                                                color: FrutiaColors.primary),
                                             textAlign: TextAlign.center,
                                           ),
                                           const SizedBox(height: 8),
@@ -4516,7 +4528,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                                       vertical: 4),
                                               decoration: BoxDecoration(
                                                 color: Colors.white
-                                                    .withOpacity(0.1),
+                                                    .withOpacity(0.3),
                                                 borderRadius:
                                                     BorderRadius.circular(6),
                                               ),
@@ -4524,7 +4536,8 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Icon(Icons.copy,
-                                                      color: Colors.white,
+                                                      color:
+                                                          FrutiaColors.primary,
                                                       size: 14),
                                                   const SizedBox(width: 4),
                                                   Text(
@@ -4533,7 +4546,8 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                                         fontSize: 10,
                                                         fontWeight:
                                                             FontWeight.w600,
-                                                        color: Colors.white),
+                                                        color: FrutiaColors
+                                                            .primary),
                                                   ),
                                                 ],
                                               ),
@@ -4574,7 +4588,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                     status.toUpperCase(),
                     valueColor: status == 'completed'
                         ? FrutiaColors.success
-                        : FrutiaColors.primary,
+                        : FrutiaColors.SpectatorGreen,
                   ),
                   const SizedBox(height: 8),
 
@@ -4989,16 +5003,28 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 
       await Future.delayed(const Duration(milliseconds: 500));
       await _loadSessionData();
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              sessionType == 'T'
-                  ? '✅ Advanced to next stage successfully!'
-                  : '✅ Playoff bracket generated successfully!',
-              style: GoogleFonts.poppins(
-                  fontSize: 16, color: FrutiaColors.primary),
+            content: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.check_circle,
+                  color: FrutiaColors.primary, // Navy
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  sessionType == 'T'
+                      ? 'Advanced to next stage successfully!'
+                      : 'Playoff bracket generated successfully!',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: FrutiaColors.primary, // Navy también en el texto
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             duration: const Duration(seconds: 3),
@@ -5015,7 +5041,9 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             content: Text(
               '❌ Error: ${e.toString().replaceAll('Exception: ', '')}',
               style: GoogleFonts.poppins(
-                  fontSize: 16, color: FrutiaColors.primary),
+                  fontSize: 16,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             duration: const Duration(seconds: 4),
@@ -5391,8 +5419,8 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            FrutiaColors.success,
-            FrutiaColors.success.withOpacity(0.8),
+            FrutiaColors.ModeratorTea,
+            FrutiaColors.ModeratorTea,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -5400,7 +5428,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: FrutiaColors.success.withOpacity(0.3),
+            color: FrutiaColors.ModeratorTea.withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -5419,7 +5447,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                 ),
                 child: Icon(
                   Icons.emoji_events,
-                  color: Colors.white,
+                  color: FrutiaColors.ElectricLime,
                   size: 32,
                 ),
               ),
@@ -5454,17 +5482,17 @@ class _SessionControlPanelState extends State<SessionControlPanel>
           ElevatedButton.icon(
             onPressed: () => _executeFinalizeSession(),
             icon:
-                Icon(Icons.check_circle, color: FrutiaColors.success, size: 22),
+                Icon(Icons.check_circle, color: FrutiaColors.primary, size: 22),
             label: Text(
               'Finalize Session & See Results',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: FrutiaColors.success,
+                color: FrutiaColors.primary,
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
+              backgroundColor: FrutiaColors.ElectricLime,
               foregroundColor: FrutiaColors.success,
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
               shape: RoundedRectangleBorder(
@@ -5574,7 +5602,9 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             content: Text(
               '❌ Error: ${e.toString().replaceAll('Exception: ', '')}',
               style: GoogleFonts.poppins(
-                  fontSize: 16, color: FrutiaColors.primary),
+                  fontSize: 16,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             duration: const Duration(seconds: 4),
@@ -7461,6 +7491,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                                 'Game moved back to the queue',
                                                 style: TextStyle(
                                                     fontSize: 17,
+                                                    fontWeight: FontWeight.bold,
                                                     color:
                                                         FrutiaColors.primary),
                                               ),
@@ -7479,8 +7510,9 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                               content: Text(
                                                 'Error: ${e.toString()}',
                                                 style: TextStyle(
-                                                    color:
-                                                        FrutiaColors.primary),
+                                                    color: FrutiaColors.primary,
+                                                    fontWeight:
+                                                        FontWeight.bold),
                                               ),
                                               backgroundColor:
                                                   FrutiaColors.ElectricLime,
@@ -7829,7 +7861,8 @@ class _SessionControlPanelState extends State<SessionControlPanel>
               'Game moved to court!', // ← Agregué !
               style: TextStyle(
                   fontSize: 17,
-                  color: FrutiaColors.primary), // ← Agregué fontSize
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold), // ← Agregué fontSize
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,
@@ -7844,7 +7877,10 @@ class _SessionControlPanelState extends State<SessionControlPanel>
               e.toString().contains('No courts available')
                   ? 'No courts available. Complete active games first.'
                   : 'Error: ${e.toString()}',
-              style: TextStyle(fontSize: 16, color: FrutiaColors.primary),
+              style: TextStyle(
+                  fontSize: 16,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.error,
             duration: Duration(seconds: 4),
@@ -7914,7 +7950,10 @@ class _SessionControlPanelState extends State<SessionControlPanel>
           SnackBar(
             content: Text(
               'Game started!',
-              style: TextStyle(fontSize: 17, color: FrutiaColors.primary),
+              style: TextStyle(
+                  fontSize: 17,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,
@@ -7938,7 +7977,8 @@ class _SessionControlPanelState extends State<SessionControlPanel>
           SnackBar(
             content: Text(
               errorMessage,
-              style: TextStyle(color: FrutiaColors.primary),
+              style: TextStyle(
+                  color: FrutiaColors.primary, fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             duration: Duration(seconds: 4),

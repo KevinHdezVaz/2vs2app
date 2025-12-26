@@ -108,7 +108,8 @@ class CustomDrawer extends StatelessWidget {
             SnackBar(
               content: Text(
                 'Error logging out: $e',
-                style: TextStyle(color: FrutiaColors.primary),
+                style: TextStyle(
+                    color: FrutiaColors.primary, fontWeight: FontWeight.bold),
               ),
               backgroundColor: FrutiaColors.ElectricLime,
               behavior: SnackBarBehavior.floating,
@@ -741,7 +742,8 @@ class CustomDrawer extends StatelessWidget {
               SnackBar(
                 content: const Text(
                   'Account deleted successfully',
-                  style: TextStyle(color: FrutiaColors.primary),
+                  style: TextStyle(
+                      color: FrutiaColors.primary, fontWeight: FontWeight.bold),
                 ),
                 backgroundColor: FrutiaColors.ElectricLime,
                 behavior: SnackBarBehavior.floating,
@@ -755,7 +757,8 @@ class CustomDrawer extends StatelessWidget {
               SnackBar(
                 content: Text(
                   'Error deleting account: $e',
-                  style: TextStyle(color: FrutiaColors.primary),
+                  style: TextStyle(
+                      color: FrutiaColors.primary, fontWeight: FontWeight.bold),
                 ),
                 backgroundColor: FrutiaColors.ElectricLime,
                 behavior: SnackBarBehavior.floating,
@@ -777,7 +780,8 @@ class CustomDrawer extends StatelessWidget {
         SnackBar(
           content: Text(
             'Error loading account information: $e',
-            style: TextStyle(color: FrutiaColors.primary),
+            style: TextStyle(
+                color: FrutiaColors.primary, fontWeight: FontWeight.bold),
           ),
           backgroundColor: FrutiaColors.ElectricLime,
           behavior: SnackBarBehavior.floating,
@@ -825,8 +829,8 @@ class CustomDrawer extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              FrutiaColors.accentLight,
-              FrutiaColors.primaryBackground,
+              FrutiaColors.LighterLime,
+              FrutiaColors.LighterLime,
             ],
           ),
         ),
@@ -888,17 +892,17 @@ class CustomDrawer extends StatelessWidget {
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: FrutiaColors.primary.withOpacity(0.1),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     Icons.logout,
-                    color: FrutiaColors.primary,
+                    color: FrutiaColors.SignalRed,
                   ),
                 ),
                 title: Text(
                   'Log Out',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.oswald(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: FrutiaColors.primary,
@@ -943,7 +947,8 @@ class CustomDrawer extends StatelessWidget {
       ),
       title: Text(
         title,
-        style: GoogleFonts.lato(
+        style: GoogleFonts.oswald(
+          // ← aquí el cambio principal
           fontSize: 16,
           fontWeight: FontWeight.w500,
           color: FrutiaColors.primaryText,

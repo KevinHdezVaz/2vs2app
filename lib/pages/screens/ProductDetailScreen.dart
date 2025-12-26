@@ -87,7 +87,9 @@ class ProductDetailScreen extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('${item.name} añadido a tu lista',
-                  style: TextStyle(color: FrutiaColors.primary)),
+                  style: TextStyle(
+                      color: FrutiaColors.primary,
+                      fontWeight: FontWeight.bold)),
               backgroundColor: FrutiaColors.ElectricLime,
               behavior: SnackBarBehavior.floating,
             ),

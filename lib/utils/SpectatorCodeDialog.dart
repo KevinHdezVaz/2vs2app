@@ -492,16 +492,16 @@ class _SpectatorCodeDialogState extends State<SpectatorCodeDialog>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ✅ HEADER VERDE (Como en la imagen)
+              // ✅ HEADER VERDE
               Container(
                 width: double.infinity,
                 padding:
-                    const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                    const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
                       FrutiaColors.SpectatorGreen,
-                      FrutiaColors.SpectatorGreen.withOpacity(0.8),
+                      FrutiaColors.SpectatorGreen
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -513,9 +513,8 @@ class _SpectatorCodeDialogState extends State<SpectatorCodeDialog>
                 ),
                 child: Column(
                   children: [
-                    // Icon con círculo de fondo
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         shape: BoxShape.circle,
@@ -527,41 +526,38 @@ class _SpectatorCodeDialogState extends State<SpectatorCodeDialog>
                       child: Icon(
                         Icons.remove_red_eye,
                         color: FrutiaColors.primary.withOpacity(0.9),
-                        size: 40,
+                        size: 48,
                       ),
                     ),
-                    const SizedBox(height: 24),
-
-                    // Title
+                    const SizedBox(height: 16),
                     Text(
-                      'JOIN AS SPECTATOR',
+                      'Join as Spectator',
                       style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                         color: FrutiaColors.primary,
-                        letterSpacing: 1,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              // ✅ CONTENIDO BLANCO (Como en la imagen)
+              // ✅ CONTENIDO BLANCO
               Padding(
-                padding: const EdgeInsets.all(32),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 child: Column(
                   children: [
-                    // Subtitle
+                    const SizedBox(height: 8),
                     Text(
-                      'Enter the 6-character session code to\nfollow the live bracket.',
-                      textAlign: TextAlign.center,
+                      'Enter the Session Code',
                       style: GoogleFonts.lato(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                        height: 1.5,
+                        fontSize: 15,
+                        color: Colors.black.withOpacity(0.9),
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 18),
 
                     // Label "SESSION CODE"
                     Align(
@@ -570,13 +566,13 @@ class _SpectatorCodeDialogState extends State<SpectatorCodeDialog>
                         'SESSION CODE',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey[500],
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black54,
                           letterSpacing: 1.2,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
 
                     // Code Input
                     TextField(
@@ -584,142 +580,165 @@ class _SpectatorCodeDialogState extends State<SpectatorCodeDialog>
                       textAlign: TextAlign.center,
                       textCapitalization: TextCapitalization.characters,
                       maxLength: 6,
-                      autofocus: true,
+                      enabled: !_isLoading,
                       style: GoogleFonts.robotoMono(
-                        fontSize: 32,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        letterSpacing: 8,
-                        color: Colors.grey[400],
+                        letterSpacing: 5,
+                        color: Colors.black,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'AB1234',
-                        hintStyle: GoogleFonts.robotoMono(
-                          fontSize: 32,
-                          letterSpacing: 8,
-                          color: Colors.grey[300],
+                        prefixIcon: const Icon(Icons.qr_code,
+                            color: FrutiaColors.SpectatorGreen),
+                        hintText: 'e.g., A1B2C3',
+                        hintStyle: GoogleFonts.lato(
+                          fontSize: 16,
+                          fontStyle: FontStyle.italic,
+                          color: FrutiaColors.secondaryText,
+                          letterSpacing: 1.5,
                         ),
                         counterText: '',
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(
-                            color: FrutiaColors.SpectatorGreen.withOpacity(0.3),
-                            width: 2,
-                          ),
+                              color:
+                                  FrutiaColors.SpectatorGreen.withOpacity(0.6),
+                              width: 2),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                           borderSide: const BorderSide(
-                            color: FrutiaColors.SpectatorGreen,
-                            width: 2,
-                          ),
+                              color: FrutiaColors.SpectatorGreen, width: 2),
                         ),
                         filled: true,
-                        fillColor: Colors.grey[50],
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 20,
-                          horizontal: 16,
-                        ),
+                        fillColor:
+                            FrutiaColors.SpectatorGreen.withOpacity(0.05),
                       ),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
-                        LengthLimitingTextInputFormatter(6),
                       ],
-                      onSubmitted: (_) => _searchSession(),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 20),
 
-                    // Buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _isLoading
-                                ? null
-                                : () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 18),
-                              side: BorderSide(
-                                color: Colors.grey[300]!,
-                                width: 2,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              backgroundColor: Colors.white,
-                            ),
+                    // INFO BOX
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: Colors.grey.withOpacity(0.5), width: 1.5),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline,
+                              color: Colors.grey, size: 22),
+                          const SizedBox(width: 12),
+                          Expanded(
                             child: Text(
-                              'CANCEL',
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w700,
-                                color: Colors.grey[700],
-                                fontSize: 15,
-                                letterSpacing: 0.5,
+                              'Ask the Session Owner for the code to spectate.',
+                              style: GoogleFonts.lato(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                                height: 1.4,
                               ),
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // BOTONES
+              Padding(
+                padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _isLoading
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          side: BorderSide(
+                              color: Colors.black.withOpacity(0.5), width: 1.5),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          backgroundColor: Colors.white.withOpacity(0.1),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              gradient: LinearGradient(
-                                colors: _isLoading
-                                    ? [Colors.grey[400]!, Colors.grey[400]!]
-                                    : [
-                                        FrutiaColors.SpectatorGreen,
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: LinearGradient(
+                            colors: _isLoading
+                                ? [
+                                    FrutiaColors.disabledText,
+                                    FrutiaColors.disabledText
+                                  ]
+                                : [
+                                    FrutiaColors.SpectatorGreen,
+                                    FrutiaColors.SpectatorGreen
+                                  ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          boxShadow: _isLoading
+                              ? []
+                              : [
+                                  BoxShadow(
+                                    color:
                                         FrutiaColors.SpectatorGreen.withOpacity(
-                                            0.8)
-                                      ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              boxShadow: _isLoading
-                                  ? []
-                                  : [
-                                      BoxShadow(
-                                        color: FrutiaColors.SpectatorGreen
-                                            .withOpacity(0.4),
-                                        blurRadius: 16,
-                                        offset: const Offset(0, 8),
-                                      ),
-                                    ],
-                            ),
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _searchSession,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 18),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                elevation: 0,
-                                shadowColor: Colors.transparent,
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                Colors.black),
-                                      ),
-                                    )
-                                  : Text(
-                                      'Search',
-                                      style: GoogleFonts.poppins(
-                                        fontWeight: FontWeight.w700,
-                                        color: FrutiaColors.primary,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                            ),
-                          ),
+                                            0.4),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
                         ),
-                      ],
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _searchSession,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : Text(
+                                  'Search',
+                                  style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                        ),
+                      ),
                     ),
                   ],
                 ),

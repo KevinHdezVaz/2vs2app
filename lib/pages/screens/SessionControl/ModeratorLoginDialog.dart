@@ -471,6 +471,19 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                     ),
                     const SizedBox(height: 18),
 
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'SESSION CODE',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black54,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     TextField(
                       controller: _sessionCodeController,
                       textCapitalization: TextCapitalization.characters,
@@ -515,6 +528,19 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                     const SizedBox(height: 16),
 
                     // Moderator Key
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'MODERATOR KEY',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black54,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     TextField(
                       controller: _verificationCodeController,
                       keyboardType: TextInputType.number,
@@ -528,7 +554,7 @@ class _ModeratorLoginDialogState extends State<ModeratorLoginDialog> {
                         color: Colors.black,
                       ),
                       decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.security,
+                        prefixIcon: const Icon(Icons.key,
                             color: FrutiaColors.ModeratorTea),
                         hintText: 'e.g., 12',
                         hintStyle: GoogleFonts.lato(
