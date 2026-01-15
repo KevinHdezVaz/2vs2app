@@ -24,25 +24,26 @@ class ScoreEntryDialog extends StatefulWidget {
 }
 
 class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
-  // Controllers para Best of 1
   final _team1Controller = TextEditingController();
   final _team2Controller = TextEditingController();
 
-  // Controllers para Best of 3 - Set 1
   final _team1Set1Controller = TextEditingController();
   final _team2Set1Controller = TextEditingController();
-
-  // Controllers para Best of 3 - Set 2
   final _team1Set2Controller = TextEditingController();
   final _team2Set2Controller = TextEditingController();
-
-  // Controllers para Best of 3 - Set 3 (solo si hay empate)
   final _team1Set3Controller = TextEditingController();
   final _team2Set3Controller = TextEditingController();
 
   bool _isSubmitting = false;
   String? _errorMessage;
   bool _enableSet3 = false;
+
+  String _formatPlayerName(Map<String, dynamic> player) {
+    final firstName = player['first_name'] ?? '';
+    final lastInitial = player['last_initial'] ?? '';
+    if (lastInitial.isEmpty) return firstName;
+    return '$firstName ${lastInitial[0].toUpperCase()}.';
+  }
 
   @override
   void initState() {
@@ -67,7 +68,6 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
         _team2Controller.text = widget.game['team2_score']?.toString() ?? '';
       }
     }
-
     if (_isBestOf3()) {
       _team1Set1Controller.addListener(_checkIfSet3Needed);
       _team2Set1Controller.addListener(_checkIfSet3Needed);
@@ -95,7 +95,6 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
 
   void _checkIfSet3Needed() {
     if (!_isBestOf3()) return;
-
     final set1Team1 = int.tryParse(_team1Set1Controller.text);
     final set1Team2 = int.tryParse(_team2Set1Controller.text);
     final set2Team1 = int.tryParse(_team1Set2Controller.text);
@@ -105,17 +104,13 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
         set1Team2 == null ||
         set2Team1 == null ||
         set2Team2 == null) {
-      setState(() {
-        _enableSet3 = false;
-      });
+      setState(() => _enableSet3 = false);
       return;
     }
 
     if (!_isSetValid(set1Team1, set1Team2) ||
         !_isSetValid(set2Team1, set2Team2)) {
-      setState(() {
-        _enableSet3 = false;
-      });
+      setState(() => _enableSet3 = false);
       return;
     }
 
@@ -124,38 +119,25 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     final team2Sets =
         (set1Team2 > set1Team1 ? 1 : 0) + (set2Team2 > set2Team1 ? 1 : 0);
 
-    setState(() {
-      _enableSet3 = (team1Sets == 1 && team2Sets == 1);
-    });
+    setState(() => _enableSet3 = (team1Sets == 1 && team2Sets == 1));
   }
 
   bool _isScoreValid() {
-    if (_isBestOf3()) {
-      return _isScoreValidBestOf3();
-    } else {
-      return _isScoreValidBestOf1();
-    }
+    return _isBestOf3() ? _isScoreValidBestOf3() : _isScoreValidBestOf1();
   }
 
   bool _isScoreValidBestOf1() {
-    if (_team1Controller.text.isEmpty || _team2Controller.text.isEmpty) {
+    if (_team1Controller.text.isEmpty || _team2Controller.text.isEmpty)
       return false;
-    }
-
     final team1Score = int.tryParse(_team1Controller.text);
     final team2Score = int.tryParse(_team2Controller.text);
-
-    if (team1Score == null || team2Score == null) {
-      return false;
-    }
+    if (team1Score == null || team2Score == null) return false;
 
     final pointsPerGame = widget.session['points_per_game'] as int;
     final winBy = widget.session['win_by'] as int;
 
     if (team1Score == team2Score) {
-      setState(() {
-        _errorMessage = 'Ties are not allowed';
-      });
+      setState(() => _errorMessage = 'Ties are not allowed');
       return false;
     }
 
@@ -166,66 +148,46 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     if (winBy == 2) {
       if (winnerScore == pointsPerGame) {
         if (loserScore > pointsPerGame - 2) {
-          setState(() {
-            _errorMessage =
-                'With winner at $pointsPerGame, loser cannot have more than ${pointsPerGame - 2} points';
-          });
+          setState(() => _errorMessage =
+              'With winner at $pointsPerGame, loser cannot have more than ${pointsPerGame - 2} points');
           return false;
         }
       } else if (winnerScore > pointsPerGame) {
         if (loserScore < pointsPerGame - 1) {
-          setState(() {
-            _errorMessage =
-                'With winner above $pointsPerGame, loser must have at least ${pointsPerGame - 1} points';
-          });
+          setState(() => _errorMessage =
+              'With winner above $pointsPerGame, loser must have at least ${pointsPerGame - 1} points');
           return false;
         }
-
         if (scoreDiff != 2) {
-          setState(() {
-            _errorMessage =
-                'With scores above $pointsPerGame, must win by exactly 2 points';
-          });
+          setState(() => _errorMessage =
+              'With scores above $pointsPerGame, must win by exactly 2 points');
           return false;
         }
       } else {
-        setState(() {
-          _errorMessage = 'Winner must have at least $pointsPerGame points';
-        });
+        setState(() =>
+            _errorMessage = 'Winner must have at least $pointsPerGame points');
         return false;
       }
     }
 
     if (winBy == 1) {
-      // Con win by 1, el partido termina cuando alguien llega a pointsPerGame
-      // No puede haber extensión más allá del puntaje objetivo
       if (winnerScore > pointsPerGame) {
-        setState(() {
-          _errorMessage =
-              'With win by 1, maximum score is $pointsPerGame points (no overtime)';
-        });
+        setState(() => _errorMessage =
+            'With win by 1, maximum score is $pointsPerGame points (no overtime)');
         return false;
       }
-
       if (winnerScore < pointsPerGame) {
-        setState(() {
-          _errorMessage = 'Winner must have at least $pointsPerGame points';
-        });
+        setState(() =>
+            _errorMessage = 'Winner must have at least $pointsPerGame points');
         return false;
       }
-
-      // Si el ganador tiene exactamente pointsPerGame, solo necesita ganar por 1
       if (scoreDiff < 1) {
-        setState(() {
-          _errorMessage = 'Must win by at least 1 point';
-        });
+        setState(() => _errorMessage = 'Must win by at least 1 point');
         return false;
       }
     }
 
-    setState(() {
-      _errorMessage = null;
-    });
+    setState(() => _errorMessage = null);
     return true;
   }
 
@@ -234,9 +196,7 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
         _team2Set1Controller.text.isEmpty ||
         _team1Set2Controller.text.isEmpty ||
         _team2Set2Controller.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Sets 1 and 2 are required';
-      });
+      setState(() => _errorMessage = 'Sets 1 and 2 are required');
       return false;
     }
 
@@ -249,84 +209,58 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
         set1Team2 == null ||
         set2Team1 == null ||
         set2Team2 == null) {
-      setState(() {
-        _errorMessage = 'Invalid scores in Sets 1 or 2';
-      });
+      setState(() => _errorMessage = 'Invalid scores in Sets 1 or 2');
       return false;
     }
 
     if (!_isSetValid(set1Team1, set1Team2)) {
-      setState(() {
-        _errorMessage = 'Set 1 has invalid scores';
-      });
+      setState(() => _errorMessage = 'Set 1 has invalid scores');
       return false;
     }
-
     if (!_isSetValid(set2Team1, set2Team2)) {
-      setState(() {
-        _errorMessage = 'Set 2 has invalid scores';
-      });
+      setState(() => _errorMessage = 'Set 2 has invalid scores');
       return false;
     }
 
     int team1SetsWon = 0;
     int team2SetsWon = 0;
-
-    if (set1Team1 > set1Team2) {
+    if (set1Team1 > set1Team2)
       team1SetsWon++;
-    } else {
+    else
       team2SetsWon++;
-    }
-
-    if (set2Team1 > set2Team2) {
+    if (set2Team1 > set2Team2)
       team1SetsWon++;
-    } else {
+    else
       team2SetsWon++;
-    }
 
     if (team1SetsWon == 1 && team2SetsWon == 1) {
       if (_team1Set3Controller.text.isEmpty ||
           _team2Set3Controller.text.isEmpty) {
-        setState(() {
-          _errorMessage = 'Set 3 is required (tied 1-1)';
-        });
+        setState(() => _errorMessage = 'Set 3 is required (tied 1-1)');
         return false;
       }
-
       final set3Team1 = int.tryParse(_team1Set3Controller.text);
       final set3Team2 = int.tryParse(_team2Set3Controller.text);
-
       if (set3Team1 == null || set3Team2 == null) {
-        setState(() {
-          _errorMessage = 'Invalid scores in Set 3';
-        });
+        setState(() => _errorMessage = 'Invalid scores in Set 3');
         return false;
       }
-
       if (!_isSetValid(set3Team1, set3Team2)) {
-        setState(() {
-          _errorMessage = 'Set 3 has invalid scores';
-        });
+        setState(() => _errorMessage = 'Set 3 has invalid scores');
         return false;
       }
-
-      if (set3Team1 > set3Team2) {
+      if (set3Team1 > set3Team2)
         team1SetsWon++;
-      } else {
+      else
         team2SetsWon++;
-      }
     }
 
     if (team1SetsWon != 2 && team2SetsWon != 2) {
-      setState(() {
-        _errorMessage = 'One team must win 2 sets';
-      });
+      setState(() => _errorMessage = 'One team must win 2 sets');
       return false;
     }
 
-    setState(() {
-      _errorMessage = null;
-    });
+    setState(() => _errorMessage = null);
     return true;
   }
 
@@ -334,9 +268,7 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     final pointsPerGame = widget.session['points_per_game'] as int;
     final winBy = widget.session['win_by'] as int;
 
-    if (score1 == score2) {
-      return false;
-    }
+    if (score1 == score2) return false;
 
     final winnerScore = score1 > score2 ? score1 : score2;
     final loserScore = score1 > score2 ? score2 : score1;
@@ -344,36 +276,19 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
 
     if (winBy == 2) {
       if (winnerScore == pointsPerGame) {
-        if (loserScore > pointsPerGame - 2) {
-          return false;
-        }
+        if (loserScore > pointsPerGame - 2) return false;
       } else if (winnerScore > pointsPerGame) {
-        if (loserScore < pointsPerGame - 1) {
-          return false;
-        }
-        if (scoreDiff != 2) {
-          return false;
-        }
+        if (loserScore < pointsPerGame - 1) return false;
+        if (scoreDiff != 2) return false;
       } else {
         return false;
       }
     }
 
     if (winBy == 1) {
-      // Con win by 1, el partido termina cuando alguien llega a pointsPerGame
-      // No puede haber extensión más allá del puntaje objetivo
-      if (winnerScore > pointsPerGame) {
-        return false;
-      }
-
-      if (winnerScore < pointsPerGame) {
-        return false;
-      }
-
-      // Si el ganador tiene exactamente pointsPerGame, solo necesita ganar por 1
-      if (scoreDiff < 1) {
-        return false;
-      }
+      if (winnerScore > pointsPerGame) return false;
+      if (winnerScore < pointsPerGame) return false;
+      if (scoreDiff < 1) return false;
     }
 
     return true;
@@ -388,7 +303,6 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     final set3Team2 = int.tryParse(_team2Set3Controller.text) ?? 0;
 
     int setsWon = 0;
-
     if (isTeam1) {
       if (set1Team1 > set1Team2) setsWon++;
       if (set2Team1 > set2Team2) setsWon++;
@@ -398,7 +312,6 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
       if (set2Team2 > set2Team1) setsWon++;
       if (_enableSet3 && set3Team2 > set3Team1) setsWon++;
     }
-
     return setsWon;
   }
 
@@ -412,27 +325,19 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     final set3 = int.tryParse(
             isTeam1 ? _team1Set3Controller.text : _team2Set3Controller.text) ??
         0;
-
     return set1 + set2 + set3;
   }
 
   Future<void> _submitScore() async {
-    if (!_isScoreValid()) {
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-    });
+    if (!_isScoreValid()) return;
+    setState(() => _isSubmitting = true);
 
     try {
-      // ✅ Si es EDICIÓN, usar flujo con recalculación
       if (widget.isEditing) {
         await _handleScoreEditWithRecalculation();
         return;
       }
 
-      // ✅ FLUJO NORMAL: Submit nuevo (sin edición)
       if (_isBestOf3()) {
         await _submitBestOf3Score();
       } else {
@@ -454,18 +359,11 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
           ),
         );
       }
-
       widget.onScoreSubmitted();
-
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
+      if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-
+        setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -484,9 +382,7 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     }
   }
 
-  // ✅ MÉTODO: Manejar edición con recalculación completa
   Future<void> _handleScoreEditWithRecalculation() async {
-    // Mostrar loading especial
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -498,21 +394,11 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
             children: [
               CircularProgressIndicator(),
               SizedBox(height: 16),
-              Text(
-                'Recalculating all ratings...',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
+              Text('Recalculating all ratings...',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               SizedBox(height: 8),
-              Text(
-                'This may take a moment',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
+              Text('This may take a moment',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600])),
             ],
           ),
         ),
@@ -521,7 +407,6 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
 
     try {
       Map<String, dynamic> result;
-
       if (_isBestOf3()) {
         result = await SessionService.updateScoreBestOf3WithRecalculation(
           gameId: widget.game['id'],
@@ -548,13 +433,10 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
         );
       }
 
-      // Cerrar loading dialog
       if (mounted) Navigator.of(context).pop();
 
       if (result['success']) {
         if (mounted) {
-          final gamesRecalculated = result['games_recalculated'] ?? 0;
-
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -570,25 +452,19 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
             ),
           );
         }
-
         widget.onScoreSubmitted();
         if (mounted) Navigator.of(context).pop();
       } else {
         throw Exception(result['error'] ?? 'Unknown error');
       }
     } catch (e) {
-      // Cerrar loading dialog si está abierto
       if (mounted) {
         try {
           Navigator.of(context).pop();
         } catch (_) {}
       }
-
       if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-
+        setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -610,19 +486,12 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
   Future<void> _submitBestOf1Score() async {
     final team1Score = int.parse(_team1Controller.text);
     final team2Score = int.parse(_team2Controller.text);
-
     if (widget.isEditing) {
       await SessionService.updateScore(
-        widget.game['id'],
-        team1Score,
-        team2Score,
-      );
+          widget.game['id'], team1Score, team2Score);
     } else {
       await SessionService.submitScore(
-        widget.game['id'],
-        team1Score,
-        team2Score,
-      );
+          widget.game['id'], team1Score, team2Score);
     }
   }
 
@@ -631,10 +500,8 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     final set1Team2 = int.parse(_team2Set1Controller.text);
     final set2Team1 = int.parse(_team1Set2Controller.text);
     final set2Team2 = int.parse(_team2Set2Controller.text);
-
     int? set3Team1;
     int? set3Team2;
-
     if (_enableSet3 &&
         _team1Set3Controller.text.isNotEmpty &&
         _team2Set3Controller.text.isNotEmpty) {
@@ -642,11 +509,10 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
       set3Team2 = int.parse(_team2Set3Controller.text);
     }
 
-    int team1Total = set1Team1 + set2Team1 + (set3Team1 ?? 0);
-    int team2Total = set1Team2 + set2Team2 + (set3Team2 ?? 0);
-
-    int team1SetsWon = _calculateSetsWon(true);
-    int team2SetsWon = _calculateSetsWon(false);
+    final team1Total = set1Team1 + set2Team1 + (set3Team1 ?? 0);
+    final team2Total = set1Team2 + set2Team2 + (set3Team2 ?? 0);
+    final team1SetsWon = _calculateSetsWon(true);
+    final team2SetsWon = _calculateSetsWon(false);
 
     if (widget.isEditing) {
       await SessionService.updateScoreBestOf3(
@@ -724,24 +590,22 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
                 hintText: '0',
                 hintStyle: TextStyle(color: FrutiaColors.disabledText),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide:
-                      BorderSide(color: FrutiaColors.tertiaryBackground),
-                ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: FrutiaColors.tertiaryBackground)),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide:
-                      BorderSide(color: FrutiaColors.tertiaryBackground),
-                ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: FrutiaColors.tertiaryBackground)),
                 disabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(
-                      color: FrutiaColors.tertiaryBackground.withOpacity(0.3)),
-                ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                        color:
+                            FrutiaColors.tertiaryBackground.withOpacity(0.3))),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
-                ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: FrutiaColors.primary, width: 2)),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 filled: true,
                 fillColor: enabled
@@ -751,13 +615,9 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            'vs',
-            style: GoogleFonts.poppins(
-              fontSize: 10,
-              color: FrutiaColors.disabledText,
-            ),
-          ),
+          Text('vs',
+              style: GoogleFonts.poppins(
+                  fontSize: 10, color: FrutiaColors.disabledText)),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(
@@ -780,24 +640,22 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
                 hintText: '0',
                 hintStyle: TextStyle(color: FrutiaColors.disabledText),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide:
-                      BorderSide(color: FrutiaColors.tertiaryBackground),
-                ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: FrutiaColors.tertiaryBackground)),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide:
-                      BorderSide(color: FrutiaColors.tertiaryBackground),
-                ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: FrutiaColors.tertiaryBackground)),
                 disabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(
-                      color: FrutiaColors.tertiaryBackground.withOpacity(0.3)),
-                ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                        color:
+                            FrutiaColors.tertiaryBackground.withOpacity(0.3))),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
-                ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: FrutiaColors.primary, width: 2)),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 filled: true,
                 fillColor: enabled
@@ -862,19 +720,17 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
                 hintText: '0',
                 hintStyle: TextStyle(color: FrutiaColors.disabledText),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide:
-                      BorderSide(color: FrutiaColors.tertiaryBackground),
-                ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: FrutiaColors.tertiaryBackground)),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide:
-                      BorderSide(color: FrutiaColors.tertiaryBackground),
-                ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: FrutiaColors.tertiaryBackground)),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: FrutiaColors.primary, width: 2),
-                ),
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: FrutiaColors.primary, width: 2)),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 filled: true,
                 fillColor: FrutiaColors.primaryBackground,
@@ -894,9 +750,7 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     final team2Player2 = widget.game['team2_player2'];
 
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
       child: SingleChildScrollView(
         child: Padding(
@@ -907,28 +761,24 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
               Text(
                 widget.isEditing ? 'Edit Score' : 'Submit Score',
                 style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: FrutiaColors.primaryText,
-                ),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: FrutiaColors.primaryText),
               ),
               const SizedBox(height: 6),
               Text(
                 'Game to ${widget.session['points_per_game']} points | Win by ${widget.session['win_by']}' +
                     (_isBestOf3() ? ' | Best of 3' : ''),
                 style: GoogleFonts.lato(
-                  fontSize: 11,
-                  color: FrutiaColors.secondaryText,
-                ),
+                    fontSize: 11, color: FrutiaColors.secondaryText),
               ),
               const SizedBox(height: 18),
-              if (_isBestOf3()) ...[
+              if (_isBestOf3())
                 _buildBestOf3UI(
-                    team1Player1, team1Player2, team2Player1, team2Player2),
-              ] else ...[
+                    team1Player1, team1Player2, team2Player1, team2Player2)
+              else
                 _buildBestOf1UI(
                     team1Player1, team1Player2, team2Player1, team2Player2),
-              ],
               if (_errorMessage != null) ...[
                 const SizedBox(height: 14),
                 Container(
@@ -940,19 +790,14 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.warning_rounded,
-                        color: FrutiaColors.warning,
-                        size: 18,
-                      ),
+                      Icon(Icons.warning_rounded,
+                          color: FrutiaColors.warning, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _errorMessage!,
                           style: GoogleFonts.lato(
-                            fontSize: 11,
-                            color: FrutiaColors.primaryText,
-                          ),
+                              fontSize: 11, color: FrutiaColors.primaryText),
                         ),
                       ),
                     ],
@@ -971,15 +816,13 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
                         side:
                             BorderSide(color: FrutiaColors.tertiaryBackground),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                            borderRadius: BorderRadius.circular(8)),
                       ),
                       child: Text(
                         'Cancel',
                         style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                          color: FrutiaColors.secondaryText,
-                        ),
+                            fontWeight: FontWeight.w600,
+                            color: FrutiaColors.secondaryText),
                       ),
                     ),
                   ),
@@ -993,25 +836,22 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
                             FrutiaColors.tertiaryBackground,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                            borderRadius: BorderRadius.circular(8)),
                       ),
                       child: _isSubmitting
                           ? const SizedBox(
                               height: 18,
                               width: 18,
                               child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white)),
                             )
                           : Text(
                               widget.isEditing ? 'Update' : 'Submit',
                               style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w600,
-                                color: FrutiaColors.ElectricLime,
-                              ),
+                                  fontWeight: FontWeight.w600,
+                                  color: FrutiaColors.ElectricLime),
                             ),
                     ),
                   ),
@@ -1041,25 +881,16 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: FrutiaColors.accentLight,
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                    color: FrutiaColors.accentLight,
+                    borderRadius: BorderRadius.circular(8)),
                 child: Column(
                   children: [
-                    Text(
-                      '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: FrutiaColors.primary,
-                      ),
-                    ),
-                    Text(
-                      '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        color: FrutiaColors.primary,
-                      ),
-                    ),
+                    Text(_formatPlayerName(team1Player1),
+                        style: GoogleFonts.poppins(
+                            fontSize: 14, color: FrutiaColors.primary)),
+                    Text(_formatPlayerName(team1Player2),
+                        style: GoogleFonts.lato(
+                            fontSize: 14, color: FrutiaColors.primary)),
                   ],
                 ),
               ),
@@ -1071,25 +902,16 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: FrutiaColors.secondaryBackground,
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                    color: FrutiaColors.secondaryBackground,
+                    borderRadius: BorderRadius.circular(8)),
                 child: Column(
                   children: [
-                    Text(
-                      '${team2Player1['first_name']} ${team2Player1['last_initial']}.',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: FrutiaColors.primary,
-                      ),
-                    ),
-                    Text(
-                      '${team2Player2['first_name']} ${team2Player2['last_initial']}.',
-                      style: GoogleFonts.lato(
-                        fontSize: 14,
-                        color: FrutiaColors.primary,
-                      ),
-                    ),
+                    Text(_formatPlayerName(team2Player1),
+                        style: GoogleFonts.poppins(
+                            fontSize: 14, color: FrutiaColors.primary)),
+                    Text(_formatPlayerName(team2Player2),
+                        style: GoogleFonts.lato(
+                            fontSize: 14, color: FrutiaColors.primary)),
                   ],
                 ),
               ),
@@ -1098,31 +920,27 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
         ),
         const SizedBox(height: 16),
         _buildSetRow(
-          setLabel: 'Set 1',
-          team1Controller: _team1Set1Controller,
-          team2Controller: _team2Set1Controller,
-          enabled: true,
-        ),
+            setLabel: 'Set 1',
+            team1Controller: _team1Set1Controller,
+            team2Controller: _team2Set1Controller,
+            enabled: true),
         _buildSetRow(
-          setLabel: 'Set 2',
-          team1Controller: _team1Set2Controller,
-          team2Controller: _team2Set2Controller,
-          enabled: true,
-        ),
+            setLabel: 'Set 2',
+            team1Controller: _team1Set2Controller,
+            team2Controller: _team2Set2Controller,
+            enabled: true),
         _buildSetRow(
-          setLabel: 'Set 3',
-          team1Controller: _team1Set3Controller,
-          team2Controller: _team2Set3Controller,
-          enabled: _enableSet3,
-        ),
+            setLabel: 'Set 3',
+            team1Controller: _team1Set3Controller,
+            team2Controller: _team2Set3Controller,
+            enabled: _enableSet3),
         if (_enableSet3) ...[
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: FrutiaColors.ElectricLime.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
+                color: FrutiaColors.ElectricLime.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8)),
             child: Row(
               children: [
                 Icon(Icons.info_outline, size: 16, color: FrutiaColors.primary),
@@ -1131,9 +949,7 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
                   child: Text(
                     'Tied 1-1! Set 3 is now active',
                     style: GoogleFonts.lato(
-                      fontSize: 11,
-                      color: FrutiaColors.primary,
-                    ),
+                        fontSize: 11, color: FrutiaColors.primary),
                   ),
                 ),
               ],
@@ -1153,27 +969,21 @@ class _ScoreEntryDialogState extends State<ScoreEntryDialog> {
     return Column(
       children: [
         _buildTeamRow(
-            player1Name:
-                '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
-            player2Name:
-                '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
-            controller: _team1Controller,
-            backgroundColor: FrutiaColors.ElectricLime.withOpacity(0.13)),
-        const SizedBox(height: 12),
-        Text(
-          'VS',
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: FrutiaColors.disabledText,
-          ),
+          player1Name: _formatPlayerName(team1Player1),
+          player2Name: _formatPlayerName(team1Player2),
+          controller: _team1Controller,
+          backgroundColor: FrutiaColors.ElectricLime.withOpacity(0.13),
         ),
         const SizedBox(height: 12),
+        Text('VS',
+            style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: FrutiaColors.disabledText)),
+        const SizedBox(height: 12),
         _buildTeamRow(
-          player1Name:
-              '${team2Player1['first_name']} ${team2Player1['last_initial']}.',
-          player2Name:
-              '${team2Player2['first_name']} ${team2Player2['last_initial']}.',
+          player1Name: _formatPlayerName(team2Player1),
+          player2Name: _formatPlayerName(team2Player2),
           controller: _team2Controller,
           backgroundColor: FrutiaColors.secondaryBackground,
         ),

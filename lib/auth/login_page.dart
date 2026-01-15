@@ -643,56 +643,6 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
                                   ),
                                 ),
 
-                                SizedBox(height: 10),
-
-                                SlideTransition(
-                                  position: _slideAnimation,
-                                  child: Container(
-                                    width: size.width * 0.8,
-                                    child: OutlinedButton(
-                                      onPressed: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (context) =>
-                                              const SpectatorCodeDialog(),
-                                        );
-                                      },
-                                      style: OutlinedButton.styleFrom(
-                                        backgroundColor: FrutiaColors.warning
-                                            .withOpacity(0.1),
-                                        padding:
-                                            EdgeInsets.symmetric(vertical: 16),
-                                        side: BorderSide(
-                                            color: FrutiaColors.warning,
-                                            width: 1.5),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(15),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.remove_red_eye_outlined,
-                                            color: Colors.black,
-                                            size: 24,
-                                          ),
-                                          SizedBox(width: 10),
-                                          Text(
-                                            "Join as Spectator",
-                                            style: GoogleFonts.lato(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
                                 SizedBox(height: 40),
 
                                 TextButton(

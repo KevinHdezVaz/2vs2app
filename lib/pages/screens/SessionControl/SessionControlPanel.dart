@@ -412,6 +412,30 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     return '$hours:$minutes:$secs';
   }
 
+  // ✅ NUEVO HELPER para formatear nombres
+  String _formatPlayerName(Map<String, dynamic> player) {
+    if (player['first_name'] == null) return 'Unknown';
+
+    final firstName = player['first_name'].toString();
+    final lastInitial = player['last_initial']?.toString() ?? '';
+
+    // Formatear Nombre (Title Case)
+    String formattedFirstName = firstName;
+    if (firstName.isNotEmpty) {
+      formattedFirstName = firstName[0].toUpperCase() +
+          (firstName.length > 1 ? firstName.substring(1).toLowerCase() : '');
+    }
+
+    // Formatear Apellido (Solo inicial + punto)
+    String formattedLastInitial = '';
+    if (lastInitial.isNotEmpty) {
+      // Tomar solo la primera letra y asegurar mayúscula
+      formattedLastInitial = '${lastInitial[0].toUpperCase()}.';
+    }
+
+    return '$formattedFirstName $formattedLastInitial'.trim();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -790,8 +814,8 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       ],
     );
   }
-// ✅ MÉTODO ACTUALIZADO: _buildNextGamesTab con botón "Copy Schedule"
 
+// ════════════════════════════════════════════════════════════════
   Widget _buildNextGamesTab() {
     final shouldShowFinalsButton = _shouldShowStartFinalsButton();
     final shouldShowFinalizeButton = _shouldShowFinalizeButton();
@@ -893,13 +917,33 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                   return _buildAdvanceStageButton();
                 }
 
-                // ✅ SOLUCIÓN: Calcular el índice REAL en _nextGames
+                // ✅ Calcular el índice REAL en _nextGames
                 final actualGameIndex = index - finalizeOffset;
                 final game = _nextGames[actualGameIndex];
 
-                // ✅ NUEVA LÓGICA: Solo el PRIMER juego puede iniciarse
+                // ════════════════════════════════════════════════════════
+                // ✅ CORRECCIÓN QUIRÚRGICA - CAMBIO DE 1 LÍNEA
+                // ════════════════════════════════════════════════════════
+                //
+                // ANTES (solo primer juego):
+                // final shouldShowStartGame =
+                //     (actualGameIndex == 0 && availableStartSlots > 0);
+                //
+                // AHORA (primeros N juegos, donde N = slots disponibles):
                 final shouldShowStartGame =
-                    (actualGameIndex == 0 && availableStartSlots > 0);
+                    (actualGameIndex < availableStartSlots) &&
+                        !isReallySpectator;
+                //
+                // EJEMPLO:
+                // - 2 canchas, 0 live → availableStartSlots = 2
+                //   → Juegos en posición 0 y 1 muestran botón ✅
+                //
+                // - 2 canchas, 1 live → availableStartSlots = 1
+                //   → Solo juego en posición 0 muestra botón ✅
+                //
+                // - 2 canchas, 2 live → availableStartSlots = 0
+                //   → Ningún juego muestra botón ✅
+                // ════════════════════════════════════════════════════════
 
                 return _buildGameCard(
                   game,
@@ -914,7 +958,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     );
   }
 
-// ✅ NUEVO WIDGET: Botón para ver schedule completo
+  // ✅ NUEVO WIDGET: Botón para ver schedule completo
   Widget _buildViewScheduleButton() {
     // ✅ NO MOSTRAR si es espectador
     if (isReallySpectator) {
@@ -1165,7 +1209,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                 child: Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: FrutiaColors.accentLight,
+                                    color: FrutiaColors.LighterLime,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Column(
@@ -1251,7 +1295,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                 child: Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: FrutiaColors.secondaryBackground,
+                                    color: FrutiaColors.NavyTint,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Column(
@@ -1284,11 +1328,9 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                             child: Text(
                                               'Team 2',
                                               style: GoogleFonts.poppins(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w600,
-                                                color:
-                                                    FrutiaColors.secondaryText,
-                                              ),
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: FrutiaColors.primary),
                                             ),
                                           ),
                                         ],
@@ -1299,7 +1341,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                         style: GoogleFonts.poppins(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
-                                          color: FrutiaColors.primaryText,
+                                          color: FrutiaColors.primary,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -1308,7 +1350,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                         team2P2Name,
                                         style: GoogleFonts.lato(
                                           fontSize: 11,
-                                          color: FrutiaColors.secondaryText,
+                                          color: FrutiaColors.primary,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -1449,7 +1491,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white, size: 20),
+                Icon(Icons.check_circle, color: FrutiaColors.primary, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -1645,18 +1687,18 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                           _tabController.animateTo(3);
                         },
                         icon: Icon(Icons.leaderboard,
-                            size: 16, color: Colors.white),
+                            size: 16, color: FrutiaColors.ElectricLime),
                         label: Text(
                           'View Rankings',
                           style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
-                            color: Colors.white,
+                            color: FrutiaColors.ElectricLime,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: FrutiaColors.primary,
-                          foregroundColor: Colors.white,
+                          foregroundColor: FrutiaColors.ElectricLime,
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -2039,23 +2081,19 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     return players;
   }
 
-  /// ✅ NUEVO: Línea de ganadores (parejas)
   Widget _buildWinnerLine(String emoji, String title, List players) {
-    // Filtrar jugadores válidos
-    final validPlayers = players.where((p) => p != null).toList();
+    // ✅ Solución: usar whereType para filtrar nulos y tipar correctamente
+    final List<Map<String, dynamic>> validPlayers =
+        players.whereType<Map<String, dynamic>>().toList();
 
     if (validPlayers.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    // Formatear nombres de la pareja
-    final playerNames = validPlayers.map((player) {
-      final firstName = player['first_name']?.toString() ?? '';
-      final lastInitial = player['last_initial']?.toString() ?? '';
-      return '$firstName ${lastInitial}.';
-    }).join(' & ');
+    // Ahora Dart sabe que cada elemento es Map<String, dynamic>
+    // → puede usar _formatPlayerName sin problemas
+    final playerNames = validPlayers.map(_formatPlayerName).join(' & ');
 
-    // Determinar si es primer lugar
     final isFirstPlace = title == '1st Place';
 
     return Container(
@@ -2075,7 +2113,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
         children: [
           Text(
             emoji,
-            style: TextStyle(fontSize: 18),
+            style: const TextStyle(fontSize: 18),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -2186,16 +2224,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 // ✅ CORREGIDO: Línea individual - SOLO NOMBRE
   Widget _buildTop3PlayerLine(String emoji, String position, dynamic player) {
     // ✅ CORREGIDO: Obtener nombre correctamente
-    String playerName = 'Unknown Player';
-
-    // Intentar diferentes formas de obtener el nombre
-    if (player['display_name'] != null) {
-      playerName = player['display_name'].toString();
-    } else if (player['first_name'] != null && player['last_initial'] != null) {
-      playerName = '${player['first_name']} ${player['last_initial']}.';
-    } else if (player['first_name'] != null) {
-      playerName = player['first_name'].toString();
-    }
+    final playerName = _formatPlayerName(player);
 
     // ✅ DEBUG: Ver qué datos tenemos
     print('🎯 Player data for $position:');
@@ -2294,23 +2323,45 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     if (_sessionData == null) return false;
     if (_sessionData!['session_type'] != 'P8') return false;
 
-    // ✅ CORREGIDO: Comparar con 1 en lugar de true
-    final completedSemifinals = _completedGames.where((g) {
-      final isPlayoff =
-          g['is_playoff_game'] == 1 || g['is_playoff_game'] == true;
-      final round = g['playoff_round']?.toString().toLowerCase();
-      return isPlayoff && round == 'semifinal';
-    }).toList();
+    // Detectar si es P8 especial (6-7 jugadores, 1 cancha)
+    final bool isSpecialP8 = _isSpecialP8();
+
+    // Contar partidos completados que califican para generar finals
+    int qualifyingGamesCompleted = 0;
+
+    if (isSpecialP8) {
+      // En P8 especial: contar Qualifier completado
+      qualifyingGamesCompleted = _completedGames.where((g) {
+        final isPlayoff =
+            g['is_playoff_game'] == 1 || g['is_playoff_game'] == true;
+        final round = g['playoff_round']?.toString().toLowerCase();
+        return isPlayoff && round == 'qualifier';
+      }).length;
+    } else {
+      // En P8 normal: contar semifinales completadas
+      qualifyingGamesCompleted = _completedGames.where((g) {
+        final isPlayoff =
+            g['is_playoff_game'] == 1 || g['is_playoff_game'] == true;
+        final round = g['playoff_round']?.toString().toLowerCase();
+        return isPlayoff && round == 'semifinal';
+      }).length;
+    }
 
     // Verificar que NO haya finals ya generadas
     final hasFinals = _nextGames.any((g) =>
             (g['is_playoff_game'] == 1 || g['is_playoff_game'] == true) &&
-            (g['playoff_round'] == 'gold' || g['playoff_round'] == 'bronze')) ||
+            (g['playoff_round'] == 'gold' ||
+                g['playoff_round'] == 'bronze' ||
+                g['playoff_round'] == 'final')) ||
         _completedGames.any((g) =>
             (g['is_playoff_game'] == 1 || g['is_playoff_game'] == true) &&
-            (g['playoff_round'] == 'gold' || g['playoff_round'] == 'bronze'));
+            (g['playoff_round'] == 'gold' ||
+                g['playoff_round'] == 'bronze' ||
+                g['playoff_round'] == 'final'));
 
-    return completedSemifinals.length == 2 && !hasFinals;
+    final requiredGames = isSpecialP8 ? 1 : 2; // 1 Qualifier o 2 Semifinales
+
+    return qualifyingGamesCompleted == requiredGames && !hasFinals;
   }
 
 // ✅ AGREGAR MÉTODO AUXILIAR
@@ -2336,10 +2387,10 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       margin: const EdgeInsets.only(left: 16, right: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: FrutiaColors.accent.withOpacity(0.1),
+        color: FrutiaColors.ModeratorTea,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: FrutiaColors.accent,
+          color: FrutiaColors.ModeratorTea,
           width: 2,
         ),
       ),
@@ -2348,7 +2399,8 @@ class _SessionControlPanelState extends State<SessionControlPanel>
         children: [
           Row(
             children: [
-              Icon(Icons.help_outline, color: FrutiaColors.accent, size: 28),
+              Icon(Icons.help_outline,
+                  color: FrutiaColors.ElectricLime, size: 28),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -2359,7 +2411,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: FrutiaColors.primaryText,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -2367,7 +2419,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                       'Start Final games based on semifinal results',
                       style: GoogleFonts.lato(
                         fontSize: 14,
-                        color: FrutiaColors.secondaryText,
+                        color: Colors.white,
                         height: 1.4,
                       ),
                     ),
@@ -2377,24 +2429,20 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             ],
           ),
           const SizedBox(height: 16),
-          Container(
-            height: 1,
-            color: Colors.grey[300],
-          ),
-          const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: () => _showStartFinalsConfirmation(),
-            icon: Icon(Icons.emoji_events, color: Colors.white, size: 20),
+            icon:
+                Icon(Icons.emoji_events, color: FrutiaColors.primary, size: 20),
             label: Text(
               'Generate Finals',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: FrutiaColors.primary,
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: FrutiaColors.accent2,
+              backgroundColor: FrutiaColors.ElectricLime,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
               shape: RoundedRectangleBorder(
@@ -2420,12 +2468,12 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: FrutiaColors.accent.withOpacity(0.1),
+                color: FrutiaColors.LighterNavy.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.emoji_events,
-                color: FrutiaColors.accent,
+                color: FrutiaColors.LighterNavy,
                 size: 48,
               ),
             ),
@@ -2482,7 +2530,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: FrutiaColors.accent.withOpacity(0.4),
+                          color: FrutiaColors.LighterNavy.withOpacity(0.4),
                           blurRadius: 12,
                           offset: const Offset(0, 6),
                         ),
@@ -2491,7 +2539,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(context, true),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: FrutiaColors.accent,
+                        backgroundColor: FrutiaColors.LighterNavy,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -2504,7 +2552,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: FrutiaColors.ElectricLime,
                         ),
                       ),
                     ),
@@ -2801,6 +2849,13 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 
     // ✅✅✅ NUEVO: AGREGAR ESTO AL INICIO ✅✅✅
     final sessionType = _sessionData?['session_type'];
+
+// ✅ NUEVA CONDICIÓN: Ocultar si estamos esperando generar las Finals en P8 especial
+    if (sessionType == 'P8' && _shouldShowStartFinalsButton()) {
+      print(
+          '[DEBUG] ❌ Ocultando Advance to Playoffs: Ya se debe generar Finals (P8 especial)');
+      return const SizedBox.shrink();
+    }
 
     // ✅ MODO SIMPLE: Mostrar botón/mensaje "Finalize" cuando no hay juegos pendientes
     if (sessionType == 'S') {
@@ -3925,7 +3980,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
             SnackBar(
               content: Row(
                 children: [
-                  Icon(Icons.check_circle, color: Colors.white),
+                  Icon(Icons.check_circle, color: FrutiaColors.LighterNavy),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -4352,7 +4407,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                       style: GoogleFonts.poppins(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
-                                        color: FrutiaColors.primaryText,
+                                        color: FrutiaColors.LighterNavy,
                                       ),
                                     ),
                                   ],
@@ -4447,15 +4502,15 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    FrutiaColors.ModeratorTea.withOpacity(0.2),
-                                    FrutiaColors.ModeratorTea.withOpacity(0.2),
+                                    FrutiaColors.ModeratorTeaLight,
+                                    FrutiaColors.ModeratorTeaLight
                                   ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: FrutiaColors.primary,
+                                  color: FrutiaColors.ModeratorTea,
                                   width: 2,
                                 ),
                               ),
@@ -5016,11 +5071,11 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                 const SizedBox(width: 10),
                 Text(
                   sessionType == 'T'
-                      ? 'Advanced to next stage successfully!'
-                      : 'Playoff bracket generated successfully!',
+                      ? 'Advanced to next stage\nsuccessfully!'
+                      : 'Playoff bracket generated\nsuccessfully!',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
-                    color: FrutiaColors.primary, // Navy también en el texto
+                    color: FrutiaColors.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -5247,8 +5302,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                   Container(
                     width: 100, // ← ANCHO FIJO para nombres
                     child: Text(
-                      _truncateName(
-                          '${player['first_name']} ${player['last_initial']}.'),
+                      _truncateName(_formatPlayerName(player)),
                       style: GoogleFonts.poppins(
                         fontSize: 13, // ← Fuente ligeramente más pequeña
                         fontWeight: FontWeight.w600,
@@ -5616,58 +5670,101 @@ class _SessionControlPanelState extends State<SessionControlPanel>
   }
 
 // ✅ NUEVO MÉTODO: Modal simple para finalización MANUAL
+
   Future<void> _showSimpleSessionCompletedDialog() async {
     await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        contentPadding: const EdgeInsets.all(24),
-        title: Row(
-          children: [
-            Icon(Icons.check_circle, color: FrutiaColors.success, size: 28),
-            const SizedBox(width: 12),
-            Text(
-              'Session Completed',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: FrutiaColors.primaryText,
-              ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        contentPadding: EdgeInsets.zero, // ← Para controlar padding manualmente
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header elegante (igual estilo que Final Results)
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: FrutiaColors.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: FrutiaColors.primary.withOpacity(0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.check_circle_rounded,
+                        color: FrutiaColors.LighterNavy,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Session Completed!',
+                            style: GoogleFonts.poppins(
+                              fontSize: 19,
+                              fontWeight: FontWeight.bold,
+                              color: FrutiaColors.LighterNavy, // Navy
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'The session has been successfully finalized.',
+                            style: GoogleFonts.lato(
+                              fontSize: 14,
+                              color: FrutiaColors.secondaryText,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 28),
+                // Botón Close centrado y bonito
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: FrutiaColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                      shadowColor: FrutiaColors.primary.withOpacity(0.3),
+                    ),
+                    child: Text(
+                      'Close',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        content: Text(
-          'The session has been successfully finalized.',
-          style: GoogleFonts.lato(
-            fontSize: 15,
-            color: FrutiaColors.secondaryText,
-            height: 1.4,
           ),
         ),
-        actions: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: FrutiaColors.primary,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                'Close',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -5948,9 +6045,6 @@ class _SessionControlPanelState extends State<SessionControlPanel>
           ...players.map((player) {
             if (player == null) return const SizedBox.shrink();
 
-            final firstName = player['first_name'] ?? 'Unknown';
-            final lastInitial = player['last_initial'] ?? '?';
-
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
@@ -5958,7 +6052,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                   Icon(Icons.person, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 6),
                   Text(
-                    '$firstName $lastInitial.',
+                    _formatPlayerName(player),
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -6169,11 +6263,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 
           // ✅ CONSTRUIR EL NOMBRE desde first_name y last_initial
           String playerName = 'Unknown Player';
-          if (player['first_name'] != null && player['last_initial'] != null) {
-            playerName = '${player['first_name']} ${player['last_initial']}.';
-          } else if (player['first_name'] != null) {
-            playerName = player['first_name'].toString();
-          }
+          playerName = _formatPlayerName(player);
 
           return Container(
             margin: EdgeInsets.only(bottom: index < 2 ? 8 : 0),
@@ -6426,8 +6516,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            player['display_name']?.toString() ??
-                                'Unknown Player',
+                            _formatPlayerName(player),
                             style: GoogleFonts.poppins(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -6568,8 +6657,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              player['display_name']?.toString() ??
-                                  'Unknown Player',
+                              _formatPlayerName(player),
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -6920,11 +7008,9 @@ class _SessionControlPanelState extends State<SessionControlPanel>
     final isCourtAvailable = hasCourtAssigned && courtStatus == 'available';
 
     // ✅ NUEVA LÓGICA: Usar el parámetro shouldShowStartGame que viene del cálculo
-    final showStartGameButton = isPending &&
-        hasCourtAssigned &&
-        isCourtAvailable &&
-        shouldShowStartGame &&
-        !widget.isSpectator;
+    //final showStartGameButton = isPending && hasCourtAssigned && isCourtAvailable && shouldShowStartGame && !widget.isSpectator;
+
+    final showStartGameButton = shouldShowStartGame;
 
     print('🔄 Game Card Debug - Game #${game['game_number']}:');
     print('   - hasCourtAssigned: $hasCourtAssigned');
@@ -7123,8 +7209,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
 
                               // Botones de acción (skip, edit, cancel)
                               if (isPending &&
-                                  !hasCourtAssigned &&
-                                  queuePosition != 1 &&
+                                  !shouldShowStartGame && // ← CAMBIO CLAVE: Si NO tiene "Start Game", muestra "Skip"
                                   !widget.isSpectator) ...[
                                 InkWell(
                                   onTap: () => _showSkipLineConfirmation(game),
@@ -7144,7 +7229,6 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                   ),
                                 ),
                               ],
-
                               // Edit button for completed games
                               if (isCompleted && !widget.isSpectator) ...[
                                 InkWell(
@@ -7567,7 +7651,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '${team1Player1['first_name']} ${team1Player1['last_initial']}.',
+                                    _formatPlayerName(team1Player1),
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
@@ -7577,7 +7661,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                     ),
                                   ),
                                   Text(
-                                    '${team1Player2['first_name']} ${team1Player2['last_initial']}.',
+                                    _formatPlayerName(team1Player2),
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
@@ -7626,7 +7710,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    '${team2Player1['first_name']} ${team2Player1['last_initial']}.',
+                                    _formatPlayerName(team2Player1),
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
@@ -7637,7 +7721,7 @@ class _SessionControlPanelState extends State<SessionControlPanel>
                                     textAlign: TextAlign.right,
                                   ),
                                   Text(
-                                    '${team2Player2['first_name']} ${team2Player2['last_initial']}.',
+                                    _formatPlayerName(team2Player2),
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
@@ -7873,18 +7957,26 @@ class _SessionControlPanelState extends State<SessionControlPanel>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              e.toString().contains('No courts available')
-                  ? 'No courts available. Complete active games first.'
-                  : 'Error: ${e.toString()}',
-              style: TextStyle(
-                  fontSize: 16,
-                  color: FrutiaColors.primary,
-                  fontWeight: FontWeight.bold),
+            content: Row(
+              children: [
+                Icon(Icons.warning, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    e.toString().contains('No courts available')
+                        ? 'No courts available. Complete live games first.'
+                        : 'Error: ${e.toString()}',
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
             backgroundColor: FrutiaColors.error,
-            duration: Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating, // Add floating behavior
           ),
         );
       }

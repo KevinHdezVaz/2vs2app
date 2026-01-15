@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // ← NUEVO
+import 'package:flutter/services.dart';
 import 'dart:convert';
 
 class HomePage extends StatefulWidget {
@@ -178,6 +179,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: FrutiaColors.secondaryBackground,
       drawer: CustomDrawer(userName: _userName, userEmail: _userEmail),
       appBar: AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle.light,
         flexibleSpace: Container(
           decoration: const BoxDecoration(color: FrutiaColors.primary),
         ),
@@ -196,8 +198,8 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Image.asset(
-              'assets/icons/LogoAppWorkana.png',
-              height: 50,
+              'assets/icons/logoAppBueno.png',
+              height: 40,
               fit: BoxFit.contain,
             ),
           ),
@@ -309,10 +311,12 @@ class _HomePageState extends State<HomePage> {
         children: [
           Text(
             'Account Summary',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+            style: GoogleFonts.oswald(
+              fontSize: 24, // ← Un poco más grande
+              fontWeight: FontWeight.w700, // ← Bold (700), no w600
+              fontStyle: FontStyle.italic, // ← Italic
               color: FrutiaColors.primary,
+              letterSpacing: 0.5, // ← Letter spacing
             ),
           ),
           const SizedBox(height: 12),
@@ -477,10 +481,13 @@ class _HomePageState extends State<HomePage> {
         children: [
           Text(
             'Quick Actions',
-            style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: FrutiaColors.primary),
+            style: GoogleFonts.oswald(
+              fontSize: 24, // ← Más grande
+              fontWeight: FontWeight.w700, // ← Bold
+              fontStyle: FontStyle.italic, // ← Italic
+              color: FrutiaColors.primary,
+              letterSpacing: 0.5, // ← Spacing
+            ),
           ),
           const SizedBox(height: 16),
 
@@ -561,10 +568,12 @@ class _HomePageState extends State<HomePage> {
           children: [
             Text(
               'My Sessions',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+              style: GoogleFonts.oswald(
+                fontSize: 24, // ← Más grande
+                fontWeight: FontWeight.w700, // ← Bold
+                fontStyle: FontStyle.italic, // ← Italic
                 color: FrutiaColors.primary,
+                letterSpacing: 0.5, // ← Spacing
               ),
             ),
             const SizedBox(height: 16),
@@ -1085,6 +1094,8 @@ class _HomePageState extends State<HomePage> {
                                   fontWeight: FontWeight.w600,
                                   color: FrutiaColors.primaryText,
                                 ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             Container(
@@ -1351,7 +1362,10 @@ class _HomePageState extends State<HomePage> {
           SnackBar(
             content: Text(
               'Draft deleted successfully!',
-              style: TextStyle(fontSize: 16, color: FrutiaColors.primary),
+              style: TextStyle(
+                  fontSize: 16,
+                  color: FrutiaColors.primary,
+                  fontWeight: FontWeight.bold),
             ),
             backgroundColor: FrutiaColors.ElectricLime,
             behavior: SnackBarBehavior.floating,

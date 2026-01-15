@@ -33,6 +33,8 @@ class FrutiaColors {
 
   static const Color LighterLime = Color(0xFFF7FDD4); // Slate Teal más claro
 
+  static const Color NavyTint = Color(0xFFE8EBF2);
+
   static const Color ModeratorTeaLight =
       Color(0xFFE7F3F5); // Slate Teal más claro
 

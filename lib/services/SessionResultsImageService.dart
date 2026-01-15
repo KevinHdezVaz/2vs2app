@@ -1,5 +1,5 @@
 // lib/services/SessionResultsImage.dart
-// ✅ DISEÑO ACTUALIZADO: Basado en el mockup HTML con estilo moderno y compacto
+// ✅ DISEÑO ACTUALIZADO: 100% idéntico al mockup HTML final
 
 import 'dart:io';
 import 'dart:typed_data';
@@ -11,11 +11,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Colores del brand - confirmados del HTML
+// Colores del brand - exactos del HTML
 const Color _navy = Color(0xFF061848);
+const Color _navyCard = Color(0xFF0A1E5A);
 const Color _lime = Color(0xFFE9FE1F);
-const Color _teal = Color(0xFF0D505D);
-const Color _bgCard = Color(0x0DFFFFFF); // rgba(255, 255, 255, 0.05)
+const Color _white = Color(0xFFFFFFFF);
+const Color _gold = Color(0xFFF2C94C);
+const Color _silver = Color(0xFFE0E0E0);
+const Color _bronze = Color(0xFFCD7F32);
 
 class SessionResultsImageService {
   /// Genera y comparte una imagen con los resultados de la sesión
@@ -157,18 +160,18 @@ Learn more: www.picklebracket.pro
     try {
       final date = DateTime.parse(dateString);
       final months = [
-        'JAN',
-        'FEB',
-        'MAR',
-        'APR',
-        'MAY',
-        'JUN',
-        'JUL',
-        'AUG',
-        'SEP',
-        'OCT',
-        'NOV',
-        'DEC'
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
       ];
       return '${months[date.month - 1]} ${date.day}, ${date.year}';
     } catch (e) {
@@ -202,43 +205,43 @@ class _ResultsImageWidget extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: _navy,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: _lime, width: 12),
+          borderRadius: BorderRadius.circular(40),
+          border: Border.all(color: _lime, width: 10),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.6),
-              blurRadius: 80,
+              blurRadius: 100,
               offset: const Offset(0, 40),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(50),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // COMPACT HEADER
-            _buildCompactHeader(),
+            // HEADER
+            _buildHeader(),
 
             // FINALISTS (solo para playoffs)
             if (sessionType == 'P4' || sessionType == 'P8') ...[
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
               _buildFinalistsSection(),
             ],
 
-            // FINAL RANKINGS
-            const SizedBox(height: 30),
-            _buildFinalRankings(showTop: topRankCount),
+            // INDIVIDUAL RANKINGS
+            const SizedBox(height: 40),
+            _buildIndividualRankings(showTop: topRankCount),
 
             // FOOTER
-            const SizedBox(height: 30),
-            _buildModernFooter(),
+            const SizedBox(height: 50),
+            _buildFooter(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCompactHeader() {
+  Widget _buildHeader() {
     final sessionName = sessionData['session_name']?.toString().toUpperCase() ??
         'SESSION RESULTS';
     final sessionTypeFormatted =
@@ -279,7 +282,7 @@ class _ResultsImageWidget extends StatelessWidget {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           // LEFT: Session name and type
           Expanded(
@@ -289,18 +292,19 @@ class _ResultsImageWidget extends StatelessWidget {
                 Text(
                   sessionName,
                   style: GoogleFonts.oswald(
-                    fontSize: 40,
+                    fontSize: 56,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: _white,
                     height: 1,
-                    letterSpacing: 1,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 5),
                 Text(
                   '$sessionTypeFormatted • $dateFormatted',
                   style: GoogleFonts.robotoMono(
-                    fontSize: 13,
+                    fontSize: 14,
                     color: _lime,
                     fontWeight: FontWeight.w400,
                     letterSpacing: 1,
@@ -310,18 +314,18 @@ class _ResultsImageWidget extends StatelessWidget {
             ),
           ),
 
-          // RIGHT: Stats strip (enlarged)
+          // RIGHT: Stats strip
           Row(
             children: [
               _buildStatBox('$numberOfPlayers', 'Players'),
-              const SizedBox(width: 24),
+              const SizedBox(width: 30),
               _buildStatBox('$numberOfCourts', 'Courts'),
-              const SizedBox(width: 24),
+              const SizedBox(width: 30),
               _buildStatBox(
                 SessionResultsImageService._formatDuration(duration),
                 'Duration',
               ),
-              const SizedBox(width: 24),
+              const SizedBox(width: 30),
               _buildStatBox('$completedGames', 'Games'),
             ],
           ),
@@ -336,18 +340,19 @@ class _ResultsImageWidget extends StatelessWidget {
       children: [
         Text(
           value,
-          style: GoogleFonts.robotoMono(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
+          style: GoogleFonts.oswald(
+            fontSize: 32,
+            fontWeight: FontWeight.w500,
+            color: _white,
+            height: 1,
           ),
         ),
         Text(
           label.toUpperCase(),
           style: GoogleFonts.robotoMono(
-            fontSize: 9,
-            color: Colors.white.withOpacity(0.5),
-            letterSpacing: 0.5,
+            fontSize: 10,
+            color: _white,
+            fontWeight: FontWeight.w400,
           ),
         ),
       ],
@@ -372,36 +377,35 @@ class _ResultsImageWidget extends StatelessWidget {
         Text(
           'FINALISTS',
           style: GoogleFonts.oswald(
-            fontSize: 26,
-            fontWeight: FontWeight.w700,
-            color: Colors.white.withOpacity(0.8),
+            fontSize: 24,
+            fontWeight: FontWeight.w500,
+            color: _white,
             letterSpacing: 2,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 30),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             // SILVER (Runner-up) - Left
             if (runnersUp != null)
               Expanded(
-                flex: 10,
-                child: _buildMedalCard('SILVER', runnersUp, isGold: false),
+                child: _buildPodiumCard(
+                    '2', runnersUp, 'RUNNER UP', _silver, false),
               ),
-            if (runnersUp != null) const SizedBox(width: 15),
+            if (runnersUp != null) const SizedBox(width: 20),
 
-            // GOLD (Champions) - Center (slightly larger)
+            // GOLD (Champions) - Center (slightly taller)
             Expanded(
-              flex: 11,
-              child: _buildMedalCard('GOLD', champions, isGold: true),
+              child: _buildPodiumCard('1', champions, 'CHAMPIONS', _gold, true),
             ),
 
             // BRONZE (3rd Place) - Right
-            if (thirdPlace != null) const SizedBox(width: 15),
+            if (thirdPlace != null) const SizedBox(width: 20),
             if (thirdPlace != null)
               Expanded(
-                flex: 10,
-                child: _buildMedalCard('BRONZE', thirdPlace, isGold: false),
+                child: _buildPodiumCard(
+                    '3', thirdPlace, '3RD PLACE', _bronze, false),
               ),
           ],
         ),
@@ -409,104 +413,85 @@ class _ResultsImageWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMedalCard(String medal, dynamic team, {required bool isGold}) {
+  Widget _buildPodiumCard(String number, dynamic team, String label,
+      Color medalColor, bool isGold) {
     String teamNames = _getTeamNames(team);
 
-    final Color circleStartColor;
-    final Color circleEndColor;
-    final String medalNumber;
-    final String medalLabel;
-
-    switch (medal) {
-      case 'GOLD':
-        circleStartColor = const Color(0xFFFFD700);
-        circleEndColor = const Color(0xFFB8860B);
-        medalNumber = '1';
-        medalLabel = 'CHAMPIONS';
-        break;
-      case 'SILVER':
-        circleStartColor = const Color(0xFFE0E0E0);
-        circleEndColor = const Color(0xFF8E8E8E);
-        medalNumber = '2';
-        medalLabel = 'RUNNER UP';
-        break;
-      case 'BRONZE':
-        circleStartColor = const Color(0xFFCD7F32);
-        circleEndColor = const Color(0xFF8B4513);
-        medalNumber = '3';
-        medalLabel = '3RD PLACE';
-        break;
-      default:
-        circleStartColor = Colors.grey;
-        circleEndColor = Colors.grey;
-        medalNumber = '?';
-        medalLabel = 'FINALIST';
-    }
-
     return Container(
-      padding: EdgeInsets.symmetric(
-        vertical: isGold ? 24 : 16,
-        horizontal: 16,
+      height: isGold ? 210 : 180,
+      padding: const EdgeInsets.symmetric(
+        vertical: 30,
+        horizontal: 20,
       ),
       decoration: BoxDecoration(
-        color: isGold ? _lime.withOpacity(0.05) : _bgCard,
-        borderRadius: BorderRadius.circular(14),
+        color: isGold ? _navyCard : _navyCard,
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isGold ? _lime : Colors.white.withOpacity(0.1),
-          width: isGold ? 2 : 1,
+          color: isGold ? _lime : Colors.transparent,
+          width: 2,
         ),
+        gradient: isGold
+            ? RadialGradient(
+                center: Alignment.topCenter,
+                radius: 1.5,
+                colors: [
+                  _lime.withOpacity(0.1),
+                  _navyCard,
+                ],
+              )
+            : null,
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min, // ✅ Cambiado a min
         children: [
           // Medal circle
           Container(
-            width: 44,
-            height: 44,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [circleStartColor, circleEndColor],
-              ),
+              color: medalColor,
             ),
             child: Center(
               child: Text(
-                medalNumber,
+                number,
                 style: GoogleFonts.oswald(
-                  fontSize: 22,
+                  fontSize: 24,
                   fontWeight: FontWeight.w700,
                   color: _navy,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 15),
 
-          // Winner names
-          Text(
-            teamNames,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.oswald(
-              fontSize: isGold ? 20 : 18,
-              fontWeight: FontWeight.w700,
-              color: isGold ? _lime : Colors.white,
-              height: 1.1,
+          // Team names - ✅ Wrapped in Flexible
+          Flexible(
+            child: Text(
+              teamNames,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.sora(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: _white,
+                height: 1.1,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
 
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
 
-          // Medal label
+          // Label
           Text(
-            medalLabel,
+            label,
             style: GoogleFonts.robotoMono(
-              fontSize: 9,
-              color: Colors.white.withOpacity(0.5),
-              letterSpacing: 0.5,
+              fontSize: 14,
+              color: isGold ? _lime : const Color(0xFF888888),
+              fontWeight: isGold ? FontWeight.w700 : FontWeight.w400,
+              letterSpacing: 1,
             ),
           ),
         ],
@@ -514,7 +499,7 @@ class _ResultsImageWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildFinalRankings({int showTop = 12}) {
+  Widget _buildIndividualRankings({int showTop = 12}) {
     final topPlayers = players.take(showTop).toList();
 
     if (topPlayers.isEmpty) {
@@ -535,15 +520,15 @@ class _ResultsImageWidget extends StatelessWidget {
     return Column(
       children: [
         Text(
-          'FINAL RANKINGS',
+          'INDIVIDUAL RANKINGS',
           style: GoogleFonts.oswald(
-            fontSize: 26,
-            fontWeight: FontWeight.w700,
-            color: Colors.white.withOpacity(0.8),
+            fontSize: 24,
+            fontWeight: FontWeight.w500,
+            color: _white,
             letterSpacing: 2,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 30),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -589,79 +574,104 @@ class _ResultsImageWidget extends StatelessWidget {
         ? (player['points_won_percentage'] as num).round()
         : (totalPoints > 0 ? ((pointsWon / totalPoints) * 100).round() : 0);
 
-    final bool isTopTier = rank <= 3;
+    // Color del número según el ranking
+    Color numColor = _white;
+    if (rank == 1) numColor = _gold;
+    if (rank == 2) numColor = _silver;
+    if (rank == 3) numColor = _bronze;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(10),
-        border: Border(
-          left: BorderSide(
-            color: isTopTier ? _lime : Colors.transparent,
-            width: 3,
-          ),
-        ),
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
           // Rank number
           SizedBox(
-            width: 35,
+            width: 45,
             child: Text(
               '#$rank',
               style: GoogleFonts.oswald(
-                fontSize: 22,
+                fontSize: 26,
                 fontWeight: FontWeight.w700,
-                color: _lime,
+                color: numColor,
               ),
             ),
           ),
 
-          // Player info
+          const SizedBox(width: 15),
+
+          // Player info con stats al lado
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(
-                  _getPlayerNameWithInitial(player),
-                  style: GoogleFonts.sora(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                // Nombre
+                Flexible(
+                  child: Text(
+                    _getPlayerNameWithInitial(player),
+                    style: GoogleFonts.sora(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: _white,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+
+                const SizedBox(width: 12),
+
+                // Stats
                 Text(
-                  'Rating: $currentRating • W:$gamesWon L:$gamesLost',
+                  'Rating: $currentRating | $gamesWon-$gamesLost',
                   style: GoogleFonts.robotoMono(
-                    fontSize: 9,
-                    color: Colors.white.withOpacity(0.4),
+                    fontSize: 11,
+                    color: _white,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
             ),
           ),
 
-          // Point won percentage
-          Text(
-            '$pointWonPct%',
-            style: GoogleFonts.robotoMono(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: _lime,
-            ),
+          const SizedBox(width: 15),
+
+          // Points won percentage
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '$pointWonPct%',
+                style: GoogleFonts.oswald(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w500,
+                  color: _lime,
+                  height: 1,
+                ),
+              ),
+              Text(
+                'POINTS WON',
+                style: GoogleFonts.robotoMono(
+                  fontSize: 9,
+                  color: _lime.withOpacity(0.7),
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildModernFooter() {
+  Widget _buildFooter() {
     return Container(
-      padding: const EdgeInsets.only(top: 25),
+      padding: const EdgeInsets.only(top: 30),
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
@@ -676,16 +686,16 @@ class _ResultsImageWidget extends StatelessWidget {
           // Brand tag
           RichText(
             text: TextSpan(
-              style: GoogleFonts.oswald(
-                fontSize: 16,
-                letterSpacing: 1,
-                color: Colors.white,
+              style: GoogleFonts.robotoMono(
+                fontSize: 18,
+                color: _white,
+                fontWeight: FontWeight.w400,
               ),
               children: [
                 const TextSpan(text: 'CREATED BY '),
                 TextSpan(
                   text: 'PICKLEBRACKET',
-                  style: GoogleFonts.oswald(
+                  style: GoogleFonts.robotoMono(
                     color: _lime,
                     fontWeight: FontWeight.w700,
                   ),
@@ -698,14 +708,14 @@ class _ResultsImageWidget extends StatelessWidget {
           RichText(
             text: TextSpan(
               style: GoogleFonts.robotoMono(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: Colors.white.withOpacity(0.6),
+                fontSize: 18,
+                fontWeight: FontWeight.w400,
+                color: _white,
               ),
               children: [
-                const TextSpan(text: 'Learn more at '),
+                const TextSpan(text: 'www.picklebracket'),
                 TextSpan(
-                  text: 'www.picklebracket.pro',
+                  text: '.pro',
                   style: GoogleFonts.robotoMono(
                     color: _lime,
                     fontWeight: FontWeight.w700,

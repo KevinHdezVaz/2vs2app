@@ -34,7 +34,7 @@ class CustomDrawer extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 'Log Out',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.oswald(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: FrutiaColors.primaryText,
@@ -672,11 +672,135 @@ class CustomDrawer extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         // Delete button - full width
+                        // Delete button - full width
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () =>
-                                Navigator.of(context).pop('delete'),
+                            onPressed: () async {
+                              // Cerrar el diálogo actual primero
+                              Navigator.of(context).pop();
+
+                              // Mostrar confirmación de eliminación
+                              final bool? confirmDelete =
+                                  await showDialog<bool>(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    title: Row(
+                                      children: [
+                                        Icon(Icons.warning_amber_rounded,
+                                            color: FrutiaColors.error,
+                                            size: 28),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            'Delete Account?',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w600,
+                                              color: FrutiaColors.error,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    content: Text(
+                                      'This action is PERMANENT.',
+                                      style: GoogleFonts.lato(
+                                        fontSize: 15,
+                                        color: FrutiaColors.primaryText,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(false),
+                                        child: Text(
+                                          'Cancel',
+                                          style: GoogleFonts.lato(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(true),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: FrutiaColors.error,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'Delete Account',
+                                          style: GoogleFonts.lato(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+
+                              // Si confirmó, proceder con la eliminación
+                              if (confirmDelete == true && context.mounted) {
+                                try {
+                                  await UserService.deleteAccount();
+                                  await StorageService().clearAll();
+                                  print('🧹 Account deleted permanently');
+
+                                  if (context.mounted) {
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const AuthPageCheck()),
+                                      (route) => false,
+                                    );
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text(
+                                          'Account deleted successfully',
+                                          style: TextStyle(
+                                            color: FrutiaColors.primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        backgroundColor:
+                                            FrutiaColors.ElectricLime,
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  print('❌ Error deleting account: $e');
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Error deleting account: $e',
+                                          style: const TextStyle(
+                                            color: FrutiaColors.primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        backgroundColor:
+                                            FrutiaColors.ElectricLime,
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: FrutiaColors.error,
                               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -943,15 +1067,14 @@ class CustomDrawer extends StatelessWidget {
     return ListTile(
       leading: Icon(
         icon,
-        color: FrutiaColors.primary,
+        color: FrutiaColors.primary, // Navy
       ),
       title: Text(
         title,
         style: GoogleFonts.oswald(
-          // ← aquí el cambio principal
           fontSize: 16,
           fontWeight: FontWeight.w500,
-          color: FrutiaColors.primaryText,
+          color: FrutiaColors.primary, // ✅ CAMBIO: Navy (igual que iconos)
         ),
       ),
       onTap: onTap,

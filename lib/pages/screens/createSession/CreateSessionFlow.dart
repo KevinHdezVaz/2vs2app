@@ -169,7 +169,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
           children: [
             const SizedBox(height: 12),
             Text(
-              'All settings entered will be lost',
+              'If you haven’t saved a draft of this session, all settings will be lost.',
               style: GoogleFonts.lato(
                 color: FrutiaColors.error,
                 fontWeight: FontWeight.w500,
@@ -298,7 +298,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
           SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white),
+                Icon(Icons.check_circle, color: FrutiaColors.LighterNavy),
                 SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -557,7 +557,7 @@ class _CreateSessionFlowState extends State<CreateSessionFlow> {
                         ),
                       ),
                       child: Text(
-                        'Start Session',
+                        'Start Session!',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
